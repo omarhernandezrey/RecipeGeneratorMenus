@@ -9,17 +9,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.LocalFireDepartment
@@ -60,7 +56,9 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.recipe_generator.data.Recipe
 import com.example.recipe_generator.data.getFeaturedRecipeDetail
+import com.example.recipe_generator.ui.components.DetailEditorialTopAppBar
 import com.example.recipe_generator.ui.components.EditorialBottomNavBar
+import com.example.recipe_generator.ui.components.editorialBottomBarContentPadding
 import com.example.recipe_generator.ui.theme.Background
 import com.example.recipe_generator.ui.theme.OnPrimary
 import com.example.recipe_generator.ui.theme.OnSecondaryContainer
@@ -110,14 +108,25 @@ fun RecipeDetailScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            RecipeDetailTopBar(onBackClick = onBackClick)
+            DetailEditorialTopAppBar(
+                title = "Detalle de Receta",
+                leadingContent = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = OnSurfaceVariant
+                        )
+                    }
+                }
+            )
 
             HeroSection(recipe = recipe)
 
             Column(
                 modifier = Modifier
                     .padding(horizontal = spacing_6)
-                    .padding(bottom = 140.dp)
+                    .padding(bottom = editorialBottomBarContentPadding() + spacing_3)
             ) {
                 Card(
                     modifier = Modifier
@@ -125,7 +134,7 @@ fun RecipeDetailScreen(
                         .offset(y = (-48).dp),
                     shape = RoundedCornerShape(rounded_lg),
                     colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(spacing_8)) {
                         Text(
@@ -166,61 +175,6 @@ fun RecipeDetailScreen(
                 selectedItem = selectedNavItem,
                 onItemSelected = onNavItemSelected
             )
-        }
-    }
-}
-
-@Composable
-private fun RecipeDetailTopBar(onBackClick: () -> Unit) {
-    val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xCCFAF9FC))
-            .padding(top = topPadding)
-            .padding(horizontal = spacing_6, vertical = spacing_4),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = onBackClick) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Volver",
-                tint = OnSurfaceVariant
-            )
-        }
-
-        Text(
-            text = "Gastronomía Editorial",
-            style = MaterialTheme.typography.headlineSmall,
-            color = Primary,
-            fontWeight = FontWeight.ExtraBold
-        )
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = {}) {
-                Icon(
-                    imageVector = Icons.Filled.Notifications,
-                    contentDescription = "Notificaciones",
-                    tint = Primary
-                )
-            }
-
-            Surface(
-                modifier = Modifier.size(32.dp),
-                shape = CircleShape,
-                color = PrimaryFixedDim.copy(alpha = 0.6f)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "J",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = Primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
         }
     }
 }
@@ -363,25 +317,36 @@ private fun ActionHub(isFavorite: Boolean, onFavoriteClick: () -> Unit) {
                         } else {
                             Icons.Outlined.FavoriteBorder
                         },
-                        contentDescription = null,
+                        contentDescription = if (isFavorite) "Eliminar de favoritos" else "Guardar en favoritos",
                         tint = if (isFavorite) OnPrimary else OnSurfaceVariant,
-                        modifier = Modifier.size(24.dp)
+                    )
+                    Text(
+                        text = if (isFavorite) "Guardado" else "Guardar en Favoritos",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = if (isFavorite) OnPrimary else OnSurfaceVariant,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
 
-        CircleActionButton(symbol = "↗")
-        CircleActionButton(symbol = "+")
+        CircleActionButton(symbol = "↗", contentDescription = "Compartir")
+        CircleActionButton(
+            symbol = "+",
+            contentDescription = "Añadir al carrito"
+        )
     }
 }
 
 @Composable
 private fun CircleActionButton(
-    symbol: String
+    symbol: String,
+    contentDescription: String
 ) {
     Surface(
-        modifier = Modifier.size(52.dp),
+        modifier = Modifier
+            .size(52.dp)
+            .clickable(onClickLabel = contentDescription) { /* Acción */ },
         shape = CircleShape,
         color = SurfaceContainerHigh
     ) {
