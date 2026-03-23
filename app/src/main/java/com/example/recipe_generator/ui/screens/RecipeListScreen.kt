@@ -49,17 +49,16 @@ fun RecipeListScreen(
             .fillMaxSize()
             .background(Surface)
     ) {
+        // Scrollable Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(top = 80.dp, bottom = 160.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Top App Bar
-            EditorialTopAppBar()
-
             // Editorial Header
             Column(
-                modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_6)
+                modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_8)
             ) {
                 Text(
                     text = "CURADO PARA TI",
@@ -97,7 +96,7 @@ fun RecipeListScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(140.dp))
+                Spacer(modifier = Modifier.height(spacing_12))
             }
         }
 
@@ -135,6 +134,16 @@ fun RecipeListScreen(
                 selectedItem = selectedNavItem,
                 onItemSelected = onNavItemSelected
             )
+        }
+
+        // Top App Bar - Fixed at top
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .background(Surface)
+        ) {
+            EditorialTopAppBar()
         }
     }
 }

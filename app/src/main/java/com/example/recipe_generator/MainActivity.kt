@@ -33,6 +33,7 @@ import com.example.recipe_generator.data.Recipe
 import com.example.recipe_generator.data.getAllRecipes
 import com.example.recipe_generator.data.getFeaturedRecipeDetail
 import com.example.recipe_generator.ui.components.EditorialBottomNavBar
+import com.example.recipe_generator.ui.screens.MenuGeneratorScreen
 import com.example.recipe_generator.ui.screens.RecipeDetailScreen
 import com.example.recipe_generator.ui.screens.FavoritesScreen
 import com.example.recipe_generator.ui.screens.RecipeListScreen
@@ -70,7 +71,7 @@ private fun RecipeGeneratorApp() {
     val favoritesRepository = remember { FavoritesRepository(context) }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
     val storedFavoriteRecipeIds by favoritesRepository.favoriteRecipeIds.collectAsState(initial = emptySet())
     var favoriteRecipeIds by remember { mutableStateOf(emptySet<String>()) }
 
@@ -80,7 +81,7 @@ private fun RecipeGeneratorApp() {
 
     var currentDestination by remember { mutableStateOf(TopLevelDestination.Home) }
     var selectedRecipeId by remember { mutableStateOf<String?>(null) }
-    
+
     val selectedRecipe = remember(selectedRecipeId, allRecipes) {
         allRecipes.find { it.id == selectedRecipeId }
     }
@@ -88,7 +89,7 @@ private fun RecipeGeneratorApp() {
     val selectedRecipeWithFavoriteState = selectedRecipe?.copy(
         isFavorite = selectedRecipe?.id in favoriteRecipeIds
     )
-    
+
     val favoriteRecipes = allRecipes
         .filter { it.id in favoriteRecipeIds }
         .map { it.copy(isFavorite = true) }
@@ -102,9 +103,9 @@ private fun RecipeGeneratorApp() {
             } else {
                 favoriteRecipeIds + recipeId
             }
-            
+
             favoritesRepository.toggleFavorite(recipeId)
-            
+
             snackbarHostState.showSnackbar(
                 if (!isCurrentlyFavorite) {
                     "Guardado en favoritos"
@@ -165,6 +166,14 @@ private fun RecipeGeneratorApp() {
                                 favoritesRepository.removeFavorite(recipeId)
                                 snackbarHostState.showSnackbar("Eliminado de favoritos")
                             }
+                        }
+                    )
+                }
+
+                currentDestination == TopLevelDestination.Generator -> {
+                    MenuGeneratorScreen(
+                        onNavigate = { index ->
+                            currentDestination = indexToDestination(index)
                         }
                     )
                 }
@@ -250,5 +259,13 @@ private fun PlaceholderScreen(
 fun RecipeListScreenPreview() {
     RecipeGeneratorTheme {
         RecipeGeneratorApp()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MenuGeneratorScreenPreview() {
+    RecipeGeneratorTheme {
+        MenuGeneratorScreen()
     }
 }

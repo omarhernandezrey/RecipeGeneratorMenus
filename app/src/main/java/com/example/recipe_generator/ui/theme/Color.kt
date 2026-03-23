@@ -8,7 +8,10 @@ val Primary = Color(0xFF4800B2)
 val PrimaryContainer = Color(0xFF6200EE)
 val OnPrimary = Color(0xFFFFFFFF)
 val OnPrimaryContainer = Color(0xFFD0BEFF)
+val PrimaryFixed = Color(0xFFE8DDFF)
 val PrimaryFixedDim = Color(0xFFCFBDFF)
+val OnPrimaryFixed = Color(0xFF22005D)
+val OnPrimaryFixedVariant = Color(0xFF5300CD)
 
 // Secondary
 val Secondary = Color(0xFF00C2A8)
