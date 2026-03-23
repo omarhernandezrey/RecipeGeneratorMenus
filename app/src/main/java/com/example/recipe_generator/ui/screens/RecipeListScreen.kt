@@ -89,7 +89,7 @@ fun RecipeListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = spacing_6),
-                verticalArrangement = Arrangement.spacedBy(spacing_12 + 8.dp)
+                verticalArrangement = Arrangement.spacedBy(spacing_10)
             ) {
                 val recipesForDay = getMenuForDay(selectedDay)
 
@@ -102,7 +102,7 @@ fun RecipeListScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(bottomNavHeight + 40.dp))
+                Spacer(modifier = Modifier.height(bottomNavHeight + spacing_10))
             }
         }
 
@@ -111,7 +111,7 @@ fun RecipeListScreen(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .height(bottomNavHeight + 40.dp)
+                .height(bottomNavHeight + spacing_10)
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
@@ -305,7 +305,7 @@ fun RecipeCard(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(spacing_3),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     InfoChip(icon = Icons.Outlined.Schedule, text = "${recipe.timeInMinutes} min")

@@ -123,9 +123,9 @@ fun InfoChip(
         color = SurfaceContainerLow
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+            modifier = Modifier.padding(horizontal = spacing_3, vertical = spacing_2),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(5.dp)
+            horizontalArrangement = Arrangement.spacedBy(spacing_1)
         ) {
             Icon(
                 imageVector = icon,

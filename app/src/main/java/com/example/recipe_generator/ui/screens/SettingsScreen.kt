@@ -50,7 +50,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.recipe_generator.ui.components.EditorialBottomNavBar
-import com.example.recipe_generator.ui.components.EditorialTopAppBar
+import com.example.recipe_generator.ui.components.HomeEditorialTopAppBar
+import com.example.recipe_generator.ui.components.editorialBottomBarContentPadding
+import com.example.recipe_generator.ui.components.editorialTopBarContentPadding
 import com.example.recipe_generator.ui.theme.Error
 import com.example.recipe_generator.ui.theme.ErrorContainer
 import com.example.recipe_generator.ui.theme.OnSecondaryContainer
@@ -125,7 +127,7 @@ fun SettingsScreen(
                 .fillMaxWidth()
                 .background(surfaceBg)
         ) {
-            EditorialTopAppBar()
+            HomeEditorialTopAppBar(title = "Ajustes")
         }
     }
 }
@@ -144,7 +146,7 @@ private fun SettingsContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 80.dp, bottom = 120.dp)
+            .padding(top = editorialTopBarContentPadding(), bottom = editorialBottomBarContentPadding())
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(spacing_10)
     ) {
@@ -666,7 +668,7 @@ private fun LanguageSelector(
                 fontSize = 10.sp,
                 fontStyle = FontStyle.Italic,
                 color = OnSurfaceVariant,
-                modifier = Modifier.padding(start = 4.dp)
+                modifier = Modifier.padding(start = spacing_1)
             )
         }
     }

@@ -77,6 +77,7 @@ import com.example.recipe_generator.ui.theme.rounded_md
 import com.example.recipe_generator.ui.theme.spacing_10
 import com.example.recipe_generator.ui.theme.spacing_12
 import com.example.recipe_generator.ui.theme.spacing_2
+import com.example.recipe_generator.ui.theme.spacing_3
 import com.example.recipe_generator.ui.theme.spacing_4
 import com.example.recipe_generator.ui.theme.spacing_6
 
@@ -126,7 +127,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = topContentPadding, bottom = editorialBottomBarContentPadding() + 40.dp)
+                .padding(top = topContentPadding, bottom = editorialBottomBarContentPadding())
                 .verticalScroll(rememberScrollState())
         ) {
             // Hero / Title
@@ -467,7 +468,7 @@ private fun PortionsCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(spacing_2),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -525,7 +526,7 @@ private fun RecipeTypeChips(
     onToggle: (String) -> Unit
 ) {
     // Row 1: first 2 chips, Row 2: next 2, Row 3: last one
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(spacing_3)) {
         // Build rows manually to wrap
         val rows = listOf(
             recipeTypeLabels.take(2),
@@ -536,7 +537,7 @@ private fun RecipeTypeChips(
         rows.forEach { rowLabels ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(spacing_3)
             ) {
                 rowLabels.forEach { label ->
                     val isSelected = label in selected
@@ -554,12 +555,12 @@ private fun RecipeTypeChips(
                             .clip(RoundedCornerShape(rounded_full))
                             .background(bg)
                             .clickable { onToggle(label) }
-                            .padding(horizontal = 18.dp, vertical = 12.dp),
+                            .padding(horizontal = spacing_4, vertical = spacing_3),
                         contentAlignment = Alignment.Center
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(7.dp)
+                            horizontalArrangement = Arrangement.spacedBy(spacing_2)
                         ) {
                             Text(
                                 text = label,

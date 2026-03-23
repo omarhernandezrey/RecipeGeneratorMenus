@@ -76,7 +76,9 @@ import com.example.recipe_generator.ui.theme.SurfaceContainerHigh
 import com.example.recipe_generator.ui.theme.SurfaceContainerLow
 import com.example.recipe_generator.ui.theme.SurfaceContainerLowest
 import com.example.recipe_generator.ui.theme.rounded_md
+import com.example.recipe_generator.ui.theme.spacing_2
 import com.example.recipe_generator.ui.theme.spacing_3
+import com.example.recipe_generator.ui.theme.spacing_12
 import com.example.recipe_generator.ui.theme.spacing_4
 import com.example.recipe_generator.ui.theme.spacing_6
 import com.example.recipe_generator.ui.theme.spacing_8
@@ -234,7 +236,7 @@ private fun FavoritesCategoryFilter(
             ) {
                 Text(
                     text = category,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+                    modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_3),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                     color = if (isSelected) OnPrimary else OnSurfaceVariant
@@ -508,9 +510,9 @@ private fun FavoriteStatChip(
         color = containerColor
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = spacing_3, vertical = spacing_2),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.spacedBy(spacing_2)
         ) {
             Icon(
                 imageVector = icon,
@@ -537,7 +539,7 @@ private fun EmptyFavoritesState() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = spacing_8, vertical = 56.dp),
+                .padding(horizontal = spacing_8, vertical = spacing_12),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(spacing_4)
         ) {
