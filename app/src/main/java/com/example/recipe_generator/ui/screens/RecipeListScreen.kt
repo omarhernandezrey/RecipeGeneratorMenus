@@ -10,6 +10,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -75,15 +77,19 @@ fun RecipeListScreen(
                 )
             }
 
+            Spacer(modifier = Modifier.height(spacing_8))
+
             // Day Tab Layout
             DayTabLayout(selectedDay) { selectedDay = it }
+
+            Spacer(modifier = Modifier.height(spacing_8))
 
             // Recipe Sections - 1 card per category
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = spacing_6),
-                verticalArrangement = Arrangement.spacedBy(spacing_12)
+                verticalArrangement = Arrangement.spacedBy(spacing_12 + 8.dp)
             ) {
                 val recipesForDay = getMenuForDay(selectedDay)
 
@@ -240,7 +246,12 @@ fun RecipeCard(
                                 .background(SurfaceContainerLow),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = "🍽️", fontSize = 48.sp)
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = "Sin imagen",
+                                modifier = Modifier.size(48.dp),
+                                tint = com.example.recipe_generator.ui.theme.Primary
+                            )
                         }
                     }
                 )
@@ -287,8 +298,8 @@ fun RecipeCard(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    InfoChip(icon = "⏱", text = "${recipe.timeInMinutes} min")
-                    InfoChip(icon = "🔥", text = "${recipe.calories} Cal")
+                    InfoChip(icon = Icons.Outlined.Schedule, text = "${recipe.timeInMinutes} min")
+                    InfoChip(icon = Icons.Outlined.LocalFireDepartment, text = "${recipe.calories} Cal")
                     DifficultyChip(difficulty = recipe.difficulty)
                 }
             }

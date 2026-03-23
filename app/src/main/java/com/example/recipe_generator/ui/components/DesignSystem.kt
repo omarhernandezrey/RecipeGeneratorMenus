@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -112,7 +113,7 @@ fun IngredientChip(
  */
 @Composable
 fun InfoChip(
-    icon: String,
+    icon: ImageVector,
     text: String,
     modifier: Modifier = Modifier
 ) {
@@ -126,9 +127,11 @@ fun InfoChip(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            Text(
-                text = icon,
-                fontSize = 14.sp
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = Primary
             )
             Text(
                 text = text,
