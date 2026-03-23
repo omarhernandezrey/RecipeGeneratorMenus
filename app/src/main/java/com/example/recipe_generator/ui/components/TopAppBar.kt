@@ -44,7 +44,7 @@ import com.example.recipe_generator.ui.theme.spacing_4
 import com.example.recipe_generator.ui.theme.spacing_6
 
 private const val PROFILE_IMAGE_URL = "https://lh3.googleusercontent.com/aida-public/AB6AXuB2xtj_r97gsEUurBmuOwkrxnpW7yFeqbQN49f2Q79dIXXT3KFVXeIrQYLSYkUT_TrcscsTFavakiUZ_SKEOnTS-t8yDUZ5Nk2sh8TR1sSgmFlPphMmtbSvy4Gs81b8aaCXpo_JpPWBRZIWe6CNJ4d0rMGaUqI1arpd0k-UxOq2s8N1yD8P_bYtik4H5hSLeTp7dSRrkcOVhoQlK3CNBReGwEWVL741RcR7k91urFLVQXuqDRlBUmY9T6jfUa37KCR9ePusAJ272j4"
-private val TopBarSlotWidth = 104.dp
+private val TopBarSlotWidth = 84.dp
 private val TopBarRowHeight = 64.dp
 
 @Composable
@@ -68,7 +68,7 @@ fun EditorialTopAppBar(
             .background(containerColor)
             .padding(top = topInset)
             .height(TopBarRowHeight)
-            .padding(horizontal = spacing_6),
+            .padding(horizontal = spacing_4),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -86,7 +86,7 @@ fun EditorialTopAppBar(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.ExtraBold,
                 color = Primary,
                 maxLines = 1,

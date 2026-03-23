@@ -28,8 +28,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.LocalFireDepartment
-import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Card
@@ -109,7 +108,7 @@ fun RecipeDetailScreen(
                 .verticalScroll(scrollState)
         ) {
             DetailEditorialTopAppBar(
-                title = "Detalle de Receta",
+                title = "Menú Semanal",
                 leadingContent = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -231,7 +230,7 @@ private fun HeroSection(recipe: Recipe) {
             horizontalArrangement = Arrangement.spacedBy(spacing_2)
         ) {
             QuickInfoChip(
-                icon = Icons.Outlined.Schedule,
+                icon = Icons.Outlined.AccessTime,
                 text = "${recipe.timeInMinutes} min",
                 iconTint = Primary
             )

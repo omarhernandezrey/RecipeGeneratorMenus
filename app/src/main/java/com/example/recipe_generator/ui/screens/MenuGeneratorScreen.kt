@@ -130,25 +130,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                 .padding(top = topContentPadding, bottom = editorialBottomBarContentPadding())
                 .verticalScroll(rememberScrollState())
         ) {
-            // Hero / Title
-            Column(modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_6)) {
-                Text(
-                    text = "Generador de Menú",
-                    style = MaterialTheme.typography.displayLarge,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = OnSurface,
-                    lineHeight = 44.sp
-                )
-                Spacer(modifier = Modifier.height(spacing_2))
-                Text(
-                    text = "Personaliza tu experiencia culinaria semanal con precisión editorial.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = OnSurfaceVariant.copy(alpha = 0.70f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(spacing_10))
+            Spacer(modifier = Modifier.height(spacing_6))
 
             // Preferencias Dietéticas Section
             Column(modifier = Modifier.padding(horizontal = spacing_6)) {
@@ -293,7 +275,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                 .fillMaxWidth()
                 .background(surfaceBg)
         ) {
-            HomeEditorialTopAppBar(title = "Generador de Menú")
+            HomeEditorialTopAppBar(title = "Menú Semanal")
         }
     }
 }

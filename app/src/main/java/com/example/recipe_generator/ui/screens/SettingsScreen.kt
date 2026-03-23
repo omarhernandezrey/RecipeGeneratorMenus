@@ -127,7 +127,7 @@ fun SettingsScreen(
                 .fillMaxWidth()
                 .background(surfaceBg)
         ) {
-            HomeEditorialTopAppBar(title = "Ajustes")
+            HomeEditorialTopAppBar(title = "Menú Semanal")
         }
     }
 }

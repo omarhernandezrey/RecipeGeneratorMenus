@@ -26,8 +26,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.LocalFireDepartment
-import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.AccessTime
+import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -172,7 +172,7 @@ fun FavoritesScreen(
             }
         }
 
-        HomeEditorialTopAppBar(title = "Favoritos")
+        HomeEditorialTopAppBar(title = "Menú Semanal")
 
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {
             EditorialBottomNavBar(
@@ -321,13 +321,13 @@ private fun FavoriteGridCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     FavoriteStatChip(
-                        icon = Icons.Outlined.Schedule,
+                        icon = Icons.Outlined.AccessTime,
                         text = "${recipe.timeInMinutes} min",
                         containerColor = SecondaryContainer.copy(alpha = 0.3f),
                         textColor = OnSecondaryContainer
                     )
                     FavoriteStatChip(
-                        icon = Icons.Outlined.LocalFireDepartment,
+                        icon = Icons.Outlined.Whatshot,
                         text = "${recipe.calories} kcal",
                         containerColor = SurfaceContainerHigh,
                         textColor = OnSurfaceVariant

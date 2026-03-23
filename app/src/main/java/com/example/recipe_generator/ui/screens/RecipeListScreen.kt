@@ -10,8 +10,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.LocalFireDepartment
-import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.AccessTime
+import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -64,26 +64,11 @@ fun RecipeListScreen(
                 .padding(top = topContentPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_8)
-            ) {
-                Text(
-                    text = "CURADO PARA TI",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Primary,
-                    letterSpacing = 2.sp
-                )
-                Spacer(modifier = Modifier.height(spacing_2))
-                Text(
-                    text = "Menú Semanal",
-                    style = MaterialTheme.typography.displayLarge,
-                    color = OnSurface
-                )
-            }
+            Spacer(modifier = Modifier.height(spacing_4))
 
             DayTabLayout(selectedDay) { selectedDay = it }
 
+            Spacer(modifier = Modifier.height(spacing_4))
 
             Column(
                 modifier = Modifier
@@ -166,7 +151,7 @@ fun RecipeListScreen(
                 .fillMaxWidth()
                 .background(Surface)
         ) {
-            HomeEditorialTopAppBar(title = "Diseñador de Menús")
+            HomeEditorialTopAppBar(title = "Menú Semanal")
         }
     }
 }
@@ -182,21 +167,22 @@ fun RecipeSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = spacing_6),
+                .padding(bottom = spacing_4),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = recipe.category,
-                style = MaterialTheme.typography.headlineLarge,
-                color = OnSurface
+                style = MaterialTheme.typography.headlineMedium,
+                color = OnSurface,
+                fontWeight = FontWeight.Bold
             )
             Text(
                 text = recipe.categorySubtitle.uppercase(),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                color = Tertiary,
-                letterSpacing = 1.5.sp
+                color = Primary,
+                letterSpacing = 1.2.sp
             )
         }
 
@@ -222,7 +208,7 @@ fun RecipeCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(rounded_md),
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column {
             Box(
@@ -264,7 +250,7 @@ fun RecipeCard(
                                 imageVector = Icons.Filled.Star,
                                 contentDescription = "Sin imagen",
                                 modifier = Modifier.size(48.dp),
-                                tint = com.example.recipe_generator.ui.theme.Primary
+                                tint = Primary
                             )
                         }
                     }
@@ -275,9 +261,9 @@ fun RecipeCard(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(spacing_4)
-                        .size(48.dp)
+                        .size(44.dp)
                         .background(
-                            Color.White.copy(alpha = 0.88f),
+                            Color.White.copy(alpha = 0.92f),
                             shape = RoundedCornerShape(rounded_full)
                         )
                 ) {
@@ -294,13 +280,14 @@ fun RecipeCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onClick)
-                    .padding(spacing_8)
+                    .padding(horizontal = spacing_8, vertical = spacing_6)
             ) {
                 Text(
                     text = recipe.title,
-                    style = MaterialTheme.typography.headlineLarge,
+                    style = MaterialTheme.typography.headlineMedium,
                     color = OnSurface,
-                    modifier = Modifier.padding(bottom = spacing_4)
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.padding(bottom = spacing_3)
                 )
 
                 Row(
@@ -308,8 +295,8 @@ fun RecipeCard(
                     horizontalArrangement = Arrangement.spacedBy(spacing_3),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    InfoChip(icon = Icons.Outlined.Schedule, text = "${recipe.timeInMinutes} min")
-                    InfoChip(icon = Icons.Outlined.LocalFireDepartment, text = "${recipe.calories} Cal")
+                    InfoChip(icon = Icons.Outlined.AccessTime, text = "${recipe.timeInMinutes} min")
+                    InfoChip(icon = Icons.Outlined.Whatshot, text = "${recipe.calories} Cal")
                     DifficultyChip(difficulty = recipe.difficulty)
                 }
             }
