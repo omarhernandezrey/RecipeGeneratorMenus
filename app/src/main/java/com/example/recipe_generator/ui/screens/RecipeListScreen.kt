@@ -30,7 +30,11 @@ import com.example.recipe_generator.data.getMenuForDay
 import com.example.recipe_generator.ui.components.DayTabLayout
 import com.example.recipe_generator.ui.components.DifficultyChip
 import com.example.recipe_generator.ui.components.EditorialBottomNavBar
+import com.example.recipe_generator.ui.components.HomeEditorialTopAppBar
 import com.example.recipe_generator.ui.components.InfoChip
+import com.example.recipe_generator.ui.components.editorialBottomBarContentPadding
+import com.example.recipe_generator.ui.components.editorialFabBottomPadding
+import com.example.recipe_generator.ui.components.editorialTopBarContentPadding
 import com.example.recipe_generator.ui.theme.*
 
 @Composable
@@ -48,14 +52,16 @@ fun RecipeListScreen(
             .fillMaxSize()
             .background(Surface)
     ) {
-        // Scrollable Content
+        val topContentPadding = editorialTopBarContentPadding()
+        val bottomNavHeight = editorialBottomBarContentPadding()
+
+        // 1. Contenido principal (Scroll)
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 80.dp, bottom = 160.dp)
+                .padding(top = topContentPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Editorial Header
             Column(
                 modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_8)
             ) {
@@ -74,10 +80,8 @@ fun RecipeListScreen(
                 )
             }
 
-            // Day Tab Layout
             DayTabLayout(selectedDay) { selectedDay = it }
 
-            // Recipe Sections - 1 card per category
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -95,15 +99,42 @@ fun RecipeListScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(spacing_12))
+                Spacer(modifier = Modifier.height(bottomNavHeight + 40.dp))
             }
         }
 
-        // FAB with gradient and proper shadow
+        // 2. Degradado inferior (Fading edge)
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(bottomNavHeight + 40.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Surface.copy(alpha = 0f),
+                            Surface.copy(alpha = 0.7f),
+                            Surface
+                        )
+                    )
+                )
+        )
+
+        // 3. Barra de navegación inferior
+        Box(
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            EditorialBottomNavBar(
+                selectedItem = selectedNavItem,
+                onItemSelected = onNavItemSelected
+            )
+        }
+
+        // 4. FAB (Botón de la estrella) - AL FINAL PARA QUE ESTÉ SIEMPRE ENCIMA
         Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = spacing_6, bottom = 112.dp)
+                .padding(end = spacing_6, bottom = editorialFabBottomPadding())
                 .size(64.dp)
                 .shadow(
                     elevation = 16.dp,
@@ -125,24 +156,14 @@ fun RecipeListScreen(
             }
         }
 
-        // Bottom Nav Bar
-        Box(
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
-            EditorialBottomNavBar(
-                selectedItem = selectedNavItem,
-                onItemSelected = onNavItemSelected
-            )
-        }
-
-        // Top App Bar - Fixed at top
+        // 5. Barra superior
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
                 .background(Surface)
         ) {
-            EditorialTopAppBar()
+            HomeEditorialTopAppBar(title = "Diseñador de Menús")
         }
     }
 }
@@ -155,7 +176,6 @@ fun RecipeSection(
     onRecipeSelected: (Recipe) -> Unit = {}
 ) {
     Column {
-        // Section Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -177,7 +197,6 @@ fun RecipeSection(
             )
         }
 
-        // Recipe Card
         RecipeCard(
             recipe = recipe,
             isFavorite = recipe.id in favoriteRecipeIds,
@@ -200,10 +219,9 @@ fun RecipeCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(rounded_md),
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
-            // Image with 16:9 aspect ratio
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -244,7 +262,6 @@ fun RecipeCard(
                     }
                 )
 
-                // Favorite Button - matching Stitch: w-12 h-12 top-4 right-4
                 IconButton(
                     onClick = onToggleFavorite,
                     modifier = Modifier
@@ -252,27 +269,25 @@ fun RecipeCard(
                         .padding(spacing_4)
                         .size(48.dp)
                         .background(
-                            Color.White.copy(alpha = 0.2f),
+                            Color.White.copy(alpha = 0.88f),
                             shape = RoundedCornerShape(rounded_full)
                         )
                 ) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint = Color.White,
+                        tint = if (isFavorite) Tertiary else OnSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                 }
             }
 
-            // Content - matching Stitch: p-8 (32dp)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onClick)
                     .padding(spacing_8)
             ) {
-                // Title - matching Stitch: text-2xl font-extrabold
                 Text(
                     text = recipe.title,
                     style = MaterialTheme.typography.headlineLarge,
@@ -280,7 +295,6 @@ fun RecipeCard(
                     modifier = Modifier.padding(bottom = spacing_4)
                 )
 
-                // Info Chips - wrap to next line if needed
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),

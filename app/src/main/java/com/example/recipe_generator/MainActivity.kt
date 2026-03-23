@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +32,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.recipe_generator.data.FavoritesRepository
 import com.example.recipe_generator.data.getAllRecipes
 import com.example.recipe_generator.ui.components.EditorialBottomNavBar
+import com.example.recipe_generator.ui.components.HomeEditorialTopAppBar
+import com.example.recipe_generator.ui.components.editorialTopBarContentPadding
 import com.example.recipe_generator.ui.screens.MenuGeneratorScreen
 import com.example.recipe_generator.ui.screens.RecipeDetailScreen
 import com.example.recipe_generator.ui.screens.FavoritesScreen
@@ -219,6 +222,8 @@ private fun PlaceholderScreen(
     selectedNavItem: Int,
     onNavItemSelected: (Int) -> Unit
 ) {
+    val topContentPadding = editorialTopBarContentPadding()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -226,7 +231,8 @@ private fun PlaceholderScreen(
     ) {
         Column(
             modifier = Modifier
-                .align(Alignment.Center)
+                .align(Alignment.TopCenter)
+                .padding(top = topContentPadding)
                 .padding(spacing_6),
             verticalArrangement = Arrangement.spacedBy(spacing_6),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -241,6 +247,15 @@ private fun PlaceholderScreen(
                 style = MaterialTheme.typography.bodyLarge,
                 color = OnSurface
             )
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .background(Background)
+        ) {
+            HomeEditorialTopAppBar(title = title)
         }
 
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {

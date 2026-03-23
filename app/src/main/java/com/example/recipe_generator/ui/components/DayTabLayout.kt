@@ -22,7 +22,7 @@ fun DayTabLayout(selectedDay: String, onDaySelected: (String) -> Unit) {
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
             .padding(horizontal = spacing_6)
-            .padding(bottom = spacing_6, top = spacing_2),
+            .padding(bottom = spacing_6, top = spacing_3),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         days.forEach { day ->
@@ -39,8 +39,8 @@ fun DayTabLayout(selectedDay: String, onDaySelected: (String) -> Unit) {
                 ),
                 elevation = if (isSelected) {
                     ButtonDefaults.buttonElevation(
-                        defaultElevation = 8.dp,
-                        pressedElevation = 4.dp
+                        defaultElevation = 4.dp,
+                        pressedElevation = 2.dp
                     )
                 } else {
                     ButtonDefaults.buttonElevation(defaultElevation = 0.dp)

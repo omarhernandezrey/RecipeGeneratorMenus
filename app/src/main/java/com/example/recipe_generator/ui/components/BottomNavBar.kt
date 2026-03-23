@@ -17,76 +17,83 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.recipe_generator.ui.theme.*
 
 data class NavItem(
     val label: String,
-    val icon: ImageVector
+    val icon: ImageVector,
+    val selectedIcon: ImageVector = icon
 )
+
+private val BottomBarCoreHeight = 56.dp
+private val BottomBarTopCorner = 28.dp
+
+@Composable
+fun editorialBottomBarContentPadding(): Dp {
+    val navigationInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    return BottomBarCoreHeight + (navigationInset * 0.35f)
+}
+
+@Composable
+fun editorialFabBottomPadding(): Dp {
+    return editorialBottomBarContentPadding() + 14.dp
+}
 
 @Composable
 fun EditorialBottomNavBar(selectedItem: Int = 0, onItemSelected: (Int) -> Unit = {}) {
     val navItems = listOf(
         NavItem("Inicio", Icons.Filled.Home),
-        NavItem("Favoritos", Icons.Filled.FavoriteBorder),
+        NavItem("Favoritos", Icons.Filled.FavoriteBorder, Icons.Filled.Favorite),
         NavItem("Generador", Icons.Filled.Star),
         NavItem("Ajustes", Icons.Filled.Settings)
     )
+    val navigationInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val containerHeight = BottomBarCoreHeight + navigationInset
 
-    // Matching Stitch: rounded-t-[2rem] bg-white/90 backdrop-blur shadow
     Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-        color = Color.White.copy(alpha = 0.95f),
-        shadowElevation = 8.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(containerHeight),
+        shape = RoundedCornerShape(topStart = BottomBarTopCorner, topEnd = BottomBarTopCorner),
+        color = Color.White.copy(alpha = 0.98f),
+        shadowElevation = 12.dp,
         tonalElevation = 0.dp
     ) {
-        Row(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-                .padding(top = 12.dp, bottom = 24.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.Center
         ) {
-            navItems.forEachIndexed { index, item ->
-                val isSelected = index == selectedItem
-                // Each nav item as a column with proper touch target
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(rounded_full))
-                        .then(
-                            if (isSelected) {
-                                Modifier.background(
-                                    PrimaryFixedDim.copy(alpha = 0.25f),
-                                    shape = RoundedCornerShape(rounded_full)
-                                )
-                            } else Modifier
-                        )
-                        .clickable { onItemSelected(index) }
-                        .padding(horizontal = 20.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                navItems.forEachIndexed { index, item ->
+                    val isSelected = index == selectedItem
+
+                    Box(
+                        modifier = Modifier
+                            .size(height = 42.dp, width = 54.dp)
+                            .clip(RoundedCornerShape(rounded_full))
+                            .then(
+                                if (isSelected) {
+                                    Modifier.background(
+                                        PrimaryFixedDim.copy(alpha = 0.16f)
+                                    )
+                                } else Modifier
+                            )
+                            .clickable { onItemSelected(index) },
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = item.icon,
+                            imageVector = if (isSelected) item.selectedIcon else item.icon,
                             contentDescription = item.label,
                             modifier = Modifier.size(24.dp),
-                            tint = if (isSelected) Primary else OnSurfaceVariant
-                        )
-                        Text(
-                            text = item.label,
-                            fontSize = 11.sp,
-                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                            color = if (isSelected) Primary else OnSurfaceVariant,
-                            letterSpacing = 0.3.sp,
-                            maxLines = 1
+                            tint = if (isSelected) Primary else OnSurfaceVariant.copy(alpha = 0.74f)
                         )
                     }
                 }

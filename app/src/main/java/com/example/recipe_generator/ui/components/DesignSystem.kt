@@ -122,7 +122,7 @@ fun InfoChip(
         color = SurfaceContainerLow
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
@@ -152,11 +152,15 @@ fun DifficultyChip(
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(rounded_full),
-        color = if (difficulty == "Fácil") SecondaryContainer else OutlineVariant.copy(alpha = 0.2f)
+        color = if (difficulty == "Fácil") {
+            SecondaryContainer.copy(alpha = 0.55f)
+        } else {
+            SurfaceContainerHigh
+        }
     ) {
         Text(
             text = difficulty.uppercase(),
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = if (difficulty == "Fácil") OnSecondaryContainer else OnSurfaceVariant,

@@ -52,7 +52,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.recipe_generator.ui.components.EditorialBottomNavBar
-import com.example.recipe_generator.ui.components.EditorialTopAppBar
+import com.example.recipe_generator.ui.components.HomeEditorialTopAppBar
+import com.example.recipe_generator.ui.components.editorialBottomBarContentPadding
+import com.example.recipe_generator.ui.components.editorialTopBarContentPadding
 import com.example.recipe_generator.ui.theme.OnPrimary
 import com.example.recipe_generator.ui.theme.OnPrimaryFixed
 import com.example.recipe_generator.ui.theme.OnSecondaryContainer
@@ -119,11 +121,13 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
             .fillMaxSize()
             .background(surfaceBg)
     ) {
+        val topContentPadding = editorialTopBarContentPadding()
+
         // Scrollable Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 80.dp, bottom = 160.dp)
+                .padding(top = topContentPadding, bottom = editorialBottomBarContentPadding() + 40.dp)
                 .verticalScroll(rememberScrollState())
         ) {
 
@@ -296,7 +300,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                 .fillMaxWidth()
                 .background(surfaceBg)
         ) {
-            EditorialTopAppBar()
+            HomeEditorialTopAppBar(title = "Generador de Menú")
         }
     }
 }

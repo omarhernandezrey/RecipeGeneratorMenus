@@ -8,14 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -28,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -59,6 +55,9 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.recipe_generator.data.Recipe
 import com.example.recipe_generator.ui.components.EditorialBottomNavBar
+import com.example.recipe_generator.ui.components.HomeEditorialTopAppBar
+import com.example.recipe_generator.ui.components.editorialBottomBarContentPadding
+import com.example.recipe_generator.ui.components.editorialTopBarContentPadding
 import com.example.recipe_generator.ui.theme.Background
 import com.example.recipe_generator.ui.theme.OnPrimary
 import com.example.recipe_generator.ui.theme.OnSecondaryContainer
@@ -78,9 +77,6 @@ import com.example.recipe_generator.ui.theme.spacing_3
 import com.example.recipe_generator.ui.theme.spacing_4
 import com.example.recipe_generator.ui.theme.spacing_6
 import com.example.recipe_generator.ui.theme.spacing_8
-
-private const val FAVORITES_PROFILE_IMAGE =
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuB2xtj_r97gsEUurBmuOwkrxnpW7yFeqbQN49f2Q79dIXXT3KFVXeIrQYLSYkUT_TrcscsTFavakiUZ_SKEOnTS-t8yDUZ5Nk2sh8TR1sSgmFlPphMmtbSvy4Gs81b8aaCXpo_JpPWBRZIWe6CNJ4d0rMGaUqI1arpd0k-UxOq2s8N1yD8P_bYtik4H5hSLeTp7dSRrkcOVhoQlK3CNBReGwEWVL741RcR7k91urFLVQXuqDRlBUmY9T6jfUa37KCR9ePusAJ272j4"
 
 @Composable
 fun FavoritesScreen(
@@ -110,14 +106,16 @@ fun FavoritesScreen(
             .fillMaxSize()
             .background(Background)
     ) {
+        val topContentPadding = editorialTopBarContentPadding()
+
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = 160.dp),
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 start = spacing_6,
                 end = spacing_6,
-                top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 80.dp,
-                bottom = 132.dp
+                top = topContentPadding,
+                bottom = editorialBottomBarContentPadding()
             ),
             horizontalArrangement = Arrangement.spacedBy(spacing_6),
             verticalArrangement = Arrangement.spacedBy(spacing_6)
@@ -169,61 +167,12 @@ fun FavoritesScreen(
             }
         }
 
-        FavoritesTopBar()
+        HomeEditorialTopAppBar(title = "Favoritos")
 
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {
             EditorialBottomNavBar(
                 selectedItem = selectedNavItem,
                 onItemSelected = onNavItemSelected
-            )
-        }
-    }
-}
-
-@Composable
-private fun FavoritesTopBar() {
-    val context = LocalContext.current
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xCCFAF9FC))
-            .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
-            .padding(horizontal = spacing_6, vertical = spacing_4),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(SurfaceContainer)
-            ) {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(FAVORITES_PROFILE_IMAGE)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Perfil",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
-
-        Text(
-            text = "Favoritos",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.ExtraBold,
-            color = Primary
-        )
-
-        IconButton(onClick = {}) {
-            Icon(
-                imageVector = Icons.Filled.Notifications,
-                contentDescription = "Notificaciones",
-                tint = OnSurfaceVariant
             )
         }
     }
@@ -253,7 +202,7 @@ private fun FavoritesSearchBar(
                 tint = Outline
             )
         },
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(rounded_md),
         colors = OutlinedTextFieldDefaults.colors(
             focusedContainerColor = SurfaceContainerLow,
             unfocusedContainerColor = SurfaceContainerLow,
@@ -305,7 +254,7 @@ private fun FavoriteGridCard(
         onClick = onClick,
         shape = RoundedCornerShape(rounded_md),
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
             Box(
@@ -398,7 +347,7 @@ private fun FavoriteFeaturedCard(
         onClick = onClick,
         shape = RoundedCornerShape(rounded_md),
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         if (isWide) {
             Row {
