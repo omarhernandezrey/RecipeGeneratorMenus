@@ -30,7 +30,6 @@ import com.example.recipe_generator.data.getMenuForDay
 import com.example.recipe_generator.ui.components.DayTabLayout
 import com.example.recipe_generator.ui.components.DifficultyChip
 import com.example.recipe_generator.ui.components.EditorialBottomNavBar
-import com.example.recipe_generator.ui.components.EditorialTopAppBar
 import com.example.recipe_generator.ui.components.InfoChip
 import com.example.recipe_generator.ui.theme.*
 

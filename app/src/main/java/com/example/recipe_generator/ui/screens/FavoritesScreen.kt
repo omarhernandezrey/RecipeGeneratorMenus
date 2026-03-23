@@ -74,7 +74,6 @@ import com.example.recipe_generator.ui.theme.SurfaceContainerHigh
 import com.example.recipe_generator.ui.theme.SurfaceContainerLow
 import com.example.recipe_generator.ui.theme.SurfaceContainerLowest
 import com.example.recipe_generator.ui.theme.rounded_md
-import com.example.recipe_generator.ui.theme.spacing_2
 import com.example.recipe_generator.ui.theme.spacing_3
 import com.example.recipe_generator.ui.theme.spacing_4
 import com.example.recipe_generator.ui.theme.spacing_6

@@ -29,9 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.recipe_generator.data.FavoritesRepository
-import com.example.recipe_generator.data.Recipe
 import com.example.recipe_generator.data.getAllRecipes
-import com.example.recipe_generator.data.getFeaturedRecipeDetail
 import com.example.recipe_generator.ui.components.EditorialBottomNavBar
 import com.example.recipe_generator.ui.screens.MenuGeneratorScreen
 import com.example.recipe_generator.ui.screens.RecipeDetailScreen
@@ -87,7 +85,7 @@ private fun RecipeGeneratorApp() {
     }
 
     val selectedRecipeWithFavoriteState = selectedRecipe?.copy(
-        isFavorite = selectedRecipe?.id in favoriteRecipeIds
+        isFavorite = selectedRecipe.id in favoriteRecipeIds
     )
 
     val favoriteRecipes = allRecipes
