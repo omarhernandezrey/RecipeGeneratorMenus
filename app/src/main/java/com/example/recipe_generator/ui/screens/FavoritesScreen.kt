@@ -30,6 +30,9 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -367,13 +370,13 @@ private fun FavoriteGridCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     FavoriteStatChip(
-                        icon = "⏱",
+                        icon = Icons.Outlined.Schedule,
                         text = "${recipe.timeInMinutes} min",
                         containerColor = SecondaryContainer.copy(alpha = 0.3f),
                         textColor = OnSecondaryContainer
                     )
                     FavoriteStatChip(
-                        icon = "⚡",
+                        icon = Icons.Outlined.LocalFireDepartment,
                         text = "${recipe.calories} kcal",
                         containerColor = SurfaceContainerHigh,
                         textColor = OnSurfaceVariant
@@ -546,7 +549,7 @@ private fun FavoriteMetricColumn(label: String, value: String) {
 
 @Composable
 private fun FavoriteStatChip(
-    icon: String,
+    icon: ImageVector,
     text: String,
     containerColor: Color,
     textColor: Color
@@ -560,9 +563,11 @@ private fun FavoriteStatChip(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(
-                text = icon,
-                style = MaterialTheme.typography.labelLarge
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = textColor
             )
             Text(
                 text = text,

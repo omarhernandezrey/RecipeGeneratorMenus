@@ -30,7 +30,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -272,23 +277,26 @@ private fun HeroSection(recipe: Recipe) {
             horizontalArrangement = Arrangement.spacedBy(spacing_2)
         ) {
             QuickInfoChip(
-                iconText = "⏱",
-                text = "${recipe.timeInMinutes} min"
+                icon = Icons.Outlined.Schedule,
+                text = "${recipe.timeInMinutes} min",
+                iconTint = Primary
             )
             QuickInfoChip(
-                iconText = "≋",
-                text = recipe.difficulty
+                icon = Icons.Outlined.Tune,
+                text = recipe.difficulty,
+                iconTint = Primary
             )
             QuickInfoChip(
-                iconText = "★",
-                text = String.format(Locale.US, "%.1f", recipe.rating)
+                icon = Icons.Filled.Star,
+                text = String.format(Locale.US, "%.1f", recipe.rating),
+                iconTint = Tertiary
             )
         }
     }
 }
 
 @Composable
-private fun QuickInfoChip(iconText: String, text: String) {
+private fun QuickInfoChip(icon: ImageVector, text: String, iconTint: Color = Primary) {
     Surface(
         shape = RoundedCornerShape(rounded_full),
         color = Color.White.copy(alpha = 0.9f),
@@ -299,11 +307,11 @@ private fun QuickInfoChip(iconText: String, text: String) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(spacing_1)
         ) {
-            Text(
-                text = iconText,
-                style = MaterialTheme.typography.labelMedium,
-                color = if (iconText == "★") Tertiary else Primary,
-                fontWeight = FontWeight.Bold
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = iconTint
             )
             Text(
                 text = text,

@@ -35,6 +35,7 @@ import com.example.recipe_generator.ui.screens.MenuGeneratorScreen
 import com.example.recipe_generator.ui.screens.RecipeDetailScreen
 import com.example.recipe_generator.ui.screens.FavoritesScreen
 import com.example.recipe_generator.ui.screens.RecipeListScreen
+import com.example.recipe_generator.ui.screens.SettingsScreen
 import com.example.recipe_generator.ui.theme.Background
 import com.example.recipe_generator.ui.theme.OnSurface
 import com.example.recipe_generator.ui.theme.RecipeGeneratorTheme
@@ -176,14 +177,18 @@ private fun RecipeGeneratorApp() {
                     )
                 }
 
+                currentDestination == TopLevelDestination.Settings -> {
+                    SettingsScreen(
+                        selectedNavItem = destinationToIndex(currentDestination),
+                        onNavItemSelected = { index ->
+                            currentDestination = indexToDestination(index)
+                        }
+                    )
+                }
+
                 else -> {
                     PlaceholderScreen(
-                        title = when (currentDestination) {
-                            TopLevelDestination.Favorites -> "Favoritos"
-                            TopLevelDestination.Generator -> "Generador"
-                            TopLevelDestination.Settings -> "Ajustes"
-                            TopLevelDestination.Home -> "Inicio"
-                        },
+                        title = "Inicio",
                         selectedNavItem = destinationToIndex(currentDestination),
                         onNavItemSelected = { index ->
                             currentDestination = indexToDestination(index)

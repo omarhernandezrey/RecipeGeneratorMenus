@@ -77,7 +77,6 @@ import com.example.recipe_generator.ui.theme.spacing_12
 import com.example.recipe_generator.ui.theme.spacing_2
 import com.example.recipe_generator.ui.theme.spacing_4
 import com.example.recipe_generator.ui.theme.spacing_6
-import com.example.recipe_generator.ui.theme.spacing_8
 
 // ── Data ────────────────────────────────────────────────────────────
 
@@ -126,9 +125,8 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                 .padding(top = 80.dp, bottom = 160.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-
             // Hero / Title
-            Column(modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_4)) {
+            Column(modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_6)) {
                 Text(
                     text = "Generador de Menú",
                     style = MaterialTheme.typography.displayLarge,
@@ -139,7 +137,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                 Spacer(modifier = Modifier.height(spacing_2))
                 Text(
                     text = "Personaliza tu experiencia culinaria semanal con precisión editorial.",
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = OnSurfaceVariant.copy(alpha = 0.70f)
                 )
@@ -147,27 +145,29 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
 
             Spacer(modifier = Modifier.height(spacing_10))
 
-            // Preferencias Dietéticas
+            // Preferencias Dietéticas Section
             Column(modifier = Modifier.padding(horizontal = spacing_6)) {
                 Text(
                     text = "Preferencias Dietéticas",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = OnSurface,
-                    modifier = Modifier.padding(start = 4.dp, bottom = spacing_4)
+                    modifier = Modifier.padding(bottom = spacing_4)
                 )
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                
+                // Diet options in grid
+                Column(verticalArrangement = Arrangement.spacedBy(spacing_4)) {
                     for (row in 0..2) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(spacing_4)
                         ) {
                             for (col in 0..1) {
                                 val i = row * 2 + col
                                 if (i < dietOptions.size) {
                                     val opt = dietOptions[i]
                                     val selected = opt.label in selectedDiets
-                                    DietCard(
+                                    DietOptionChip(
                                         option = opt,
                                         selected = selected,
                                         onClick = {
@@ -185,20 +185,21 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(spacing_8))
+            Spacer(modifier = Modifier.height(spacing_12))
 
-            // Dificultad + Porciones
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing_6),
-                verticalArrangement = Arrangement.spacedBy(spacing_6)
-            ) {
+            // Dificultad Card
+            Box(modifier = Modifier.padding(horizontal = spacing_6)) {
                 DifficultyCard(
                     level = difficultyLevel,
                     onLevelChange = { difficultyLevel = it },
                     modifier = Modifier.fillMaxWidth()
                 )
+            }
+
+            Spacer(modifier = Modifier.height(spacing_6))
+
+            // Porciones Card
+            Box(modifier = Modifier.padding(horizontal = spacing_6)) {
                 PortionsCard(
                     count = portions,
                     onChange = { portions = it },
@@ -206,16 +207,16 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(spacing_10))
+            Spacer(modifier = Modifier.height(spacing_12))
 
-            // Tipos de Recetas Preferidas
+            // Tipos de Recetas Section
             Column(modifier = Modifier.padding(horizontal = spacing_6)) {
                 Text(
                     text = "Tipos de Recetas Preferidas",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = OnSurface,
-                    modifier = Modifier.padding(start = 4.dp, bottom = spacing_4)
+                    modifier = Modifier.padding(bottom = spacing_4)
                 )
                 RecipeTypeChips(
                     selected = selectedRecipeTypes,
@@ -228,28 +229,19 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                 )
             }
 
-            Spacer(modifier = Modifier.height(spacing_8))
+            Spacer(modifier = Modifier.height(spacing_12))
 
-            // Generate CTA
-            Column(modifier = Modifier.padding(horizontal = spacing_6)) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(SurfaceContainer.copy(alpha = 0.40f))
-                )
-                Spacer(modifier = Modifier.height(spacing_6))
+            // Generate Button
+            Box(modifier = Modifier.padding(horizontal = spacing_6)) {
                 Button(
                     onClick = { },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(60.dp)
+                        .height(56.dp)
                         .shadow(
-                            elevation = 20.dp,
+                            elevation = 12.dp,
                             shape = RoundedCornerShape(rounded_full),
-                            ambientColor = Primary.copy(alpha = 0.20f),
-                            spotColor = Primary.copy(alpha = 0.25f)
+                            ambientColor = Primary.copy(alpha = 0.20f)
                         ),
                     shape = RoundedCornerShape(rounded_full),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -267,7 +259,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                         Text(
                             text = "GENERAR MENÚ SEMANAL",
                             color = Color.White,
-                            fontSize = 16.sp,
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp
                         )
@@ -301,10 +293,10 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
     }
 }
 
-// ── Diet Card ───────────────────────────────────────────────────────
+// ── Diet Option Chip ────────────────────────────────────────────────
 
 @Composable
-private fun DietCard(
+private fun DietOptionChip(
     option: DietOption,
     selected: Boolean,
     onClick: () -> Unit,
@@ -313,31 +305,31 @@ private fun DietCard(
     val bgColor by animateColorAsState(
         targetValue = if (selected) SecondaryContainer else SurfaceContainerLow,
         animationSpec = tween(300),
-        label = "dietBg"
+        label = "chipBg"
     )
     val textColor by animateColorAsState(
         targetValue = if (selected) OnSecondaryContainer else OnSurface,
         animationSpec = tween(300),
-        label = "dietText"
+        label = "chipText"
     )
     val iconColor by animateColorAsState(
         targetValue = if (selected) OnSecondaryContainer else Secondary,
         animationSpec = tween(300),
-        label = "dietIcon"
+        label = "chipIcon"
     )
 
     Box(
         modifier = modifier
-            .height(110.dp)
+            .height(88.dp)
             .clip(RoundedCornerShape(rounded_md))
             .background(bgColor)
             .clickable(onClick = onClick)
+            .padding(spacing_4)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(spacing_4),
-            verticalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 imageVector = when(option.iconName) {
@@ -350,14 +342,16 @@ private fun DietCard(
                     else -> Icons.Filled.Favorite
                 },
                 contentDescription = option.label,
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(24.dp),
                 tint = iconColor
             )
             Text(
                 text = option.label,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = textColor
+                color = textColor,
+                textAlign = TextAlign.Center,
+                fontSize = 11.sp
             )
         }
     }
