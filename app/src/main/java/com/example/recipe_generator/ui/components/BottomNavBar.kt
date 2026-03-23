@@ -48,7 +48,7 @@ fun EditorialBottomNavBar(selectedItem: Int = 0, onItemSelected: (Int) -> Unit =
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp)
-                .padding(top = 12.dp, bottom = 28.dp),
+                .padding(top = 12.dp, bottom = 24.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {

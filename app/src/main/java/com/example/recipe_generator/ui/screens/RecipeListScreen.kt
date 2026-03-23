@@ -34,7 +34,7 @@ import com.example.recipe_generator.ui.components.InfoChip
 import com.example.recipe_generator.ui.theme.*
 
 @Composable
-fun RecipeListScreen() {
+fun RecipeListScreen(onNavigate: (Int) -> Unit = {}) {
     var selectedDay by remember { mutableStateOf("Lunes") }
     var selectedNavItem by remember { mutableStateOf(0) }
 
@@ -43,17 +43,16 @@ fun RecipeListScreen() {
             .fillMaxSize()
             .background(Surface)
     ) {
+        // Scrollable Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(top = 80.dp, bottom = 160.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Top App Bar
-            EditorialTopAppBar()
-
             // Editorial Header
             Column(
-                modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_6)
+                modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_8)
             ) {
                 Text(
                     text = "CURADO PARA TI",
@@ -86,7 +85,7 @@ fun RecipeListScreen() {
                     RecipeSection(recipe = recipe)
                 }
 
-                Spacer(modifier = Modifier.height(140.dp))
+                Spacer(modifier = Modifier.height(spacing_12))
             }
         }
 
@@ -122,8 +121,21 @@ fun RecipeListScreen() {
         ) {
             EditorialBottomNavBar(
                 selectedItem = selectedNavItem,
-                onItemSelected = { selectedNavItem = it }
+                onItemSelected = {
+                    selectedNavItem = it
+                    onNavigate(it)
+                }
             )
+        }
+
+        // Top App Bar - Fixed at top
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .background(Surface)
+        ) {
+            EditorialTopAppBar()
         }
     }
 }
