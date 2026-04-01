@@ -1,44 +1,83 @@
+<div align="center">
+
 # Recipe Generator — Generador de Menús Semanales
+
+&nbsp;
+
+**Omar Hernández Rey** — Cód. 100349113  
+**Julian David Ortiz Bedoya**  
+**Yonatan Ferney Fernández**  
+**Juan David Rivera Casallas**
+
+&nbsp;
+
+Facultad de Ingeniería y Ciencias Básicas  
+Programa de Ingeniería de Sistemas  
+Politécnico Grancolombiano — Bogotá, Colombia
+
+&nbsp;
+
+Herramientas de Programación Móvil I — Grupo B03
+
+Docente: Jose Ricardo Casallas Triana
+
+&nbsp;
+
+Marzo de 2026
+
+</div>
 
 ---
 
-## CARÁTULA
+## Resumen
 
-**Título de la Aplicación:**
-# Recipe Generator — Generador de Menús Semanales
+*Recipe Generator — Generador de Menús Semanales* es una aplicación móvil nativa para
+Android, desarrollada en Kotlin con Jetpack Compose y Material Design 3, cuyo propósito
+es facilitar la planificación alimenticia semanal del usuario a través de una interfaz
+intuitiva, completamente local y sin dependencia de servicios externos. El presente
+documento corresponde a la **Entrega 1** del proyecto integrador del módulo
+*Herramientas de Programación Móvil I* del Politécnico Grancolombiano (Grupo B03) y
+describe el diseño y la planificación del sistema antes de su implementación. Se incluye
+la identificación del proyecto, la descripción del público objetivo y el alcance
+funcional, el objetivo general y cinco objetivos específicos medibles alineados con los
+lineamientos LF1–LF8 del módulo, doce requerimientos funcionales y veinte requerimientos
+no funcionales clasificados según la norma ISO/IEC 25010 (International Organization for
+Standardization, 2011), así como los modelos UML de casos de uso, clases y secuencia, y
+los wireframes de las tres superficies principales de la interfaz: pantalla principal
+(*MainScreen*), pantalla de detalle de receta (*RecipeDetailScreen*) y panel lateral de
+filtros (*LeftMenuPanel*). La arquitectura adoptada sigue el patrón MVVM + Clean
+Architecture en tres capas (Presentation, Domain, Data), con Room Database como fuente
+de verdad local, DataStore Preferences para la persistencia de configuración y
+Navigation Component para la navegación entre pantallas (Google LLC, 2024a, 2024c).
 
-**Materia:** Herramientas de Programación Móvil I
-
-**Institución:** Politécnico Grancolombiano — Bogotá, Colombia
-
-**Programa:** Ingeniería de Sistemas
-
-**Integrantes:**
-- Omar Hernández Rey — Cód. 100349113
-- Julian David Ortiz Bedoya
-- Yonatan Ferney Fernández
-- Juan David Rivera Casallas
-
-**Docente:** Jose Ricardo Casallas Triana
-
-**Grupo:** B03
-
-**Fecha:** Marzo 2026
+**Palabras clave:** aplicación móvil Android, Jetpack Compose, MVVM, Clean Architecture,
+Room Database, planificación alimenticia, menú semanal, Material Design 3.
 
 ---
 
 ## TABLA DE CONTENIDO
 
+> **Nota sobre formato APA 7:** Este documento sigue las pautas de la 7.ª edición del
+> *Publication Manual of the American Psychological Association* para trabajos de
+> estudiantes. Las referencias utilizan sangría francesa (representada con espacios
+> en este formato Markdown). La numeración de página figura en la esquina superior
+> derecha al exportar a PDF. Los encabezados de nivel 1 están centrados en negrita;
+> los de nivel 2 son alineados a la izquierda en negrita; los de nivel 3 son alineados
+> a la izquierda en negrita cursiva, conforme a la Tabla 2.3 del manual APA 7.
+
+&nbsp;
+
+- [Resumen](#resumen)
 1. [Título de la Aplicación](#1-título-de-la-aplicación)
-2. [Descripción del Proyecto](#2-descripción-del-proyecto) *(F1-02)*
-3. [Objetivo General](#3-objetivo-general) *(F1-03)*
-4. [Objetivos Específicos](#4-objetivos-específicos) *(F1-04)*
-5. [Requerimientos Funcionales](#5-requerimientos-funcionales) *(F1-05)*
-6. [Requerimientos No Funcionales](#6-requerimientos-no-funcionales) *(F1-06)*
-7. [Diagrama de Casos de Uso](#7-diagrama-de-casos-de-uso) *(F1-07)*
-8. [Diagrama de Clases](#8-diagrama-de-clases) *(F1-08)*
-9. [Diagrama de Secuencia](#9-diagrama-de-secuencia) *(F1-09)*
-10. [Wireframes / Mockups](#10-wireframes--mockups) *(F1-10)*
+2. [Descripción del Proyecto](#2-descripción-del-proyecto)
+3. [Objetivo General](#3-objetivo-general)
+4. [Objetivos Específicos](#4-objetivos-específicos)
+5. [Requerimientos Funcionales](#5-requerimientos-funcionales)
+6. [Requerimientos No Funcionales](#6-requerimientos-no-funcionales)
+7. [Diagrama de Casos de Uso](#7-diagrama-de-casos-de-uso)
+8. [Diagrama de Clases](#8-diagrama-de-clases)
+9. [Diagrama de Secuencia](#9-diagrama-de-secuencia)
+10. [Wireframes / Mockups](#10-wireframes--mockups)
 11. [Referencias](#referencias)
 
 ---
@@ -62,6 +101,10 @@ El nombre combina dos elementos:
   de la aplicación.
 
 ### Identificación técnica del proyecto
+
+*Tabla 1*
+
+*Identificación técnica del proyecto Recipe Generator*
 
 | Atributo          | Valor                                      |
 |-------------------|--------------------------------------------|
@@ -106,6 +149,10 @@ Architecture, Jetpack Compose, Room Database y navegación entre pantallas.
 
 La aplicación está dirigida a los siguientes perfiles de usuario:
 
+*Tabla 2*
+
+*Perfiles de usuario objetivo de la aplicación*
+
 | Perfil | Descripción |
 |---|---|
 | **Personas activas** | Adultos de 18 a 45 años que buscan comer saludable pero disponen de poco tiempo para planificar su menú diario. |
@@ -128,6 +175,10 @@ el mercado.
 La versión 1.0 de **Recipe Generator** contempla las siguientes funcionalidades:
 
 #### Funcionalidades incluidas (en alcance)
+
+*Tabla 3*
+
+*Módulos funcionales incluidos en el alcance de la versión 1.0*
 
 | # | Módulo | Descripción |
 |---|---|---|
@@ -155,7 +206,18 @@ La versión 1.0 de **Recipe Generator** contempla las siguientes funcionalidades
 
 ### 2.4 Stack Tecnológico
 
-El proyecto se desarrolla con la siguiente pila tecnológica, aprobada por el docente:
+*Tabla 4*
+
+*Stack tecnológico del proyecto*
+
+El proyecto se desarrolla con la siguiente pila tecnológica, aprobada por el docente.
+Jetpack Compose es la solución oficial de Google para la construcción de interfaces
+declarativas en Android (Google LLC, 2024a); Material Design 3 provee el sistema de
+diseño visual adoptado en esta arquitectura (Google LLC, 2024b); Room Database actúa
+como capa de abstracción sobre SQLite para la persistencia local (Google LLC, 2024d);
+Navigation Component gestiona las transiciones entre destinos mediante `NavHost`
+(Google LLC, 2024e); y Kotlin 2.2.10 es el lenguaje de programación principal
+(JetBrains, 2024):
 
 | Capa | Tecnología |
 |---|---|
@@ -199,15 +261,16 @@ La formulación del objetivo sigue la estructura académica estándar:
 
 La selección de **Jetpack Compose** como framework de UI responde a la aprobación
 explícita del docente y al hecho de ser la tecnología oficial recomendada por Google
-para el desarrollo moderno de interfaces en Android. Este framework permite cumplir
-íntegramente los lineamientos LF1 a LF8 del módulo mediante estrategias de
-compatibilidad documentadas en la tabla de equivalencias del Plan Maestro v3.0
-(Actividades, Fragmentos con `ComposeView`, `AndroidView{}` para controles
-específicos, `LazyColumn` como equivalente de `ListView`, entre otros).
+para el desarrollo moderno de interfaces en Android (Google LLC, 2024a). Este framework
+permite cumplir íntegramente los lineamientos LF1 a LF8 del módulo mediante estrategias
+de compatibilidad documentadas en la tabla de equivalencias del Plan Maestro v3.0
+(Politécnico Grancolombiano, 2026) (Actividades, Fragmentos con `ComposeView`,
+`AndroidView{}` para controles específicos, `LazyColumn` como equivalente de `ListView`,
+entre otros).
 
 La elección de **Room Database** garantiza persistencia de datos completamente local
-y sin dependencia de backend externo, lo cual es coherente con el alcance definido
-para la versión 1.0 de la aplicación.
+y sin dependencia de backend externo (Google LLC, 2024d), lo cual es coherente con el
+alcance definido para la versión 1.0 de la aplicación.
 
 ---
 
@@ -215,7 +278,7 @@ para la versión 1.0 de la aplicación.
 
 Los siguientes cinco objetivos específicos son medibles, alcanzables y están
 alineados directamente con los lineamientos de formación LF1 a LF8 del módulo
-*Herramientas de Programación Móvil I*.
+*Herramientas de Programación Móvil I* (Politécnico Grancolombiano, 2026).
 
 ---
 
@@ -306,6 +369,10 @@ los ajustes guardados en DataStore se restauran correctamente al reiniciar.
 ---
 
 ### Tabla resumen de objetivos específicos
+
+*Tabla 5*
+
+*Resumen de objetivos específicos y cobertura de lineamientos*
 
 | ID | Verbo | Qué | Cómo | LF cubierto |
 |---|---|---|---|---|
@@ -520,8 +587,9 @@ Media — mejora significativa de la experiencia. Baja — funcionalidad complem
 
 Los requerimientos no funcionales (RNF) definen los atributos de calidad que el
 sistema debe cumplir: cómo debe comportarse, no qué debe hacer. Están organizados
-por categoría de calidad según el estándar ISO/IEC 25010 (Calidad del Producto de
-Software).
+por categoría de calidad según el estándar ISO/IEC 25010 — *Systems and software
+Quality Requirements and Evaluation (SQuaRE): System and software quality models*
+(International Organization for Standardization [ISO/IEC], 2011).
 
 ---
 
@@ -1836,14 +1904,35 @@ end note
 
 ## Referencias
 
-Google LLC. (2024). *Jetpack Compose — Android Developers*.
-https://developer.android.com/jetpack/compose
+Google LLC. (2024a). *Jetpack Compose overview*. Android Developers.
+&nbsp;&nbsp;&nbsp;&nbsp;https://developer.android.com/jetpack/compose
 
-Google LLC. (2024). *Material Design 3 for Android*.
-https://m3.material.io/develop/android/jetpack-compose
+Google LLC. (2024b). *Material Design 3 for Compose*. Material Design.
+&nbsp;&nbsp;&nbsp;&nbsp;https://m3.material.io/develop/android/jetpack-compose
 
-Google LLC. (2024). *Guide to app architecture — Android Developers*.
-https://developer.android.com/topic/architecture
+Google LLC. (2024c). *Guide to app architecture*. Android Developers.
+&nbsp;&nbsp;&nbsp;&nbsp;https://developer.android.com/topic/architecture
+
+Google LLC. (2024d). *Save data in a local database using Room*. Android Developers.
+&nbsp;&nbsp;&nbsp;&nbsp;https://developer.android.com/training/data-storage/room
+
+Google LLC. (2024e). *Navigation component — Get started*. Android Developers.
+&nbsp;&nbsp;&nbsp;&nbsp;https://developer.android.com/guide/navigation/get-started
+
+Google LLC. (2024f). *DataStore*. Android Developers.
+&nbsp;&nbsp;&nbsp;&nbsp;https://developer.android.com/topic/libraries/architecture/datastore
+
+Google LLC. (2024g). *ViewModel overview*. Android Developers.
+&nbsp;&nbsp;&nbsp;&nbsp;https://developer.android.com/topic/libraries/architecture/viewmodel
+
+International Organization for Standardization. (2011). *ISO/IEC 25010:2011 —
+Systems and software engineering — Systems and software Quality Requirements and
+Evaluation (SQuaRE): System and software quality models*. ISO.
+&nbsp;&nbsp;&nbsp;&nbsp;https://www.iso.org/standard/35733.html
+
+JetBrains. (2024). *Kotlin documentation*. JetBrains.
+&nbsp;&nbsp;&nbsp;&nbsp;https://kotlinlang.org/docs/home.html
 
 Politécnico Grancolombiano. (2026). *Plan Maestro Recipe Generator v3.0 —
-Herramientas de Programación Móvil I*. Bogotá, Colombia.
+Herramientas de Programación Móvil I*. Bogotá, Colombia: Facultad de Ingeniería
+y Ciencias Básicas.
