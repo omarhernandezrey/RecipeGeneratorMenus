@@ -57,6 +57,12 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.androidx.datastore.preferences)
 
+    // Lifecycle Runtime Compose — collectAsStateWithLifecycle() (F0-08)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    // Navigation Compose (F0-08)
+    implementation(libs.androidx.navigation.compose)
+
     // Room Database (F0-07)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
