@@ -19,12 +19,12 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
@@ -75,7 +75,7 @@ private fun MainAppContent() {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val storedFavoriteRecipeIds by favoritesRepository.favoriteRecipeIds.collectAsState(initial = emptySet())
+    val storedFavoriteRecipeIds by favoritesRepository.favoriteRecipeIds.collectAsStateWithLifecycle(initialValue = emptySet())
     var favoriteRecipeIds by remember { mutableStateOf(emptySet<String>()) }
 
     LaunchedEffect(storedFavoriteRecipeIds) {
