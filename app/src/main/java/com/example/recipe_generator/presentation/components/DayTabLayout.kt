@@ -1,4 +1,4 @@
-package com.example.recipe_generator.ui.components
+package com.example.recipe_generator.presentation.components
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.recipe_generator.ui.theme.*
+import com.example.recipe_generator.presentation.theme.*
 
 @Composable
 fun DayTabLayout(selectedDay: String, onDaySelected: (String) -> Unit) {

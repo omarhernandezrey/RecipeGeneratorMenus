@@ -1,4 +1,4 @@
-package com.example.recipe_generator.data
+package com.example.recipe_generator.data.legacy
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit

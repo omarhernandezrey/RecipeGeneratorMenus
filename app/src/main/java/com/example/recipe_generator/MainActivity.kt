@@ -31,18 +31,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.recipe_generator.data.FavoritesRepository
 import com.example.recipe_generator.data.getAllRecipes
-import com.example.recipe_generator.ui.components.EditorialBottomNavBar
-import com.example.recipe_generator.ui.components.HomeEditorialTopAppBar
-import com.example.recipe_generator.ui.components.editorialTopBarContentPadding
-import com.example.recipe_generator.ui.screens.MenuGeneratorScreen
-import com.example.recipe_generator.ui.screens.RecipeDetailScreen
-import com.example.recipe_generator.ui.screens.FavoritesScreen
-import com.example.recipe_generator.ui.screens.RecipeListScreen
-import com.example.recipe_generator.ui.screens.SettingsScreen
-import com.example.recipe_generator.ui.theme.Background
-import com.example.recipe_generator.ui.theme.OnSurface
-import com.example.recipe_generator.ui.theme.RecipeGeneratorTheme
-import com.example.recipe_generator.ui.theme.spacing_6
+import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
+import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
+import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
+import com.example.recipe_generator.presentation.generator.MenuGeneratorScreen
+import com.example.recipe_generator.presentation.detail.RecipeDetailScreen
+import com.example.recipe_generator.presentation.favorites.FavoritesScreen
+import com.example.recipe_generator.presentation.home.RecipeListScreen
+import com.example.recipe_generator.presentation.settings.SettingsScreen
+import com.example.recipe_generator.presentation.theme.Background
+import com.example.recipe_generator.presentation.theme.OnSurface
+import com.example.recipe_generator.presentation.theme.RecipeGeneratorTheme
+import com.example.recipe_generator.presentation.theme.spacing_6
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {

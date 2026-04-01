@@ -232,7 +232,7 @@ Establece los fundamentos arquitectónicos. Debe completarse antes de cualquier 
 | ID | Categoría | Tarea / Descripción | Semana | Estado |
 |---|---|---|---|---|
 | F0-01 | ARQUITECTURA | **Definir arquitectura MVVM + Clean Architecture** — Layers: Presentation / Domain / Data | 1-2 | ✅ COMPLETADO |
-| F0-02 | ARQUITECTURA | **Refactorizar estructura de paquetes por capas** — presentation/ · domain/ · data/ · di/ · widget/ | 1-2 | ⬜ PENDIENTE |
+| F0-02 | ARQUITECTURA | **Refactorizar estructura de paquetes por capas** — presentation/ · domain/ · data/ · di/ · widget/ | 1-2 | ✅ COMPLETADO |
 | F0-03 | ARQUITECTURA | **Migrar estado a ViewModels con StateFlow** — Un ViewModel por pantalla principal | 1-2 | ⬜ PENDIENTE |
 | F0-04 | ARQUITECTURA | **Implementar inyección de dependencias manual** — AppContainer en Application class (sin Hilt) | 1-2 | ⬜ PENDIENTE |
 | F0-05 | ARQUITECTURA | **Migrar de Jetpack Compose a Views XML + Fragments** — Requisito académico: actividades y fragmentos (LF5, LF6) | 1-2 | ⬜ PENDIENTE |
@@ -460,7 +460,7 @@ Establece los fundamentos arquitectónicos. Debe completarse antes de cualquier 
 
 | FASE | N.º TAREAS | SEMANAS | ENTREGA | ESTADO |
 |---|---|---|---|---|
-| **FASE 0** — Arquitectura Base | 10 | 1–2 | Prerequisito | ✅ 1/10 |
+| **FASE 0** — Arquitectura Base | 10 | 1–2 | Prerequisito | ✅ 2/10 |
 | **FASE 1** — Planificación | 11 | 3 | Entrega 1 | ⬜ 0/11 |
 | **FASE 2** — Implementación Base | 25 | 4–5 | Entrega 2 | ⬜ 0/25 |
 | **FASE 3** — App Completa | 43 | 6–8 | Entrega 3 | ⬜ 0/43 |

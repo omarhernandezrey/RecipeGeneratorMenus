@@ -1,4 +1,4 @@
-package com.example.recipe_generator.ui.components
+package com.example.recipe_generator.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.recipe_generator.ui.theme.*
+import com.example.recipe_generator.presentation.theme.*
 
 data class NavItem(
     val label: String,
