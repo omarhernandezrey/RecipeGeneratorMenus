@@ -315,7 +315,206 @@ los ajustes guardados en DataStore se restauran correctamente al reiniciar.
 | OE-04 | Implementar | Navegación entre Activities y Fragments | NavHost, Intent, Fragment + ComposeView | LF5, LF6 |
 | OE-05 | Persistir | Datos locales con Room y DataStore | Room DB (21 recetas), DataStore Preferences | LF1, LF2 |
 
-*Las secciones siguientes se completan en las tareas F1-05 a F1-10.*
+---
+
+## 5. Requerimientos Funcionales
+
+Los requerimientos funcionales describen las capacidades y comportamientos que el
+sistema **debe** proporcionar al usuario. Cada requerimiento está identificado con
+el código **RF-XX**, su nombre, descripción, prioridad y la pantalla donde se
+implementa.
+
+**Escala de prioridad:** Alta — el sistema no puede funcionar sin este RF.
+Media — mejora significativa de la experiencia. Baja — funcionalidad complementaria.
+
+---
+
+### RF-01 — Ver menú semanal por día
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-01 |
+| **Nombre** | Ver menú semanal por día |
+| **Descripción** | El sistema debe mostrar las recetas del día seleccionado (Lunes a Domingo), organizadas por tipo de comida: Desayuno, Almuerzo y Cena. El usuario puede cambiar de día mediante un selector de pestañas horizontal. |
+| **Actor** | Usuario |
+| **Pantalla** | `RecipeListScreen` (Inicio) |
+| **Prioridad** | Alta |
+| **Criterio de aceptación** | Al seleccionar un día en el tab layout, la lista de recetas se actualiza automáticamente mostrando únicamente las 3 recetas (o las disponibles) del día elegido. |
+
+---
+
+### RF-02 — Buscar receta en favoritos
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-02 |
+| **Nombre** | Buscar receta por texto |
+| **Descripción** | El sistema debe permitir al usuario filtrar las recetas guardadas como favoritas mediante un campo de búsqueda de texto libre. La búsqueda aplica sobre el título y la descripción de la receta en tiempo real. |
+| **Actor** | Usuario |
+| **Pantalla** | `FavoritesScreen` |
+| **Prioridad** | Alta |
+| **Criterio de aceptación** | Al escribir en el campo de búsqueda, la lista se filtra en tiempo real mostrando únicamente las recetas cuyos títulos o descripciones contienen el texto ingresado. Si no hay coincidencias, se muestra un estado vacío informativo. |
+
+---
+
+### RF-03 — Ver detalle completo de una receta
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-03 |
+| **Nombre** | Ver detalle de receta |
+| **Descripción** | El sistema debe mostrar una pantalla de detalle al seleccionar una receta, con imagen hero, título, descripción, información nutricional (calorías, proteínas, carbohidratos, grasas), lista de ingredientes y pasos de preparación numerados. |
+| **Actor** | Usuario |
+| **Pantalla** | `RecipeDetailScreen` / `RecipeDetailActivity` |
+| **Prioridad** | Alta |
+| **Criterio de aceptación** | La pantalla de detalle muestra todos los campos de la receta. Los pasos de preparación se presentan en orden numérico. El usuario puede regresar a la pantalla anterior mediante el botón de retroceso. |
+
+---
+
+### RF-04 — Marcar y desmarcar receta como favorita
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-04 |
+| **Nombre** | Toggle de favorito |
+| **Descripción** | El sistema debe permitir al usuario marcar o desmarcar cualquier receta como favorita desde la pantalla de lista o desde el detalle. El estado de favorito debe persistir localmente entre sesiones. |
+| **Actor** | Usuario |
+| **Pantalla** | `RecipeListScreen`, `RecipeDetailScreen`, `FavoritesScreen` |
+| **Prioridad** | Alta |
+| **Criterio de aceptación** | Al presionar el ícono de favorito, el estado cambia visualmente de forma inmediata (ícono relleno / vacío). Al cerrar y reabrir la app, el estado de favorito se conserva. La receta aparece o desaparece de `FavoritesScreen` según corresponda. |
+
+---
+
+### RF-05 — Filtrar favoritos por categoría
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-05 |
+| **Nombre** | Filtrar favoritos por categoría |
+| **Descripción** | El sistema debe permitir filtrar las recetas favoritas por categoría de comida (Todos, Desayuno, Almuerzo, Cena) mediante chips de selección horizontal. |
+| **Actor** | Usuario |
+| **Pantalla** | `FavoritesScreen` |
+| **Prioridad** | Media |
+| **Criterio de aceptación** | Al seleccionar un chip de categoría, la cuadrícula de favoritos muestra únicamente las recetas de esa categoría. Al seleccionar "Todos", se muestran todas las recetas favoritas. |
+
+---
+
+### RF-06 — Generar menú personalizado
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-06 |
+| **Nombre** | Generar menú con filtros |
+| **Descripción** | El sistema debe permitir al usuario configurar parámetros (nivel de dificultad mediante un Slider, tipo de comida mediante un Dropdown, tipo de dieta mediante Chips) y generar un menú filtrado al presionar el botón "Generar Menú". |
+| **Actor** | Usuario |
+| **Pantalla** | `MenuGeneratorScreen` |
+| **Prioridad** | Alta |
+| **Criterio de aceptación** | Al presionar "Generar Menú", el sistema consulta la base de datos y muestra en una `LazyColumn` las recetas que cumplen con todos los filtros seleccionados. Si no hay resultados, muestra un mensaje informativo. |
+
+---
+
+### RF-07 — Configurar preferencias de la aplicación
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-07 |
+| **Nombre** | Configurar ajustes |
+| **Descripción** | El sistema debe permitir al usuario configurar: tema visual (claro/oscuro) mediante Switch, idioma (Español/Inglés/Portugués) mediante RadioButton group, número de porciones (1–10) mediante ExposedDropdownMenu, y tipos de dieta mediante Checkbox. Los cambios deben persistir con DataStore. |
+| **Actor** | Usuario |
+| **Pantalla** | `SettingsScreen` |
+| **Prioridad** | Media |
+| **Criterio de aceptación** | Los cambios en el tema se aplican de forma inmediata en toda la app. Al reiniciar la aplicación, las preferencias guardadas se restauran correctamente desde DataStore. |
+
+---
+
+### RF-08 — Reproducir video de receta
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-08 |
+| **Nombre** | Reproducir video |
+| **Descripción** | El sistema debe mostrar una pantalla con un reproductor de video (`VideoView` dentro de `AndroidView`) con controles de reproducción (`MediaController`): play, pause, barra de progreso y control de volumen. |
+| **Actor** | Usuario |
+| **Pantalla** | `VideoScreen` |
+| **Prioridad** | Media |
+| **Criterio de aceptación** | El video se reproduce correctamente desde un recurso local. Los controles de reproducción responden a las interacciones del usuario. El video se pausa automáticamente al salir de la pantalla (`DisposableEffect`). |
+
+---
+
+### RF-09 — Navegar a URL en navegador integrado
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-09 |
+| **Nombre** | Navegador web integrado |
+| **Descripción** | El sistema debe proporcionar una pantalla con un campo de texto para ingresar una URL, un botón para navegar, y un `WebView` (dentro de `AndroidView`) que cargue la página. Debe mostrar una barra de progreso lineal mientras carga. |
+| **Actor** | Usuario |
+| **Pantalla** | `WebScreen` |
+| **Prioridad** | Media |
+| **Criterio de aceptación** | Al ingresar una URL válida y presionar "Ir", el `WebView` carga la página. La barra de progreso se muestra durante la carga y desaparece al completarse. JavaScript está habilitado. |
+
+---
+
+### RF-10 — Mostrar galería de fotos de recetas
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-10 |
+| **Nombre** | Galería de fotos |
+| **Descripción** | El sistema debe mostrar una pantalla con una `LazyColumn` de imágenes locales de recetas. Al seleccionar una imagen, debe mostrarse su título y descripción en un `Text` inferior con una animación de selección. |
+| **Actor** | Usuario |
+| **Pantalla** | `PhotosScreen` |
+| **Prioridad** | Media |
+| **Criterio de aceptación** | La galería muestra mínimo 5 imágenes locales. Al seleccionar una, la descripción se actualiza con animación. El estado de selección se mantiene mientras el usuario navega por la lista. |
+
+---
+
+### RF-11 — Mostrar widget de receta del día en el escritorio
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-11 |
+| **Nombre** | Widget de escritorio |
+| **Descripción** | El sistema debe proveer un widget de Android Home Screen que muestre el título de la receta del día y un botón que abra la aplicación directamente en el detalle de esa receta. El widget se actualiza periódicamente. |
+| **Actor** | Usuario |
+| **Pantalla** | `RecipeWidgetProvider` (AppWidgetProvider) |
+| **Prioridad** | Baja |
+| **Criterio de aceptación** | El widget aparece disponible en el menú de widgets del launcher. Muestra el nombre de la receta del día. Al presionar el botón, abre la app. Se actualiza según el `updatePeriodMillis` configurado. |
+
+---
+
+### RF-12 — Demostrar controles de interfaz requeridos por el módulo
+
+| Atributo | Detalle |
+|---|---|
+| **ID** | RF-12 |
+| **Nombre** | Pantalla de controles LF8 |
+| **Descripción** | El sistema debe incluir una pantalla que exhiba y haga funcionar todos los controles exigidos por LF8: Button, IconButton (ImageButton), Checkbox, RadioButton group (RadioGroup), Switch (ToggleButton), ExposedDropdownMenuBox (Spinner), LazyColumn (ListView) con scroll. Al presionar "Confirmar", todos los valores seleccionados se muestran en un Text. |
+| **Actor** | Evaluador / Docente |
+| **Pantalla** | `ControlsScreen` |
+| **Prioridad** | Alta |
+| **Criterio de aceptación** | Todos los controles responden correctamente a la interacción. El texto de resultado refleja el estado actual de cada control. La pantalla hace scroll cuando el contenido supera la altura de la pantalla. |
+
+---
+
+### Tabla resumen de Requerimientos Funcionales
+
+| ID | Nombre | Pantalla | Prioridad | LF |
+|---|---|---|---|---|
+| RF-01 | Ver menú semanal por día | RecipeListScreen | Alta | LF3, LF8 |
+| RF-02 | Buscar receta por texto | FavoritesScreen | Alta | LF4, LF8 |
+| RF-03 | Ver detalle de receta | RecipeDetailScreen | Alta | LF5, LF7 |
+| RF-04 | Toggle de favorito | RecipeListScreen, Detail | Alta | LF4, LF8 |
+| RF-05 | Filtrar favoritos por categoría | FavoritesScreen | Media | LF8 |
+| RF-06 | Generar menú con filtros | MenuGeneratorScreen | Alta | LF7, LF8 |
+| RF-07 | Configurar ajustes | SettingsScreen | Media | LF8 |
+| RF-08 | Reproducir video | VideoScreen | Media | LF7 |
+| RF-09 | Navegador web integrado | WebScreen | Media | LF7 |
+| RF-10 | Galería de fotos | PhotosScreen | Media | LF7, LF8 |
+| RF-11 | Widget de escritorio | RecipeWidgetProvider | Baja | LF7 |
+| RF-12 | Pantalla de controles LF8 | ControlsScreen | Alta | LF8 |
+
+*Las secciones siguientes se completan en las tareas F1-06 a F1-10.*
 
 ---
 
