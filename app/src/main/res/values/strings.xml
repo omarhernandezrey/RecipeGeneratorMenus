@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Recipe-Generator</string>
+    <string name="app_name">Recipe Generator</string>
+    <string name="app_title_full">Recipe Generator — Generador de Menús Semanales</string>
+    <string name="app_subtitle">Planifica tu semana con recetas saludables y equilibradas</string>
 </resources>
