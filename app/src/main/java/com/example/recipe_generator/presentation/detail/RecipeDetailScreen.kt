@@ -56,7 +56,6 @@ import com.example.recipe_generator.presentation.components.EditorialBottomNavBa
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
 import com.example.recipe_generator.presentation.theme.Background
 import com.example.recipe_generator.presentation.theme.OnPrimary
-import com.example.recipe_generator.presentation.theme.OnSecondaryContainer
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
