@@ -6,10 +6,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -462,7 +460,6 @@ private fun RecipeSectionHeader(title: String, accentColor: Color) {
 }
 
 @Composable
-@OptIn(ExperimentalLayoutApi::class)
 private fun IngredientsList(recipe: Recipe) {
     Column(verticalArrangement = Arrangement.spacedBy(spacing_3)) {
         recipe.ingredients.forEach { ingredient ->
@@ -478,7 +475,7 @@ private fun IngredientsList(recipe: Recipe) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = ingredient,
+                        text = "${ingredient.quantity} ${ingredient.unit} ${ingredient.name}".trim(),
                         style = MaterialTheme.typography.bodyLarge,
                         color = OnSurface
                     )
@@ -487,29 +484,6 @@ private fun IngredientsList(recipe: Recipe) {
                         contentDescription = null,
                         tint = Secondary
                     )
-                }
-            }
-        }
-
-        if (recipe.ingredientTags.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(spacing_1))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(spacing_2),
-                verticalArrangement = Arrangement.spacedBy(spacing_2)
-            ) {
-                recipe.ingredientTags.forEach { tag ->
-                    Surface(
-                        shape = RoundedCornerShape(rounded_full),
-                        color = SecondaryContainer
-                    ) {
-                        Text(
-                            text = tag,
-                            modifier = Modifier.padding(horizontal = spacing_4, vertical = spacing_2),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = OnSecondaryContainer,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
                 }
             }
         }
