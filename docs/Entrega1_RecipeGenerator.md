@@ -514,7 +514,105 @@ Media — mejora significativa de la experiencia. Baja — funcionalidad complem
 | RF-11 | Widget de escritorio | RecipeWidgetProvider | Baja | LF7 |
 | RF-12 | Pantalla de controles LF8 | ControlsScreen | Alta | LF8 |
 
-*Las secciones siguientes se completan en las tareas F1-06 a F1-10.*
+---
+
+## 6. Requerimientos No Funcionales
+
+Los requerimientos no funcionales (RNF) definen los atributos de calidad que el
+sistema debe cumplir: cómo debe comportarse, no qué debe hacer. Están organizados
+por categoría de calidad según el estándar ISO/IEC 25010 (Calidad del Producto de
+Software).
+
+---
+
+### 6.1 Rendimiento
+
+| ID | Requerimiento | Métrica |
+|---|---|---|
+| **RNF-01** | La aplicación debe iniciar completamente (splash → pantalla de inicio con recetas visibles) en un tiempo menor a **3 segundos** en el dispositivo Samsung SM-A528B con Android 12. | Tiempo medido desde el toque del ícono hasta que `RecipeListScreen` es interactuable. |
+| **RNF-02** | La transición entre pantallas (navegación entre tabs del `NavigationBar`) debe completarse en menos de **300 milisegundos**, garantizando una experiencia fluida a 60 fps. | Medido con Android Profiler — Frame rendering time < 16 ms por fotograma. |
+| **RNF-03** | La consulta a Room Database (obtener recetas del día) debe completarse en menos de **100 milisegundos** en dispositivos con API 24 o superior. | Verificado con Room Query instrumentation tests. |
+| **RNF-04** | La generación de menú personalizado (`GenerateMenuUseCase`) debe retornar resultados en menos de **500 milisegundos** independientemente del número de filtros aplicados. | Medido en test unitario con Room In-Memory Database. |
+
+---
+
+### 6.2 Seguridad
+
+| ID | Requerimiento | Métrica |
+|---|---|---|
+| **RNF-05** | Todos los datos del usuario (favoritos, preferencias) deben almacenarse **únicamente en el dispositivo local**, sin transmisión a servidores externos ni servicios de analítica de terceros. | Verificación mediante análisis de tráfico de red: la app no realiza ninguna petición HTTP en condiciones de uso normal. |
+| **RNF-06** | La aplicación debe cumplir con el principio de **mínimos permisos**: solicitar únicamente el permiso `INTERNET` (requerido para `WebView`) y ningún otro permiso sensible (cámara, contactos, ubicación, micrófono). | Revisión del `AndroidManifest.xml`: máximo 1 permiso declarado. |
+| **RNF-07** | Los datos persistidos en Room Database no deben contener información personal identificable (PII) del usuario. El perfil de usuario es estático y definido en código fuente, no ingresado por el usuario. | Revisión de esquema de base de datos: ninguna tabla contiene campos de nombre, correo, contraseña ni datos biométricos. |
+| **RNF-08** | El `WebView` debe habilitar `WebViewClient` personalizado para controlar la navegación y evitar redirecciones a URLs maliciosas externas fuera de la intención del usuario. | El `WebViewClient` intercepta `shouldOverrideUrlLoading` y mantiene la navegación dentro del componente. |
+
+---
+
+### 6.3 Usabilidad
+
+| ID | Requerimiento | Métrica |
+|---|---|---|
+| **RNF-09** | La interfaz debe seguir las guías de **Material Design 3** en todos los componentes: colores del tema (`Primary #4800B2`, `Secondary #00C2A8`, `Tertiary #FF0081`), tipografía, espaciado y formas redondeadas definidos en `AppTheme.kt`. | Revisión visual contra la paleta de colores y componentes M3 documentados. |
+| **RNF-10** | Todos los elementos interactivos (botones, chips, ítems de lista) deben tener un área táctil mínima de **48 × 48 dp**, cumpliendo las directrices de accesibilidad de Android. | Revisión con el inspector de layouts de Android Studio. |
+| **RNF-11** | La aplicación debe soportar **modo claro y modo oscuro** de forma completa, aplicando el tema correspondiente en todos los Composables sin textos ni fondos hardcodeados con colores absolutos. | Verificación visual en ambos modos con Android Studio Preview y en dispositivo físico. |
+| **RNF-12** | La navegación debe ser **intuitiva y consistente**: la `NavigationBar` debe estar visible en todas las pantallas principales, el ícono activo debe resaltarse visualmente, y el botón de retroceso debe funcionar correctamente en toda la jerarquía de navegación. | Prueba de navegación manual recorriendo todos los destinos y verificando el estado activo del tab. |
+
+---
+
+### 6.4 Portabilidad
+
+| ID | Requerimiento | Métrica |
+|---|---|---|
+| **RNF-13** | La aplicación debe ejecutarse correctamente en dispositivos Android con **API 24 (Android 7.0 Nougat) o superior**, cubriendo aproximadamente el 95 % de los dispositivos Android activos en el mercado. | `minSdk = 24` configurado en `build.gradle.kts`. Prueba en AVD con API 24. |
+| **RNF-14** | La interfaz debe adaptarse correctamente a diferentes tamaños de pantalla: teléfonos (360 dp – 480 dp de ancho) y tabletas (600 dp o más), utilizando layouts responsivos con `LazyVerticalGrid` y `AdaptiveCells`. | Verificación en AVD con tamaños de pantalla 5" (1080×1920) y 10" (1200×1920). |
+| **RNF-15** | La aplicación debe compilar y ejecutarse sin modificaciones en **Android Studio Panda 2025.3.2** con JDK 25.0.2, SDK API 35 y Kotlin 2.2.10. | Compilación exitosa con `./gradlew assembleDebug` sin errores ni warnings críticos. |
+
+---
+
+### 6.5 Mantenibilidad
+
+| ID | Requerimiento | Métrica |
+|---|---|---|
+| **RNF-16** | El código fuente debe seguir la arquitectura **MVVM + Clean Architecture** con separación estricta en tres capas (`presentation/`, `domain/`, `data/`), sin que la capa de dominio importe clases de Android Framework. | Verificación estática: ningún archivo en `domain/` importa `android.*`. |
+| **RNF-17** | Cada pantalla debe tener su propio **ViewModel** que exponga el estado mediante `StateFlow` inmutable, sin que la UI acceda directamente a repositorios o bases de datos. | Revisión de código: los Composables solo importan clases del paquete `presentation/` y el modelo de dominio. |
+| **RNF-18** | El proyecto debe gestionar sus dependencias mediante **Gradle Version Catalog** (`libs.versions.toml`), evitando versiones hardcodeadas en los archivos `build.gradle.kts`. | Revisión de `build.gradle.kts`: todas las dependencias usan `libs.*` del catálogo. |
+
+---
+
+### 6.6 Confiabilidad
+
+| ID | Requerimiento | Métrica |
+|---|---|---|
+| **RNF-19** | La aplicación **no debe cerrarse inesperadamente** (crash) durante el flujo principal de uso: navegar entre pantallas, marcar favoritos, generar menú y configurar ajustes. | Cero crashes en 30 minutos de uso continuo en el dispositivo Samsung SM-A528B. |
+| **RNF-20** | Las operaciones de lectura y escritura en Room Database deben ejecutarse en **hilos de fondo** (Coroutines con `Dispatchers.IO`) para no bloquear el hilo principal de la UI. | Ninguna operación de Room se llama desde el hilo principal; uso exclusivo de `viewModelScope.launch {}`. |
+
+---
+
+### Tabla resumen de Requerimientos No Funcionales
+
+| ID | Categoría | Nombre resumido |
+|---|---|---|
+| RNF-01 | Rendimiento | Inicio < 3 segundos |
+| RNF-02 | Rendimiento | Transición < 300 ms a 60 fps |
+| RNF-03 | Rendimiento | Consulta Room < 100 ms |
+| RNF-04 | Rendimiento | Generación de menú < 500 ms |
+| RNF-05 | Seguridad | Datos solo en dispositivo local (sin backend) |
+| RNF-06 | Seguridad | Mínimos permisos (solo INTERNET) |
+| RNF-07 | Seguridad | Sin PII en base de datos |
+| RNF-08 | Seguridad | WebViewClient personalizado |
+| RNF-09 | Usabilidad | Material Design 3 en toda la UI |
+| RNF-10 | Usabilidad | Área táctil mínima 48×48 dp |
+| RNF-11 | Usabilidad | Modo claro y oscuro completo |
+| RNF-12 | Usabilidad | Navegación intuitiva y consistente |
+| RNF-13 | Portabilidad | API 24+ (95 % de dispositivos) |
+| RNF-14 | Portabilidad | Responsivo: teléfono y tableta |
+| RNF-15 | Portabilidad | Compila en Android Studio Panda 2025.3.2 |
+| RNF-16 | Mantenibilidad | Clean Architecture sin cruces de capas |
+| RNF-17 | Mantenibilidad | ViewModel + StateFlow por pantalla |
+| RNF-18 | Mantenibilidad | Gradle Version Catalog |
+| RNF-19 | Confiabilidad | Cero crashes en flujo principal |
+| RNF-20 | Confiabilidad | Room en hilos de fondo (Coroutines) |
+
+*Las secciones siguientes se completan en las tareas F1-07 a F1-10.*
 
 ---
 
