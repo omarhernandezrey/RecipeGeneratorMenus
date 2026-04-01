@@ -49,14 +49,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.SubcomposeAsyncImage
-import coil.request.ImageRequest
-import com.example.recipe_generator.data.legacy.Recipe
+import com.example.recipe_generator.R
+import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
@@ -252,8 +251,6 @@ private fun FavoriteGridCard(
     onClick: () -> Unit,
     onRemoveFavorite: () -> Unit
 ) {
-    val context = LocalContext.current
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
@@ -267,21 +264,11 @@ private fun FavoriteGridCard(
                     .fillMaxWidth()
                     .height(240.dp)
             ) {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(recipe.imageUrl)
-                        .crossfade(true)
-                        .build(),
+                androidx.compose.foundation.Image(
+                    painter = painterResource(id = R.drawable.img_placeholder),
                     contentDescription = recipe.title,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    loading = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(SurfaceContainerLow)
-                        )
-                    }
+                    contentScale = ContentScale.Crop
                 )
 
                 IconButton(
@@ -345,7 +332,6 @@ private fun FavoriteFeaturedCard(
     onRemoveFavorite: () -> Unit
 ) {
     val isWide = LocalConfiguration.current.screenWidthDp >= 700
-    val context = LocalContext.current
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -361,11 +347,8 @@ private fun FavoriteFeaturedCard(
                         .weight(1f)
                         .height(280.dp)
                 ) {
-                    SubcomposeAsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(recipe.imageUrl)
-                            .crossfade(true)
-                            .build(),
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.drawable.img_placeholder),
                         contentDescription = recipe.title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
@@ -385,11 +368,8 @@ private fun FavoriteFeaturedCard(
                         .fillMaxWidth()
                         .height(240.dp)
                 ) {
-                    SubcomposeAsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(recipe.imageUrl)
-                            .crossfade(true)
-                            .build(),
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.drawable.img_placeholder),
                         contentDescription = recipe.title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop

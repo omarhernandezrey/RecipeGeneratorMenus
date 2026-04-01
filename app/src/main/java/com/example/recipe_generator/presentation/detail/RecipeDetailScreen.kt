@@ -45,16 +45,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.SubcomposeAsyncImage
-import coil.request.ImageRequest
-import com.example.recipe_generator.data.legacy.Recipe
-import com.example.recipe_generator.data.legacy.getFeaturedRecipeDetail
+import com.example.recipe_generator.R
+import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.presentation.components.DetailEditorialTopAppBar
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
@@ -88,7 +86,18 @@ import java.util.Locale
 
 @Composable
 fun RecipeDetailScreen(
-    recipe: Recipe = getFeaturedRecipeDetail(),
+    recipe: Recipe = Recipe(
+        id = "default",
+        title = "Receta",
+        imageRes = "",
+        timeInMinutes = 30,
+        calories = 500,
+        difficulty = "Medio",
+        category = "Almuerzo",
+        categorySubtitle = "Equilibrado",
+        description = "Una deliciosa receta",
+        dayOfWeek = "Lunes"
+    ),
     selectedNavItem: Int = 0,
     onNavItemSelected: (Int) -> Unit = {},
     isFavorite: Boolean = recipe.isFavorite,
@@ -180,35 +189,16 @@ fun RecipeDetailScreen(
 
 @Composable
 private fun HeroSection(recipe: Recipe) {
-    val context = LocalContext.current
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(4f / 5f)
     ) {
-        SubcomposeAsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(recipe.imageUrl)
-                .crossfade(true)
-                .build(),
+        androidx.compose.foundation.Image(
+            painter = painterResource(id = R.drawable.img_placeholder),
             contentDescription = recipe.title,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop,
-            loading = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(SurfaceContainerLow),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Cargando...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSurfaceVariant
-                    )
-                }
-            }
+            contentScale = ContentScale.Crop
         )
 
         Box(
