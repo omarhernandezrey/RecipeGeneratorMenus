@@ -209,7 +209,113 @@ La elección de **Room Database** garantiza persistencia de datos completamente 
 y sin dependencia de backend externo, lo cual es coherente con el alcance definido
 para la versión 1.0 de la aplicación.
 
-*Las secciones siguientes se completan en las tareas F1-04 a F1-10.*
+---
+
+## 4. Objetivos Específicos
+
+Los siguientes cinco objetivos específicos son medibles, alcanzables y están
+alineados directamente con los lineamientos de formación LF1 a LF8 del módulo
+*Herramientas de Programación Móvil I*.
+
+---
+
+### OE-01 — Implementar la arquitectura MVVM + Clean Architecture *(LF1, LF2)*
+
+**Implementar** la arquitectura MVVM + Clean Architecture en tres capas
+(Presentation, Domain, Data) **mediante** la definición de ViewModels con
+`StateFlow`, casos de uso en la capa Domain, repositorios con interfaces e
+implementaciones en la capa Data, y un contenedor de inyección de dependencias
+manual (`AppContainer`) en la clase `Application`, **con el fin de** garantizar
+una separación de responsabilidades clara, código mantenible y testeable que
+demuestre el dominio de los principios de arquitectura de aplicaciones Android
+modernas establecidos en LF1 y LF2.
+
+**Indicador de cumplimiento:** La aplicación compila sin errores, las tres capas
+están correctamente delimitadas en paquetes (`presentation/`, `domain/`, `data/`),
+y cada ViewModel expone su estado únicamente a través de `StateFlow` inmutable.
+
+---
+
+### OE-02 — Construir la interfaz de usuario con Jetpack Compose y Material Design 3 *(LF3, LF4)*
+
+**Construir** todas las pantallas de la aplicación (Menú Semanal, Detalle de Receta,
+Favoritos, Generador de Menú, Ajustes y panel lateral) **mediante** Jetpack Compose
+con componentes de Material Design 3 (`Scaffold`, `LazyColumn`, `LazyVerticalGrid`,
+`NavigationBar`, `Card`, `TopAppBar`) y manejo de estado local con
+`remember { mutableStateOf() }`, **con el fin de** ofrecer una interfaz moderna,
+responsiva y consistente que cubra íntegramente los lineamientos LF3 (layouts e
+interfaz) y LF4 (app interactiva con estado).
+
+**Indicador de cumplimiento:** Cada pantalla está implementada como `@Composable`,
+responde correctamente a las interacciones del usuario, y el estado visual se
+actualiza de forma reactiva sin requerir `invalidate()` ni `notifyDataSetChanged()`.
+
+---
+
+### OE-03 — Integrar controles de interfaz requeridos por el módulo *(LF7, LF8)*
+
+**Integrar** en la aplicación todos los controles de interfaz exigidos por los
+lineamientos LF7 y LF8 **mediante** el uso de sus equivalentes modernos en
+Jetpack Compose (`Slider` por `SeekBar`, `LazyColumn` por `ListView`,
+`ExposedDropdownMenuBox` por `Spinner`, `Switch`, `Checkbox`, `RadioButton`,
+`Button`, `IconButton`) y el uso de `AndroidView{}` para incrustar controles
+nativos como `VideoView` y `WebView` dentro de Composables, **con el fin de**
+demostrar el dominio y la equivalencia funcional entre los controles del framework
+XML tradicional y el paradigma declarativo de Compose.
+
+**Indicador de cumplimiento:** La pantalla `ControlsScreen` exhibe y responde
+correctamente a todos los controles listados; `VideoScreen` reproduce video local
+y `WebScreen` carga URLs mediante `WebView`; cada control genera una respuesta
+visible en la UI al interactuar con él.
+
+---
+
+### OE-04 — Implementar navegación entre actividades y fragmentos *(LF5, LF6)*
+
+**Implementar** la navegación completa de la aplicación **mediante** una
+`MainActivity` como Single Activity host con `NavHost` de Navigation Compose,
+una segunda actividad `RecipeDetailActivity` lanzada con `Intent.putExtra(recipeId)`
+para el detalle de receta, y cada pantalla principal alojada en un `Fragment`
+con `ComposeView` como host de la UI Compose, **con el fin de** cumplir
+explícitamente los lineamientos LF5 (ciclo de vida de actividades, back stack,
+`Intent` y `Bundle`) y LF6 (gestión de fragmentos con `FragmentManager`,
+`replace()` y `addToBackStack()`).
+
+**Indicador de cumplimiento:** La aplicación navega correctamente entre las
+4 pestañas del `NavigationBar`, lanza `RecipeDetailActivity` al seleccionar
+una receta, permite regresar con el botón Back, y el `FragmentManager`
+gestiona el back stack de fragmentos sin fugas de memoria.
+
+---
+
+### OE-05 — Persistir datos localmente con Room Database y DataStore *(LF1, LF2)*
+
+**Persistir** todas las recetas, favoritos y preferencias del usuario
+**mediante** Room Database (SQLite local) para las entidades `RecipeEntity`,
+`IngredientEntity` y `StepEntity`, y DataStore Preferences para la
+configuración de tema, idioma, porciones y dietas, **con el fin de** garantizar
+que la aplicación funcione completamente offline, que los favoritos y ajustes
+del usuario se conserven entre sesiones, y que la capa de datos cumpla los
+principios de fuente única de verdad (*Single Source of Truth*) del módulo.
+
+**Indicador de cumplimiento:** Las 21 recetas (7 días × 3 comidas) se almacenan
+en Room al primer inicio mediante `DatabaseSeeder`; marcar una receta como favorita
+persiste en la base de datos y aparece en `FavoritesScreen` al relanzar la app;
+los ajustes guardados en DataStore se restauran correctamente al reiniciar.
+
+---
+
+### Tabla resumen de objetivos específicos
+
+| ID | Verbo | Qué | Cómo | LF cubierto |
+|---|---|---|---|---|
+| OE-01 | Implementar | Arquitectura MVVM + Clean Architecture | ViewModels, StateFlow, UseCases, AppContainer | LF1, LF2 |
+| OE-02 | Construir | UI con Compose + Material Design 3 | Composables, Scaffold, LazyColumn, remember | LF3, LF4 |
+| OE-03 | Integrar | Controles requeridos por el módulo | Slider, LazyColumn, Dropdown, AndroidView | LF7, LF8 |
+| OE-04 | Implementar | Navegación entre Activities y Fragments | NavHost, Intent, Fragment + ComposeView | LF5, LF6 |
+| OE-05 | Persistir | Datos locales con Room y DataStore | Room DB (21 recetas), DataStore Preferences | LF1, LF2 |
+
+*Las secciones siguientes se completan en las tareas F1-05 a F1-10.*
 
 ---
 
