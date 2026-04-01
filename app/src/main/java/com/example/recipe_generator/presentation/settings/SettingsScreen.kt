@@ -1,4 +1,4 @@
-package com.example.recipe_generator.ui.screens
+package com.example.recipe_generator.presentation.settings
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -49,32 +49,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.recipe_generator.ui.components.EditorialBottomNavBar
-import com.example.recipe_generator.ui.components.HomeEditorialTopAppBar
-import com.example.recipe_generator.ui.components.editorialBottomBarContentPadding
-import com.example.recipe_generator.ui.components.editorialTopBarContentPadding
-import com.example.recipe_generator.ui.theme.Error
-import com.example.recipe_generator.ui.theme.ErrorContainer
-import com.example.recipe_generator.ui.theme.OnSecondaryContainer
-import com.example.recipe_generator.ui.theme.OnSurface
-import com.example.recipe_generator.ui.theme.OnSurfaceVariant
-import com.example.recipe_generator.ui.theme.Outline
-import com.example.recipe_generator.ui.theme.OutlineVariant
-import com.example.recipe_generator.ui.theme.Primary
-import com.example.recipe_generator.ui.theme.SecondaryContainer
-import com.example.recipe_generator.ui.theme.SurfaceContainerHighest
-import com.example.recipe_generator.ui.theme.SurfaceContainerLow
-import com.example.recipe_generator.ui.theme.SurfaceContainerLowest
-import com.example.recipe_generator.ui.theme.rounded_full
-import com.example.recipe_generator.ui.theme.rounded_lg
-import com.example.recipe_generator.ui.theme.rounded_md
-import com.example.recipe_generator.ui.theme.rounded_sm
-import com.example.recipe_generator.ui.theme.spacing_1
-import com.example.recipe_generator.ui.theme.spacing_10
-import com.example.recipe_generator.ui.theme.spacing_2
-import com.example.recipe_generator.ui.theme.spacing_3
-import com.example.recipe_generator.ui.theme.spacing_4
-import com.example.recipe_generator.ui.theme.spacing_6
+import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
+import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
+import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
+import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
+import com.example.recipe_generator.presentation.theme.Error
+import com.example.recipe_generator.presentation.theme.ErrorContainer
+import com.example.recipe_generator.presentation.theme.OnSecondaryContainer
+import com.example.recipe_generator.presentation.theme.OnSurface
+import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
+import com.example.recipe_generator.presentation.theme.Outline
+import com.example.recipe_generator.presentation.theme.OutlineVariant
+import com.example.recipe_generator.presentation.theme.Primary
+import com.example.recipe_generator.presentation.theme.SecondaryContainer
+import com.example.recipe_generator.presentation.theme.SurfaceContainerHighest
+import com.example.recipe_generator.presentation.theme.SurfaceContainerLow
+import com.example.recipe_generator.presentation.theme.SurfaceContainerLowest
+import com.example.recipe_generator.presentation.theme.rounded_full
+import com.example.recipe_generator.presentation.theme.rounded_lg
+import com.example.recipe_generator.presentation.theme.rounded_md
+import com.example.recipe_generator.presentation.theme.rounded_sm
+import com.example.recipe_generator.presentation.theme.spacing_1
+import com.example.recipe_generator.presentation.theme.spacing_10
+import com.example.recipe_generator.presentation.theme.spacing_2
+import com.example.recipe_generator.presentation.theme.spacing_3
+import com.example.recipe_generator.presentation.theme.spacing_4
+import com.example.recipe_generator.presentation.theme.spacing_6
 
 private val dietLabels = listOf("Vegetariano", "Vegano", "Sin Gluten", "Keto", "Paleo")
 private val themeOptions = listOf("Claro", "Oscuro", "Sistema")
@@ -90,7 +90,7 @@ fun SettingsScreen(
     var selectedTheme by remember { mutableStateOf("Claro") }
     var selectedLanguage by remember { mutableStateOf("Español") }
 
-    val surfaceBg = com.example.recipe_generator.ui.theme.Surface
+    val surfaceBg = com.example.recipe_generator.presentation.theme.Surface
 
     Box(
         modifier = Modifier

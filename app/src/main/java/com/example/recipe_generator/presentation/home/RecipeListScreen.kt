@@ -1,4 +1,4 @@
-package com.example.recipe_generator.ui.screens
+package com.example.recipe_generator.presentation.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,15 +29,15 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.recipe_generator.data.Recipe
 import com.example.recipe_generator.data.getMenuForDay
-import com.example.recipe_generator.ui.components.DayTabLayout
-import com.example.recipe_generator.ui.components.DifficultyChip
-import com.example.recipe_generator.ui.components.EditorialBottomNavBar
-import com.example.recipe_generator.ui.components.HomeEditorialTopAppBar
-import com.example.recipe_generator.ui.components.InfoChip
-import com.example.recipe_generator.ui.components.editorialBottomBarContentPadding
-import com.example.recipe_generator.ui.components.editorialFabBottomPadding
-import com.example.recipe_generator.ui.components.editorialTopBarContentPadding
-import com.example.recipe_generator.ui.theme.*
+import com.example.recipe_generator.presentation.components.DayTabLayout
+import com.example.recipe_generator.presentation.components.DifficultyChip
+import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
+import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
+import com.example.recipe_generator.presentation.components.InfoChip
+import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
+import com.example.recipe_generator.presentation.components.editorialFabBottomPadding
+import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
+import com.example.recipe_generator.presentation.theme.*
 
 @Composable
 fun RecipeListScreen(

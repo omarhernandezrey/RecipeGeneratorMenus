@@ -1,4 +1,4 @@
-package com.example.recipe_generator.data
+package com.example.recipe_generator.data.legacy
 
 data class Recipe(
     val id: String,

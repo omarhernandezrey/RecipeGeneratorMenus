@@ -1,4 +1,4 @@
-package com.example.recipe_generator.ui.screens
+package com.example.recipe_generator.presentation.generator
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -51,35 +51,35 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.recipe_generator.ui.components.EditorialBottomNavBar
-import com.example.recipe_generator.ui.components.HomeEditorialTopAppBar
-import com.example.recipe_generator.ui.components.editorialBottomBarContentPadding
-import com.example.recipe_generator.ui.components.editorialTopBarContentPadding
-import com.example.recipe_generator.ui.theme.OnPrimary
-import com.example.recipe_generator.ui.theme.OnPrimaryFixed
-import com.example.recipe_generator.ui.theme.OnSecondaryContainer
-import com.example.recipe_generator.ui.theme.OnSurface
-import com.example.recipe_generator.ui.theme.OnSurfaceVariant
-import com.example.recipe_generator.ui.theme.Outline
-import com.example.recipe_generator.ui.theme.Primary
-import com.example.recipe_generator.ui.theme.PrimaryContainer
-import com.example.recipe_generator.ui.theme.PrimaryFixed
-import com.example.recipe_generator.ui.theme.Secondary
-import com.example.recipe_generator.ui.theme.SecondaryContainer
-import com.example.recipe_generator.ui.theme.SurfaceContainer
-import com.example.recipe_generator.ui.theme.SurfaceContainerHigh
-import com.example.recipe_generator.ui.theme.SurfaceContainerHighest
-import com.example.recipe_generator.ui.theme.SurfaceContainerLow
-import com.example.recipe_generator.ui.theme.SurfaceContainerLowest
-import com.example.recipe_generator.ui.theme.rounded_full
-import com.example.recipe_generator.ui.theme.rounded_lg
-import com.example.recipe_generator.ui.theme.rounded_md
-import com.example.recipe_generator.ui.theme.spacing_10
-import com.example.recipe_generator.ui.theme.spacing_12
-import com.example.recipe_generator.ui.theme.spacing_2
-import com.example.recipe_generator.ui.theme.spacing_3
-import com.example.recipe_generator.ui.theme.spacing_4
-import com.example.recipe_generator.ui.theme.spacing_6
+import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
+import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
+import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
+import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
+import com.example.recipe_generator.presentation.theme.OnPrimary
+import com.example.recipe_generator.presentation.theme.OnPrimaryFixed
+import com.example.recipe_generator.presentation.theme.OnSecondaryContainer
+import com.example.recipe_generator.presentation.theme.OnSurface
+import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
+import com.example.recipe_generator.presentation.theme.Outline
+import com.example.recipe_generator.presentation.theme.Primary
+import com.example.recipe_generator.presentation.theme.PrimaryContainer
+import com.example.recipe_generator.presentation.theme.PrimaryFixed
+import com.example.recipe_generator.presentation.theme.Secondary
+import com.example.recipe_generator.presentation.theme.SecondaryContainer
+import com.example.recipe_generator.presentation.theme.SurfaceContainer
+import com.example.recipe_generator.presentation.theme.SurfaceContainerHigh
+import com.example.recipe_generator.presentation.theme.SurfaceContainerHighest
+import com.example.recipe_generator.presentation.theme.SurfaceContainerLow
+import com.example.recipe_generator.presentation.theme.SurfaceContainerLowest
+import com.example.recipe_generator.presentation.theme.rounded_full
+import com.example.recipe_generator.presentation.theme.rounded_lg
+import com.example.recipe_generator.presentation.theme.rounded_md
+import com.example.recipe_generator.presentation.theme.spacing_10
+import com.example.recipe_generator.presentation.theme.spacing_12
+import com.example.recipe_generator.presentation.theme.spacing_2
+import com.example.recipe_generator.presentation.theme.spacing_3
+import com.example.recipe_generator.presentation.theme.spacing_4
+import com.example.recipe_generator.presentation.theme.spacing_6
 
 // ── Data ────────────────────────────────────────────────────────────
 
@@ -114,7 +114,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
         mutableStateOf(setOf("Desayunos", "Almuerzos Ejecutivos"))
     }
 
-    val surfaceBg = com.example.recipe_generator.ui.theme.Surface
+    val surfaceBg = com.example.recipe_generator.presentation.theme.Surface
 
     Box(
         modifier = Modifier

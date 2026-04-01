@@ -1,4 +1,4 @@
-package com.example.recipe_generator.ui.components
+package com.example.recipe_generator.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -34,14 +34,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.recipe_generator.ui.theme.Background
-import com.example.recipe_generator.ui.theme.OnSurfaceVariant
-import com.example.recipe_generator.ui.theme.Primary
-import com.example.recipe_generator.ui.theme.PrimaryFixedDim
-import com.example.recipe_generator.ui.theme.SurfaceContainer
-import com.example.recipe_generator.ui.theme.spacing_3
-import com.example.recipe_generator.ui.theme.spacing_4
-import com.example.recipe_generator.ui.theme.spacing_6
+import com.example.recipe_generator.presentation.theme.Background
+import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
+import com.example.recipe_generator.presentation.theme.Primary
+import com.example.recipe_generator.presentation.theme.PrimaryFixedDim
+import com.example.recipe_generator.presentation.theme.SurfaceContainer
+import com.example.recipe_generator.presentation.theme.spacing_3
+import com.example.recipe_generator.presentation.theme.spacing_4
+import com.example.recipe_generator.presentation.theme.spacing_6
 
 private const val PROFILE_IMAGE_URL = "https://lh3.googleusercontent.com/aida-public/AB6AXuB2xtj_r97gsEUurBmuOwkrxnpW7yFeqbQN49f2Q79dIXXT3KFVXeIrQYLSYkUT_TrcscsTFavakiUZ_SKEOnTS-t8yDUZ5Nk2sh8TR1sSgmFlPphMmtbSvy4Gs81b8aaCXpo_JpPWBRZIWe6CNJ4d0rMGaUqI1arpd0k-UxOq2s8N1yD8P_bYtik4H5hSLeTp7dSRrkcOVhoQlK3CNBReGwEWVL741RcR7k91urFLVQXuqDRlBUmY9T6jfUa37KCR9ePusAJ272j4"
 private val TopBarSlotWidth = 84.dp
