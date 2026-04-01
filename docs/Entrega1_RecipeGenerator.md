@@ -1370,6 +1370,470 @@ deactivate RDS
 
 ---
 
+## 10. Wireframes / Mockups de la UI
+
+### 10.1 Descripción general del sistema de diseño
+
+La interfaz sigue los principios de **Material Design 3** con un esquema de color editorial en tonos púrpura (`#7E57C2` / Deep Purple). Los wireframes documentan tres superficies clave de la aplicación:
+
+| ID | Pantalla | Descripción |
+|---|---|---|
+| WF-01 | `MainScreen` | Pantalla principal: TopAppBar + LazyVerticalGrid de recetas + BottomNavBar |
+| WF-02 | `RecipeDetailScreen` | Detalle de receta: Hero + metadatos + ingredientes + pasos |
+| WF-03 | `LeftMenuPanel` | Panel lateral deslizante: filtros de categoría, dificultad y tiempo |
+
+**Notación de los wireframes Salt (PlantUML):**
+
+| Símbolo | Significado |
+|---|---|
+| `[Botón]` | Botón o ícono interactivo |
+| `"campo"` | Campo de texto / etiqueta |
+| `^Opción^` | Selector desplegable |
+| `(*)` / `( )` | RadioButton seleccionado / vacío |
+| `[X]` / `[ ]` | CheckBox marcado / vacío |
+| `{/` | Pestaña (Tab) |
+| `{+` | Contenedor con borde visible |
+| `{-` | Contenedor sin borde (layout) |
+
+---
+
+### 10.2 WF-01 — MainScreen (NavBar + Content)
+
+#### 10.2.1 Wireframe Salt
+
+```plantuml
+@startsalt
+title WF-01 : MainScreen — RecipeListScreen
+scale 1.5
+
+{+
+  {/ <b>Recipe Generator</b> }
+  {-
+    "  🔍 Buscar receta...          " | [⚙]
+  }
+  ==
+  {-
+    {+
+      {-
+        [🖼 img]
+        "Pasta Carbonara"
+        "⏱ 30 min  · 🍽 2 pers"
+        "★★★★☆  Medio"
+        [♡ Favorito]
+      }
+      |
+      {+
+        {-
+          [🖼 img]
+          "Ensalada César"
+          "⏱ 15 min  · 🍽 4 pers"
+          "★★★☆☆  Fácil"
+          [♡ Favorito]
+        }
+      }
+    }
+    {+
+      {-
+        [🖼 img]
+        "Salmón al horno"
+        "⏱ 45 min  · 🍽 2 pers"
+        "★★★★★  Difícil"
+        [♡ Favorito]
+      }
+      |
+      {+
+        {-
+          [🖼 img]
+          "Tacos de pollo"
+          "⏱ 25 min  · 🍽 3 pers"
+          "★★★★☆  Medio"
+          [♡ Favorito]
+        }
+      }
+    }
+  }
+  ==
+  {-
+    [🏠\nInicio] | [♥\nFavoritos] | [📋\nGenerador] | [⚙\nAjustes]
+  }
+}
+
+@endsalt
+```
+
+#### 10.2.2 ASCII Wireframe detallado
+
+```
+┌─────────────────────────────────────────┐
+│  ≡  Recipe Generator            [⚙]    │  ← TopAppBar (EditorialTopAppBar)
+│     Generador de Menús Semanales        │
+├─────────────────────────────────────────┤
+│  🔍 Buscar receta...          [Filtrar] │  ← SearchBar / FilterRow
+├────────────────────┬────────────────────┤
+│  ┌──────────────┐  │  ┌──────────────┐  │
+│  │  [img 1:1]   │  │  │  [img 1:1]   │  │  ← LazyVerticalGrid (2 columnas)
+│  │              │  │  │              │  │     ElevatedCard con shape rounded
+│  └──────────────┘  │  └──────────────┘  │
+│  Pasta Carbonara   │  Ensalada César    │
+│  ⏱ 30 min  👤 2   │  ⏱ 15 min  👤 4   │
+│  ⭐⭐⭐⭐  Medio  │  ⭐⭐⭐  Fácil     │
+│  [♡]               │  [♡]               │
+├────────────────────┼────────────────────┤
+│  ┌──────────────┐  │  ┌──────────────┐  │
+│  │  [img 1:1]   │  │  │  [img 1:1]   │  │
+│  └──────────────┘  │  └──────────────┘  │
+│  Salmón al horno   │  Tacos de pollo    │
+│  ⏱ 45 min  👤 2   │  ⏱ 25 min  👤 3   │
+│  ⭐⭐⭐⭐⭐ Difíc │  ⭐⭐⭐⭐  Medio  │
+│  [♡]               │  [♡]               │
+├────────────────────┴────────────────────┤
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+│  [🏠]      [♥]      [📋]      [⚙]      │  ← EditorialBottomNavBar
+│  Inicio  Favoritos  Generador  Ajustes  │     NavigationBar M3
+└─────────────────────────────────────────┘
+```
+
+#### 10.2.3 Especificaciones de componentes
+
+| Componente | Composable | Notas |
+|---|---|---|
+| Barra superior | `HomeEditorialTopAppBar` | Título + subtítulo editorial, fondo `Background` |
+| Barra de búsqueda | `SearchBar` (M3) | `query` en `HomeUiState`, filtra en `HomeViewModel` |
+| Grid de recetas | `LazyVerticalGrid(columns = Fixed(2))` | `RecipeCard` con padding `4.dp` entre celdas |
+| Tarjeta de receta | `ElevatedCard` | Imagen 1:1, título, tiempo, porciones, rating, ícono favorito |
+| Ícono favorito | `IconToggleButton` | `♡` vacío / `♥` relleno según `isFavorite` |
+| Barra inferior | `EditorialBottomNavBar` | 4 destinos: Home(0), Favorites(1), Generator(2), Settings(3) |
+
+---
+
+### 10.3 WF-02 — RecipeDetailScreen
+
+#### 10.3.1 Wireframe Salt
+
+```plantuml
+@startsalt
+title WF-02 : RecipeDetailScreen — Detalle de Receta
+scale 1.5
+
+{+
+  {-
+    [← Atrás] | "     Pasta Carbonara      " | [♥]
+  }
+  ==
+  {+
+    "         [  Imagen Hero 16:9  ]         "
+    "                                        "
+    "       Placeholder — img_placeholder    "
+  }
+  ==
+  {-
+    "  🍳 Pasta Carbonara               ★4.2"
+    "  ⏱ 30 min   🍽 2 personas   📊 Medio "
+  }
+  ==
+  {/ <b>Ingredientes</b> | Preparación | Info }
+  {+
+    " • 200 g de espaguetis              "
+    " • 100 g de panceta o guanciale     "
+    " • 2 yemas de huevo                 "
+    " • 50 g de queso Pecorino Romano    "
+    " • Pimienta negra al gusto          "
+    " • Sal para el agua                 "
+  }
+  ==
+  {-
+    [♡  Guardar en favoritos            ]
+  }
+  ==
+  {-
+    [🏠\nInicio] | [♥\nFavoritos] | [📋\nGenerador] | [⚙\nAjustes]
+  }
+}
+
+@endsalt
+```
+
+#### 10.3.2 ASCII Wireframe detallado
+
+```
+┌─────────────────────────────────────────┐
+│  [←]   Pasta Carbonara           [♥]   │  ← TopAppBar con back + toggle favorito
+├─────────────────────────────────────────┤
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │                                 │    │  ← HeroSection: AspectRatio(16/9)
+│  │       [  img_placeholder  ]     │    │     Image con contentScale = Crop
+│  │                                 │    │
+│  └─────────────────────────────────┘    │
+├─────────────────────────────────────────┤
+│  🍳 Pasta Carbonara            ★ 4.2   │  ← Título + rating
+│  ⏱ 30 min  ·  🍽 2 personas  ·  Medio │  ← MetaRow: tiempo, porciones, dificultad
+│  🏷 Italiana · Pasta · Principal       │  ← CategoryChips (FilterChip M3)
+├─────────────────────────────────────────┤
+│  ┌──────────┐ ┌──────────┐ ┌────────┐  │
+│  │Ingredien.│ │Preparac. │ │  Info  │  │  ← TabRow (M3): 3 pestañas
+│  └──────────┘ └──────────┘ └────────┘  │     HorizontalPager
+│  ─────────── ← indicador activo        │
+│                                         │
+│  • 200 g espaguetis                    │
+│  • 100 g panceta (guanciale)           │  ← LazyColumn con IngredientRow
+│  • 2 yemas de huevo                    │     Checkbox + cantidad + nombre
+│  • 50 g queso Pecorino Romano          │
+│  • Pimienta negra al gusto             │
+│  • Sal gruesa para el agua             │
+│                                         │
+├─────────────────────────────────────────┤
+│  [♥  Guardar en favoritos  ]            │  ← FilledButton hoisteado
+├─────────────────────────────────────────┤
+│  [🏠]      [♥]      [📋]      [⚙]      │  ← BottomNavBar (misma que MainScreen)
+│  Inicio  Favoritos  Generador  Ajustes  │
+└─────────────────────────────────────────┘
+
+── Pestaña "Preparación" ──────────────────
+│                                         │
+│  1.  Cocer la pasta en agua con sal    │
+│      hasta que esté al dente.          │  ← StepRow: número + descripción
+│                                         │
+│  2.  En un bol mezclar yemas, queso    │     Divider entre pasos
+│      y pimienta negra.                 │
+│                                         │
+│  3.  Saltear panceta sin aceite        │
+│      hasta que esté crujiente.         │
+│                                         │
+│  4.  Mezclar pasta caliente con        │
+│      la panceta fuera del fuego...     │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+#### 10.3.3 Especificaciones de componentes
+
+| Componente | Composable | Notas |
+|---|---|---|
+| Barra superior | `TopAppBar` (M3) | `navigationIcon` = `IconButton(←)`, `actions` = `IconToggleButton(♥)` |
+| Hero imagen | `Image(painterResource)` + `AspectRatio(16/9f)` | `contentScale = ContentScale.Crop`, placeholder `img_placeholder` |
+| Meta fila | `RecipeMetaRow` | `Row` con `Icon` + `Text` separados por `·` |
+| Etiquetas | `FilterChip` (M3) | No interactivas en detalle; solo informativas |
+| Pestañas | `TabRow` + `HorizontalPager` | 0=Ingredientes, 1=Preparación, 2=Info nutricional |
+| Ingrediente | `IngredientRow` | `Checkbox` (lista de compras futura) + cantidad + unidad + nombre |
+| Paso | `StepRow` | Número en `CircleBadge` + `Text` párrafo + `Divider` |
+| Botón favorito | `FilledButton` | Cambia texto/ícono según `isFavorite`; debounce 300 ms |
+
+---
+
+### 10.4 WF-03 — LeftMenuPanel (Panel de Filtros)
+
+#### 10.4.1 Descripción
+
+El `LeftMenuPanel` es un panel lateral deslizante (`ModalDrawerSheet` de M3) que se abre desde el ícono `≡` (hamburger) en la `TopAppBar`. Permite al usuario filtrar las recetas visibles en `MainScreen` por categoría, nivel de dificultad y tiempo de preparación, sin abandonar la pantalla actual.
+
+#### 10.4.2 Wireframe Salt
+
+```plantuml
+@startsalt
+title WF-03 : LeftMenuPanel — Panel lateral de filtros
+scale 1.5
+
+{+
+  {-
+    "  Recipe Generator   " | [✕]
+  }
+  "  Generador de Menús  "
+  ==
+  {+
+    "<b>Categoría</b>"
+    (*)  Todas las categorías
+    ( )  Desayuno
+    ( )  Almuerzo
+    ( )  Cena
+    ( )  Merienda
+    ( )  Postres
+  }
+  ==
+  {+
+    "<b>Dificultad</b>"
+    [X]  Fácil
+    [X]  Medio
+    [ ]  Difícil
+  }
+  ==
+  {+
+    "<b>Tiempo máximo</b>"
+    ^Sin límite^
+  }
+  ==
+  {+
+    "<b>Porciones</b>"
+    ( )  1 persona
+    (*)  2 personas
+    ( )  3–4 personas
+    ( )  5 o más
+  }
+  ==
+  {-
+    [  Aplicar filtros  ] | [Limpiar]
+  }
+}
+
+@endsalt
+```
+
+#### 10.4.3 ASCII Wireframe detallado
+
+```
+┌────────────────────────┬──────────────────────────────┐
+│  ≡  Recipe Generator   │                              │
+│     Menús Semanales [✕]│                              │
+│════════════════════════│     MainScreen               │
+│                        │     (contenido semitranspa-  │
+│  CATEGORÍA             │      rente / atenuado con    │
+│  ───────────────────   │      scrim 0.32 alpha)       │
+│  ◉ Todas               │                              │
+│  ○ Desayuno            │                              │
+│  ○ Almuerzo            │                              │
+│  ○ Cena                │                              │
+│  ○ Merienda            │                              │
+│  ○ Postres             │                              │
+│                        │                              │
+│  DIFICULTAD            │                              │
+│  ───────────────────   │                              │
+│  ☑ Fácil               │                              │
+│  ☑ Medio               │                              │
+│  ☐ Difícil             │                              │
+│                        │                              │
+│  TIEMPO MÁXIMO         │                              │
+│  ───────────────────   │                              │
+│  ▾ Sin límite       ▾  │                              │
+│    ┌──────────────┐    │                              │
+│    │ ≤ 15 min     │    │                              │
+│    │ ≤ 30 min     │    │                              │
+│    │ ≤ 45 min     │    │                              │
+│    │ Sin límite ✓ │    │                              │
+│    └──────────────┘    │                              │
+│                        │                              │
+│  PORCIONES             │                              │
+│  ───────────────────   │                              │
+│  ○ 1 persona           │                              │
+│  ◉ 2 personas          │                              │
+│  ○ 3–4 personas        │                              │
+│  ○ 5 o más             │                              │
+│                        │                              │
+│  ════════════════════  │                              │
+│  [  Aplicar filtros  ] │                              │
+│  [  Limpiar todo     ] │                              │
+└────────────────────────┴──────────────────────────────┘
+  ← 280 dp →              ← resto del ancho →
+```
+
+#### 10.4.4 Especificaciones de componentes
+
+| Componente | Composable | Notas |
+|---|---|---|
+| Contenedor | `ModalNavigationDrawer` (M3) | `drawerContent = { ModalDrawerSheet { ... } }` |
+| Apertura | `DrawerState` + `rememberDrawerState` | Se abre desde `IconButton(≡)` en `TopAppBar` |
+| Cabecera | `DrawerHeader` | Logo + título + subtítulo + botón `✕` para cerrar |
+| Sección | `DrawerSectionHeader` | `Text` en `labelSmall` con `Divider` inferior |
+| Categoría | `RadioButton` + `Text` en `Row` | Valor en `FilterState.category: String?` |
+| Dificultad | `Checkbox` + `Text` en `Row` | Valor en `FilterState.difficulties: Set<String>` |
+| Tiempo | `ExposedDropdownMenuBox` (M3) | Opciones: `null`, 15, 30, 45 minutos |
+| Porciones | `RadioButton` + `Text` en `Row` | Valor en `FilterState.servings: Int?` |
+| Botón aplicar | `FilledButton` | Llama `HomeViewModel.applyFilters(filterState)` |
+| Botón limpiar | `TextButton` | Llama `HomeViewModel.clearFilters()` |
+
+#### 10.4.5 Estado del filtro — modelo de datos
+
+```kotlin
+// FilterState — objeto de dominio simple (sin Room, sin DataStore en esta fase)
+data class FilterState(
+    val category: String? = null,           // null = todas
+    val difficulties: Set<String> = setOf("Fácil", "Medio", "Difícil"),
+    val maxTimeMinutes: Int? = null,        // null = sin límite
+    val servings: Int? = null               // null = cualquier cantidad
+)
+```
+
+El `HomeViewModel` expone un `StateFlow<FilterState>` y aplica los filtros sobre la lista completa de recetas en memoria antes de emitirla como `HomeUiState.Success`.
+
+---
+
+### 10.5 Flujo de navegación entre pantallas
+
+```plantuml
+@startuml NAV-01-FlujoPantallas
+title NAV-01 : Flujo de navegación entre pantallas principales
+skinparam rectangleBackgroundColor #EDE7F6
+skinparam rectangleBorderColor #7E57C2
+skinparam arrowColor #512DA8
+skinparam noteBackgroundColor #F3E5F5
+
+rectangle "MainScreen\n(RecipeListScreen)" as MAIN
+rectangle "RecipeDetailScreen" as DETAIL
+rectangle "FavoritesScreen" as FAV
+rectangle "MenuGeneratorScreen" as GEN
+rectangle "SettingsScreen" as SET
+rectangle "LeftMenuPanel\n(Drawer)" as DRAWER
+
+MAIN -right-> DETAIL : onRecipeSelected(id)
+DETAIL -left-> MAIN : onBackClick()
+
+MAIN -up-> DRAWER : onMenuIconClick() [≡]
+DRAWER -down-> MAIN : onApplyFilters() / onClose()
+
+MAIN -down-> FAV : BottomNav[1]
+MAIN -down-> GEN : BottomNav[2]
+MAIN -down-> SET : BottomNav[3]
+
+FAV -up-> DETAIL : onRecipeSelected(id)
+FAV -left-> MAIN : BottomNav[0]
+
+GEN --> MAIN : BottomNav[0]
+SET --> MAIN : BottomNav[0]
+
+note right of DETAIL
+  isFavorite se pasa como
+  parámetro desde MainActivity
+  (estado hoisted)
+end note
+
+note left of DRAWER
+  ModalNavigationDrawer
+  ancho fijo 280 dp
+  scrim semi-transparente
+end note
+
+@enduml
+```
+
+---
+
+### 10.6 Paleta de color y tipografía del sistema de diseño
+
+#### Color
+
+| Token | Hex | Uso |
+|---|---|---|
+| `Background` | `#F5F0FF` | Fondo global de todas las pantallas |
+| `Surface` | `#FFFFFF` | Cards, BottomSheet, Drawer |
+| `Primary` | `#7E57C2` | Botones primarios, íconos activos, TabIndicator |
+| `PrimaryContainer` | `#EDE7F6` | Chips seleccionados, highlights |
+| `OnSurface` | `#1C1B1F` | Texto principal |
+| `OnSurfaceVariant` | `#49454F` | Texto secundario, metadatos |
+| `Error` | `#B3261E` | Validaciones, estados de error |
+
+#### Tipografía (M3 TypeScale)
+
+| Estilo | Uso |
+|---|---|
+| `displaySmall` | Título de sección en Placeholder screens |
+| `headlineMedium` | Título de receta en `RecipeDetailScreen` |
+| `titleLarge` | Cabecera de `TopAppBar` |
+| `titleMedium` | Nombre de receta en `RecipeCard` |
+| `bodyLarge` | Texto de descripción e ingredientes |
+| `bodyMedium` | Metadatos (tiempo, porciones, dificultad) |
+| `labelSmall` | Sección headers en `LeftMenuPanel` |
+
+---
+
 ## Referencias
 
 Google LLC. (2024). *Jetpack Compose — Android Developers*.
