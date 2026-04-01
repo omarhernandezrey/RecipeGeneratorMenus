@@ -762,7 +762,372 @@ CU04 .> CU05 : <<extend>>\n(filtro adicional)
 | CU-07 → CU-08 | `<<include>>` | Para generar el menú (CU-08) es **obligatorio** configurar los filtros (CU-07) previamente. |
 | CU-04 → CU-05 | `<<extend>>` | El filtro por categoría (CU-05) es una extensión opcional de la búsqueda (CU-04). |
 
-*Las secciones siguientes se completan en las tareas F1-08 a F1-10.*
+---
+
+## 8. Diagrama de Clases UML
+
+### 8.1 Descripción general
+
+El diagrama de clases refleja la estructura real del código fuente del proyecto,
+organizado en las tres capas de **Clean Architecture**:
+
+- **Domain** — modelos de negocio puros e interfaces de repositorios (sin dependencias Android).
+- **Data** — entidades Room, DAOs, implementaciones de repositorios y mappers.
+- **Presentation** — ViewModels con StateFlow que consumen los casos de uso.
+
+> Para renderizar el diagrama, pegar el código en [https://www.plantuml.com/plantuml/uml](https://www.plantuml.com/plantuml/uml)
+
+---
+
+### 8.2 Diagrama PlantUML — Capa Domain
+
+```plantuml
+@startuml RecipeGenerator_ClassDiagram_Domain
+
+skinparam classBackgroundColor #EDE7F6
+skinparam classBorderColor #4800B2
+skinparam classArrowColor #4800B2
+skinparam classFontColor #1B1B1E
+skinparam packageBackgroundColor #F3E5F5
+skinparam packageBorderColor #7E57C2
+
+package "domain.model" #EDE7F6 {
+
+  class Recipe {
+    + id: String
+    + title: String
+    + imageRes: String
+    + timeInMinutes: Int
+    + calories: Int
+    + difficulty: String
+    + category: String
+    + categorySubtitle: String
+    + description: String
+    + isFavorite: Boolean
+    + rating: Double
+    + proteinGrams: Int
+    + carbsGrams: Int
+    + fatGrams: Int
+    + dayOfWeek: String
+    + ingredients: List<Ingredient>
+    + steps: List<RecipeStep>
+  }
+
+  class Ingredient {
+    + id: Int
+    + name: String
+    + quantity: String
+    + unit: String
+  }
+
+  class RecipeStep {
+    + id: Int
+    + stepNumber: Int
+    + title: String
+    + description: String
+  }
+
+  class UserPreferences {
+    + theme: String
+    + language: String
+    + defaultPortions: Int
+    + selectedDiets: Set<String>
+  }
+}
+
+package "domain.repository" #E8EAF6 {
+
+  interface RecipeRepository {
+    + getAllRecipes(): Flow<List<Recipe>>
+    + getRecipesByDay(day: String): Flow<List<Recipe>>
+    + getRecipesByCategory(category: String): Flow<List<Recipe>>
+    + getRecipeById(id: String): Flow<Recipe?>
+    + searchRecipes(query: String): Flow<List<Recipe>>
+    + insertAll(recipes: List<Recipe>)
+    + count(): Int
+  }
+
+  interface FavoritesRepository {
+    + getFavoriteRecipes(): Flow<List<Recipe>>
+    + getFavoriteIds(): Flow<Set<String>>
+    + toggleFavorite(recipeId: String)
+    + removeFavorite(recipeId: String)
+    + isFavorite(recipeId: String): Boolean
+  }
+
+  interface UserPrefsRepository {
+    + getUserPreferences(): Flow<UserPreferences>
+    + saveTheme(theme: String)
+    + saveLanguage(language: String)
+    + saveDefaultPortions(portions: Int)
+    + saveSelectedDiets(diets: Set<String>)
+  }
+}
+
+package "domain.usecase" #F3E5F5 {
+
+  class GetMenuForDayUseCase {
+    - recipeRepository: RecipeRepository
+    + invoke(day: String): Flow<List<Recipe>>
+  }
+
+  class GetRecipeDetailUseCase {
+    - recipeRepository: RecipeRepository
+    + invoke(id: String): Flow<Recipe?>
+  }
+
+  class ToggleFavoriteUseCase {
+    - favoritesRepository: FavoritesRepository
+    + invoke(recipeId: String)
+  }
+
+  class GenerateMenuUseCase {
+    - recipeRepository: RecipeRepository
+    + invoke(maxDifficulty, selectedTypes, selectedDiets): Flow<List<Recipe>>
+  }
+}
+
+Recipe "1" *-- "0..*" Ingredient : contains >
+Recipe "1" *-- "0..*" RecipeStep : contains >
+
+RecipeRepository ..> Recipe : uses >
+FavoritesRepository ..> Recipe : uses >
+UserPrefsRepository ..> UserPreferences : uses >
+
+GetMenuForDayUseCase --> RecipeRepository : depends on >
+GetRecipeDetailUseCase --> RecipeRepository : depends on >
+ToggleFavoriteUseCase --> FavoritesRepository : depends on >
+GenerateMenuUseCase --> RecipeRepository : depends on >
+
+@enduml
+```
+
+---
+
+### 8.3 Diagrama PlantUML — Capa Data
+
+```plantuml
+@startuml RecipeGenerator_ClassDiagram_Data
+
+skinparam classBackgroundColor #E8F5E9
+skinparam classBorderColor #2E7D32
+skinparam classArrowColor #2E7D32
+skinparam packageBackgroundColor #F1F8E9
+skinparam packageBorderColor #66BB6A
+
+package "data.local.entity" #E8F5E9 {
+
+  class RecipeEntity {
+    + id: String <<PrimaryKey>>
+    + title: String
+    + imageRes: String
+    + timeInMinutes: Int
+    + calories: Int
+    + difficulty: String
+    + category: String
+    + categorySubtitle: String
+    + description: String
+    + isFavorite: Boolean
+    + rating: Double
+    + proteinGrams: Int
+    + carbsGrams: Int
+    + fatGrams: Int
+    + dayOfWeek: String
+  }
+
+  class IngredientEntity {
+    + id: Int <<PrimaryKey>>
+    + recipeId: String <<ForeignKey>>
+    + name: String
+    + quantity: String
+    + unit: String
+  }
+
+  class StepEntity {
+    + id: Int <<PrimaryKey>>
+    + recipeId: String <<ForeignKey>>
+    + stepNumber: Int
+    + title: String
+    + description: String
+  }
+}
+
+package "data.local.dao" #F1F8E9 {
+
+  interface RecipeDao {
+    + getAllRecipes(): Flow<List<RecipeEntity>>
+    + getRecipesByDay(day: String): Flow<List<RecipeEntity>>
+    + getRecipeById(id: String): Flow<RecipeEntity?>
+    + searchRecipes(query: String): Flow<List<RecipeEntity>>
+    + getFavoriteRecipes(): Flow<List<RecipeEntity>>
+    + insertAll(recipes: List<RecipeEntity>)
+    + updateFavorite(id: String, isFavorite: Boolean)
+    + count(): Int
+  }
+}
+
+package "data.repository" #DCEDC8 {
+
+  class RecipeRepositoryImpl {
+    - recipeDao: RecipeDao
+    + getAllRecipes(): Flow<List<Recipe>>
+    + getRecipesByDay(day: String): Flow<List<Recipe>>
+    + getRecipesByCategory(category: String): Flow<List<Recipe>>
+    + getRecipeById(id: String): Flow<Recipe?>
+    + searchRecipes(query: String): Flow<List<Recipe>>
+    + insertAll(recipes: List<Recipe>)
+    + count(): Int
+  }
+
+  class FavoritesRepositoryImpl {
+    - recipeDao: RecipeDao
+    + getFavoriteRecipes(): Flow<List<Recipe>>
+    + getFavoriteIds(): Flow<Set<String>>
+    + toggleFavorite(recipeId: String)
+    + removeFavorite(recipeId: String)
+    + isFavorite(recipeId: String): Boolean
+  }
+
+  class UserPrefsRepositoryImpl {
+    - dataStore: DataStore<Preferences>
+    + getUserPreferences(): Flow<UserPreferences>
+    + saveTheme(theme: String)
+    + saveLanguage(language: String)
+    + saveDefaultPortions(portions: Int)
+    + saveSelectedDiets(diets: Set<String>)
+  }
+}
+
+package "data.mapper" #F9FBE7 {
+  class RecipeMapper {
+    + {static} toDomain(entity: RecipeEntity): Recipe
+    + {static} toEntity(domain: Recipe): RecipeEntity
+  }
+}
+
+package "di" #FFF9C4 {
+  class AppContainer {
+    + recipeRepository: RecipeRepository
+    + favoritesRepository: FavoritesRepository
+    + userPrefsRepository: UserPrefsRepository
+    + getMenuForDayUseCase: GetMenuForDayUseCase
+    + getRecipeDetailUseCase: GetRecipeDetailUseCase
+    + toggleFavoriteUseCase: ToggleFavoriteUseCase
+    + generateMenuUseCase: GenerateMenuUseCase
+  }
+}
+
+RecipeEntity "1" -- "0..*" IngredientEntity : has >
+RecipeEntity "1" -- "0..*" StepEntity : has >
+RecipeRepositoryImpl ..|> RecipeRepository
+FavoritesRepositoryImpl ..|> FavoritesRepository
+UserPrefsRepositoryImpl ..|> UserPrefsRepository
+RecipeRepositoryImpl --> RecipeDao : uses >
+FavoritesRepositoryImpl --> RecipeDao : uses >
+RecipeRepositoryImpl --> RecipeMapper : uses >
+AppContainer --> RecipeRepositoryImpl : creates >
+AppContainer --> FavoritesRepositoryImpl : creates >
+AppContainer --> UserPrefsRepositoryImpl : creates >
+
+@enduml
+```
+
+---
+
+### 8.4 Diagrama PlantUML — Capa Presentation (ViewModels)
+
+```plantuml
+@startuml RecipeGenerator_ClassDiagram_Presentation
+
+skinparam classBackgroundColor #FFF3E0
+skinparam classBorderColor #E65100
+skinparam classArrowColor #E65100
+skinparam packageBackgroundColor #FFF8E1
+skinparam packageBorderColor #FFB300
+
+package "presentation.home" #FFF3E0 {
+  class HomeViewModel {
+    - getMenuForDayUseCase: GetMenuForDayUseCase
+    + selectedDay: StateFlow<String>
+    + recipes: StateFlow<List<Recipe>>
+    + isLoading: StateFlow<Boolean>
+    + selectDay(day: String)
+  }
+}
+
+package "presentation.detail" #FFF3E0 {
+  class RecipeDetailViewModel {
+    - getRecipeDetailUseCase: GetRecipeDetailUseCase
+    - toggleFavoriteUseCase: ToggleFavoriteUseCase
+    + recipe: StateFlow<Recipe?>
+    + isLoading: StateFlow<Boolean>
+    + loadRecipe(recipeId: String)
+    + toggleFavorite()
+  }
+}
+
+package "presentation.favorites" #FFF3E0 {
+  class FavoritesViewModel {
+    - favoritesRepository: FavoritesRepository
+    + searchQuery: StateFlow<String>
+    + selectedCategory: StateFlow<String>
+    + filteredRecipes: StateFlow<List<Recipe>>
+    + onSearchQueryChanged(query: String)
+    + onCategorySelected(category: String)
+  }
+}
+
+package "presentation.generator" #FFF3E0 {
+  class MenuGeneratorViewModel {
+    - generateMenuUseCase: GenerateMenuUseCase
+    + maxDifficulty: StateFlow<String>
+    + selectedDiets: StateFlow<Set<String>>
+    + selectedTypes: StateFlow<Set<String>>
+    + portions: StateFlow<Int>
+    + generatedMenu: StateFlow<List<Recipe>>
+    + isGenerating: StateFlow<Boolean>
+    + generateMenu()
+  }
+}
+
+package "presentation.settings" #FFF3E0 {
+  class SettingsViewModel {
+    - userPrefsRepository: UserPrefsRepository
+    + preferences: StateFlow<UserPreferences>
+    + saveTheme(theme: String)
+    + saveLanguage(language: String)
+    + saveDefaultPortions(portions: Int)
+    + toggleDiet(diet: String)
+  }
+}
+
+HomeViewModel --> GetMenuForDayUseCase : uses >
+RecipeDetailViewModel --> GetRecipeDetailUseCase : uses >
+RecipeDetailViewModel --> ToggleFavoriteUseCase : uses >
+FavoritesViewModel --> FavoritesRepository : uses >
+MenuGeneratorViewModel --> GenerateMenuUseCase : uses >
+SettingsViewModel --> UserPrefsRepository : uses >
+
+@enduml
+```
+
+---
+
+### 8.5 Resumen de clases por capa
+
+| Capa | Tipo | Clases / Interfaces |
+|---|---|---|
+| **Domain — Models** | `data class` | `Recipe`, `Ingredient`, `RecipeStep`, `UserPreferences` |
+| **Domain — Repositories** | `interface` | `RecipeRepository`, `FavoritesRepository`, `UserPrefsRepository` |
+| **Domain — Use Cases** | `class` | `GetMenuForDayUseCase`, `GetRecipeDetailUseCase`, `ToggleFavoriteUseCase`, `GenerateMenuUseCase` |
+| **Data — Entities** | `@Entity` | `RecipeEntity`, `IngredientEntity`, `StepEntity` |
+| **Data — DAOs** | `@Dao interface` | `RecipeDao` |
+| **Data — Repositories** | `class` | `RecipeRepositoryImpl`, `FavoritesRepositoryImpl`, `UserPrefsRepositoryImpl` |
+| **Data — Mapper** | `object` | `RecipeMapper` |
+| **DI** | `class` | `AppContainer` |
+| **Presentation** | `ViewModel` | `HomeViewModel`, `RecipeDetailViewModel`, `FavoritesViewModel`, `MenuGeneratorViewModel`, `SettingsViewModel` |
+
+*Las secciones siguientes se completan en las tareas F1-09 y F1-10.*
 
 ---
 
