@@ -612,7 +612,157 @@ Software).
 | RNF-19 | Confiabilidad | Cero crashes en flujo principal |
 | RNF-20 | Confiabilidad | Room en hilos de fondo (Coroutines) |
 
-*Las secciones siguientes se completan en las tareas F1-07 a F1-10.*
+---
+
+## 7. Diagrama de Casos de Uso UML
+
+### 7.1 Descripción general
+
+El diagrama de casos de uso representa las interacciones entre el actor principal
+(**Usuario**) y las funcionalidades del sistema **Recipe Generator**. Se identifican
+**12 casos de uso** agrupados en 5 módulos funcionales, que cubren la totalidad de
+los requerimientos funcionales RF-01 a RF-12.
+
+**Actor principal:** Usuario — persona que interactúa con la aplicación móvil a
+través de la pantalla táctil del dispositivo Android.
+
+**Sistema:** Recipe Generator — Generador de Menús Semanales (`com.example.recipe_generator`).
+
+---
+
+### 7.2 Diagrama PlantUML
+
+> Para renderizar el diagrama, pegar el código en [https://www.plantuml.com/plantuml/uml](https://www.plantuml.com/plantuml/uml)
+> o usar la extensión PlantUML de VS Code / IntelliJ.
+
+```plantuml
+@startuml RecipeGenerator_UseCases
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #EDE7F6
+  BorderColor #4800B2
+  FontColor #1B1B1E
+  ArrowColor #4800B2
+}
+skinparam actor {
+  BackgroundColor #00C2A8
+  BorderColor #006F64
+  FontColor #FFFFFF
+}
+
+left to right direction
+
+actor "Usuario" as U
+
+rectangle "Recipe Generator — Generador de Menús Semanales" {
+
+  rectangle "Módulo: Menú Semanal" {
+    usecase "CU-01\nVer menú semanal\npor día" as CU01
+    usecase "CU-02\nVer detalle\nde receta" as CU02
+  }
+
+  rectangle "Módulo: Favoritos" {
+    usecase "CU-03\nMarcar receta\ncomo favorita" as CU03
+    usecase "CU-04\nBuscar receta\nen favoritos" as CU04
+    usecase "CU-05\nFiltrar favoritos\npor categoría" as CU05
+    usecase "CU-06\nEliminar receta\nde favoritos" as CU06
+  }
+
+  rectangle "Módulo: Generador de Menú" {
+    usecase "CU-07\nConfigurar filtros\n(dificultad, tipo, dieta)" as CU07
+    usecase "CU-08\nGenerar menú\npersonalizado" as CU08
+  }
+
+  rectangle "Módulo: Ajustes" {
+    usecase "CU-09\nConfigurar tema\nclaro / oscuro" as CU09
+    usecase "CU-10\nSeleccionar idioma\ny porciones" as CU10
+  }
+
+  rectangle "Módulo: Contenido Multimedia" {
+    usecase "CU-11\nReproducir video\nde receta" as CU11
+    usecase "CU-12\nNavegar URL en\nnavegador integrado" as CU12
+  }
+}
+
+U --> CU01
+U --> CU02
+U --> CU03
+U --> CU04
+U --> CU05
+U --> CU06
+U --> CU07
+U --> CU08
+U --> CU09
+U --> CU10
+U --> CU11
+U --> CU12
+
+CU02 .> CU03 : <<extend>>\n(desde detalle)
+CU07 .> CU08 : <<include>>\n(filtros requeridos)
+CU04 .> CU05 : <<extend>>\n(filtro adicional)
+
+@enduml
+```
+
+---
+
+### 7.3 Representación textual del diagrama
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│              Recipe Generator — Generador de Menús Semanales                │
+│                                                                             │
+│  ┌──── Módulo: Menú Semanal ──────┐  ┌──── Módulo: Favoritos ────────────┐  │
+│  │  (CU-01) Ver menú por día      │  │  (CU-03) Marcar como favorita    │  │
+│  │  (CU-02) Ver detalle receta    │  │  (CU-04) Buscar en favoritos     │  │
+│  └────────────────────────────────┘  │  (CU-05) Filtrar por categoría   │  │
+│                                      │  (CU-06) Eliminar de favoritos   │  │
+│  ┌──── Módulo: Generador ─────────┐  └──────────────────────────────────┘  │
+│  │  (CU-07) Configurar filtros    │                                         │
+│  │  (CU-08) Generar menú          │  ┌──── Módulo: Ajustes ──────────────┐  │
+│  └────────────────────────────────┘  │  (CU-09) Tema claro/oscuro       │  │
+│                                      │  (CU-10) Idioma y porciones      │  │
+│  ┌──── Módulo: Multimedia ────────┐  └──────────────────────────────────┘  │
+│  │  (CU-11) Reproducir video      │                                         │
+│  │  (CU-12) Navegar URL web       │                                         │
+│  └────────────────────────────────┘                                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+                              ▲ asociación ▲
+                         ┌────┴────┐
+                         │ Usuario │
+                         └─────────┘
+```
+
+---
+
+### 7.4 Descripción de cada Caso de Uso
+
+| ID | Caso de Uso | Actor | Pantalla | RF asociado |
+|---|---|---|---|---|
+| CU-01 | Ver menú semanal por día | Usuario | RecipeListScreen | RF-01 |
+| CU-02 | Ver detalle de receta | Usuario | RecipeDetailScreen | RF-03 |
+| CU-03 | Marcar receta como favorita | Usuario | RecipeListScreen, Detail | RF-04 |
+| CU-04 | Buscar receta en favoritos | Usuario | FavoritesScreen | RF-02 |
+| CU-05 | Filtrar favoritos por categoría | Usuario | FavoritesScreen | RF-05 |
+| CU-06 | Eliminar receta de favoritos | Usuario | FavoritesScreen | RF-04 |
+| CU-07 | Configurar filtros del generador | Usuario | MenuGeneratorScreen | RF-06 |
+| CU-08 | Generar menú personalizado | Usuario | MenuGeneratorScreen | RF-06 |
+| CU-09 | Configurar tema claro/oscuro | Usuario | SettingsScreen | RF-07 |
+| CU-10 | Seleccionar idioma y porciones | Usuario | SettingsScreen | RF-07 |
+| CU-11 | Reproducir video de receta | Usuario | VideoScreen | RF-08 |
+| CU-12 | Navegar URL en navegador integrado | Usuario | WebScreen | RF-09 |
+
+### 7.5 Relaciones entre casos de uso
+
+| Relación | Tipo | Descripción |
+|---|---|---|
+| CU-02 → CU-03 | `<<extend>>` | Desde el detalle de receta el usuario **puede** marcar como favorita (extensión opcional). |
+| CU-07 → CU-08 | `<<include>>` | Para generar el menú (CU-08) es **obligatorio** configurar los filtros (CU-07) previamente. |
+| CU-04 → CU-05 | `<<extend>>` | El filtro por categoría (CU-05) es una extensión opcional de la búsqueda (CU-04). |
+
+*Las secciones siguientes se completan en las tareas F1-08 a F1-10.*
 
 ---
 
