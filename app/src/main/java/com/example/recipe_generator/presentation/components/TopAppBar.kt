@@ -35,7 +35,6 @@ import com.example.recipe_generator.presentation.theme.Primary
 import com.example.recipe_generator.presentation.theme.PrimaryFixedDim
 import com.example.recipe_generator.presentation.theme.spacing_3
 import com.example.recipe_generator.presentation.theme.spacing_4
-import com.example.recipe_generator.presentation.theme.spacing_6
 
 private val TopBarSlotWidth = 84.dp
 private val TopBarRowHeight = 64.dp
