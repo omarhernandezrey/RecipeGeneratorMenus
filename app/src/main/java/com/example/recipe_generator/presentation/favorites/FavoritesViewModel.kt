@@ -22,6 +22,8 @@ import kotlinx.coroutines.launch
 class FavoritesViewModel(
     private val favoritesRepository: FavoritesRepository
 ) : ViewModel() {
+    private val _favoriteRecipes = MutableStateFlow<List<Recipe>>(emptyList())
+    val favoriteRecipes: StateFlow<List<Recipe>> = _favoriteRecipes.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -34,8 +36,14 @@ class FavoritesViewModel(
 
     init {
         viewModelScope.launch {
+            favoritesRepository.getFavoriteRecipes().collect { recipes ->
+                _favoriteRecipes.value = recipes
+            }
+        }
+
+        viewModelScope.launch {
             combine(
-                favoritesRepository.getFavoriteRecipes(),
+                _favoriteRecipes,
                 _searchQuery,
                 _selectedCategory
             ) { recipes, query, category ->

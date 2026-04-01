@@ -39,10 +39,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -85,26 +81,16 @@ import com.example.recipe_generator.presentation.theme.spacing_8
 @Composable
 fun FavoritesScreen(
     recipes: List<Recipe>,
+    categories: List<String>,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    selectedCategory: String,
+    onCategorySelected: (String) -> Unit,
     selectedNavItem: Int,
     onNavItemSelected: (Int) -> Unit,
     onRecipeSelected: (Recipe) -> Unit,
     onRemoveFavorite: (String) -> Unit
 ) {
-    var query by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("Todos") }
-
-    val categories = remember(recipes) {
-        listOf("Todos") + recipes.map { normalizeCategory(it.category) }.distinct()
-    }
-    val filteredRecipes = recipes.filter { recipe ->
-        val matchesQuery = query.isBlank() ||
-            recipe.title.contains(query, ignoreCase = true) ||
-            recipe.description.contains(query, ignoreCase = true)
-        val matchesCategory = selectedCategory == "Todos" ||
-            normalizeCategory(recipe.category) == selectedCategory
-        matchesQuery && matchesCategory
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -127,7 +113,7 @@ fun FavoritesScreen(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 FavoritesSearchBar(
                     query = query,
-                    onQueryChange = { query = it }
+                    onQueryChange = onQueryChange
                 )
             }
 
@@ -135,26 +121,26 @@ fun FavoritesScreen(
                 FavoritesCategoryFilter(
                     categories = categories,
                     selectedCategory = selectedCategory,
-                    onCategorySelected = { selectedCategory = it }
+                    onCategorySelected = onCategorySelected
                 )
             }
 
-            if (filteredRecipes.isEmpty()) {
+            if (recipes.isEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     EmptyFavoritesState()
                 }
             } else {
                 itemsIndexed(
-                    filteredRecipes,
+                    recipes,
                     span = { index, _ ->
-                        if (shouldUseFeaturedCard(index, filteredRecipes.size)) {
+                        if (shouldUseFeaturedCard(index, recipes.size)) {
                             GridItemSpan(maxLineSpan)
                         } else {
                             GridItemSpan(1)
                         }
                     }
                 ) { index, recipe ->
-                    if (shouldUseFeaturedCard(index, filteredRecipes.size)) {
+                    if (shouldUseFeaturedCard(index, recipes.size)) {
                         FavoriteFeaturedCard(
                             recipe = recipe,
                             onClick = { onRecipeSelected(recipe) },
@@ -552,7 +538,7 @@ private fun EmptyFavoritesState() {
     }
 }
 
-private fun normalizeCategory(category: String): String {
+internal fun normalizeCategory(category: String): String {
     return when (category.lowercase()) {
         "comida" -> "Almuerzo"
         else -> category

@@ -36,11 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
@@ -105,16 +101,23 @@ private val recipeTypeLabels = listOf(
 // ── Main Screen ─────────────────────────────────────────────────────
 
 @Composable
-fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
-    var selectedNavItem by remember { mutableIntStateOf(2) }
-    var selectedDiets by remember { mutableStateOf(setOf<String>()) }
-    var difficultyLevel by remember { mutableFloatStateOf(2f) }
-    var portions by remember { mutableIntStateOf(4) }
-    var selectedRecipeTypes by remember {
-        mutableStateOf(setOf("Desayunos", "Almuerzos Ejecutivos"))
-    }
-
+fun MenuGeneratorScreen(
+    selectedNavItem: Int = 2,
+    selectedDiets: Set<String> = emptySet(),
+    onToggleDiet: (String) -> Unit = {},
+    selectedDifficulty: String = "Difícil",
+    onDifficultySelected: (String) -> Unit = {},
+    portions: Int = 4,
+    onPortionsChange: (Int) -> Unit = {},
+    selectedRecipeTypes: Set<String> = emptySet(),
+    onToggleRecipeType: (String) -> Unit = {},
+    generatedRecipes: List<Recipe> = emptyList(),
+    isGenerating: Boolean = false,
+    onGenerateClick: () -> Unit = {},
+    onNavigate: (Int) -> Unit = {}
+) {
     val surfaceBg = com.example.recipe_generator.presentation.theme.Surface
+    val difficultyLevel = difficultyLabelToSliderValue(selectedDifficulty)
 
     Box(
         modifier = Modifier
@@ -157,12 +160,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                                     DietOptionChip(
                                         option = opt,
                                         selected = selected,
-                                        onClick = {
-                                            selectedDiets = if (selected)
-                                                selectedDiets - opt.label
-                                            else
-                                                selectedDiets + opt.label
-                                        },
+                                        onClick = { onToggleDiet(opt.label) },
                                         modifier = Modifier.weight(1f)
                                     )
                                 }
@@ -178,7 +176,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
             Box(modifier = Modifier.padding(horizontal = spacing_6)) {
                 DifficultyCard(
                     level = difficultyLevel,
-                    onLevelChange = { difficultyLevel = it },
+                    onLevelChange = { onDifficultySelected(sliderValueToDifficultyLabel(it)) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -189,7 +187,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
             Box(modifier = Modifier.padding(horizontal = spacing_6)) {
                 PortionsCard(
                     count = portions,
-                    onChange = { portions = it },
+                    onChange = onPortionsChange,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -207,12 +205,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                 )
                 RecipeTypeChips(
                     selected = selectedRecipeTypes,
-                    onToggle = { label ->
-                        selectedRecipeTypes = if (label in selectedRecipeTypes)
-                            selectedRecipeTypes - label
-                        else
-                            selectedRecipeTypes + label
-                    }
+                    onToggle = onToggleRecipeType
                 )
             }
 
@@ -221,7 +214,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
             // Generate Button
             Box(modifier = Modifier.padding(horizontal = spacing_6)) {
                 Button(
-                    onClick = { },
+                    onClick = onGenerateClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
@@ -254,6 +247,19 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
                 }
             }
 
+            if (isGenerating || generatedRecipes.isNotEmpty()) {
+                Text(
+                    text = if (isGenerating) {
+                        "Generando menú..."
+                    } else {
+                        "Resultados generados: ${generatedRecipes.size}"
+                    },
+                    modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_4),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OnSurfaceVariant
+                )
+            }
+
             Spacer(modifier = Modifier.height(spacing_12))
         }
 
@@ -261,10 +267,7 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {
             EditorialBottomNavBar(
                 selectedItem = selectedNavItem,
-                onItemSelected = {
-                    selectedNavItem = it
-                    onNavigate(it)
-                }
+                onItemSelected = onNavigate
             )
         }
 
@@ -277,6 +280,22 @@ fun MenuGeneratorScreen(onNavigate: (Int) -> Unit = {}) {
         ) {
             HomeEditorialTopAppBar(title = "Menú Semanal")
         }
+    }
+}
+
+private fun difficultyLabelToSliderValue(difficulty: String): Float {
+    return when (difficulty) {
+        "Fácil" -> 1f
+        "Medio" -> 2f
+        else -> 3f
+    }
+}
+
+private fun sliderValueToDifficultyLabel(value: Float): String {
+    return when (value.toInt()) {
+        1 -> "Fácil"
+        2 -> "Medio"
+        else -> "Difícil"
     }
 }
 

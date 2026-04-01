@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,6 +44,7 @@ class MenuGeneratorViewModel(
 
     private val _isGenerating = MutableStateFlow(false)
     val isGenerating: StateFlow<Boolean> = _isGenerating.asStateFlow()
+    private var generateJob: Job? = null
 
     // ── Acciones ──────────────────────────────────────────────────────
 
@@ -61,7 +63,8 @@ class MenuGeneratorViewModel(
     fun setPortions(count: Int) { _portions.value = count }
 
     fun generateMenu() {
-        viewModelScope.launch {
+        generateJob?.cancel()
+        generateJob = viewModelScope.launch {
             _isGenerating.value = true
             generateMenuUseCase(
                 maxDifficulty = _maxDifficulty.value,

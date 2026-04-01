@@ -201,6 +201,7 @@ fun getMenuForDayAsDomainModel(day: String): List<com.example.recipe_generator.d
             fatGrams = legacyRecipe.fatGrams,
             dayOfWeek = day,
             ingredients = emptyList(),
+            ingredientTags = legacyRecipe.ingredientTags,
             steps = legacyRecipe.steps.mapIndexed { index, recipeStep -> 
                 com.example.recipe_generator.domain.model.RecipeStep(
                     stepNumber = index + 1,
@@ -221,31 +222,34 @@ fun getFeaturedRecipeDetail(): Recipe {
 }
 
 fun getAllRecipesAsDomainModel(): List<com.example.recipe_generator.domain.model.Recipe> {
-    return getAllRecipes().map { legacyRecipe ->
-        com.example.recipe_generator.domain.model.Recipe(
-            id = legacyRecipe.id,
-            title = legacyRecipe.title,
-            imageRes = legacyRecipe.imageUrl,
-            timeInMinutes = legacyRecipe.timeInMinutes,
-            calories = legacyRecipe.calories,
-            difficulty = legacyRecipe.difficulty,
-            category = legacyRecipe.category,
-            categorySubtitle = legacyRecipe.categorySubtitle,
-            description = legacyRecipe.description,
-            isFavorite = legacyRecipe.isFavorite,
-            rating = legacyRecipe.rating,
-            proteinGrams = legacyRecipe.proteinGrams,
-            carbsGrams = legacyRecipe.carbsGrams,
-            fatGrams = legacyRecipe.fatGrams,
-            dayOfWeek = "Lunes",
-            ingredients = emptyList(),
-            steps = legacyRecipe.steps.mapIndexed { index, recipeStep -> 
-                com.example.recipe_generator.domain.model.RecipeStep(
-                    stepNumber = index + 1,
-                    title = recipeStep.title,
-                    description = recipeStep.description
-                )
-            }
-        )
+    return weeklyMenus.entries.flatMap { (day, recipes) ->
+        recipes.map { legacyRecipe ->
+            com.example.recipe_generator.domain.model.Recipe(
+                id = legacyRecipe.id,
+                title = legacyRecipe.title,
+                imageRes = legacyRecipe.imageUrl,
+                timeInMinutes = legacyRecipe.timeInMinutes,
+                calories = legacyRecipe.calories,
+                difficulty = legacyRecipe.difficulty,
+                category = legacyRecipe.category,
+                categorySubtitle = legacyRecipe.categorySubtitle,
+                description = legacyRecipe.description,
+                isFavorite = legacyRecipe.isFavorite,
+                rating = legacyRecipe.rating,
+                proteinGrams = legacyRecipe.proteinGrams,
+                carbsGrams = legacyRecipe.carbsGrams,
+                fatGrams = legacyRecipe.fatGrams,
+                dayOfWeek = day,
+                ingredients = emptyList(),
+                ingredientTags = legacyRecipe.ingredientTags,
+                steps = legacyRecipe.steps.mapIndexed { index, recipeStep ->
+                    com.example.recipe_generator.domain.model.RecipeStep(
+                        stepNumber = index + 1,
+                        title = recipeStep.title,
+                        description = recipeStep.description
+                    )
+                }
+            )
+        }
     }
 }

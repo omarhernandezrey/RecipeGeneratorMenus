@@ -26,8 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.recipe_generator.R
-import com.example.recipe_generator.domain.model.Recipe
-import com.example.recipe_generator.data.legacy.LegacyRecipeData
 import com.example.recipe_generator.presentation.components.DayTabLayout
 import com.example.recipe_generator.presentation.components.DifficultyChip
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
@@ -36,18 +34,20 @@ import com.example.recipe_generator.presentation.components.InfoChip
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
 import com.example.recipe_generator.presentation.components.editorialFabBottomPadding
 import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
+import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.presentation.theme.*
 
 @Composable
 fun RecipeListScreen(
+    selectedDay: String = "Lunes",
+    recipes: List<Recipe> = emptyList(),
+    onDaySelected: (String) -> Unit = {},
     selectedNavItem: Int = 0,
     onNavItemSelected: (Int) -> Unit = {},
     favoriteRecipeIds: Set<String> = emptySet(),
     onToggleFavorite: (String) -> Unit = {},
     onRecipeSelected: (Recipe) -> Unit = {}
 ) {
-    var selectedDay by remember { mutableStateOf("Lunes") }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +65,7 @@ fun RecipeListScreen(
         ) {
             Spacer(modifier = Modifier.height(spacing_4))
 
-            DayTabLayout(selectedDay) { selectedDay = it }
+            DayTabLayout(selectedDay = selectedDay, onDaySelected = onDaySelected)
 
             Spacer(modifier = Modifier.height(spacing_4))
 
@@ -75,9 +75,7 @@ fun RecipeListScreen(
                     .padding(horizontal = spacing_6),
                 verticalArrangement = Arrangement.spacedBy(spacing_10)
             ) {
-                val recipesForDay = LegacyRecipeData.getMenuForDayAsDomainModel(selectedDay)
-
-                recipesForDay.forEach { recipe ->
+                recipes.forEach { recipe ->
                     RecipeSection(
                         recipe = recipe,
                         favoriteRecipeIds = favoriteRecipeIds,

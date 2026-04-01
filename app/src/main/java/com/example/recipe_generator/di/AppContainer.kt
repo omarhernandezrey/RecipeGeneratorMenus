@@ -1,6 +1,9 @@
 package com.example.recipe_generator.di
 
 import android.content.Context
+import com.example.recipe_generator.data.repository.FavoritesRepositoryImpl
+import com.example.recipe_generator.data.repository.RecipeRepositoryImpl
+import com.example.recipe_generator.data.repository.UserPrefsRepositoryImpl
 import com.example.recipe_generator.domain.repository.FavoritesRepository
 import com.example.recipe_generator.domain.repository.RecipeRepository
 import com.example.recipe_generator.domain.repository.UserPrefsRepository
@@ -31,13 +34,26 @@ import com.example.recipe_generator.domain.usecase.ToggleFavoriteUseCase
  * para dejar explícita la arquitectura.
  */
 class AppContainer(private val context: Context) {
+    private val appContext = context.applicationContext
 
     // ── Repositorios (interfaces de Dominio, impls de Datos) ──────────
-    // Se inicializarán en F2-19 (Room) y F2-21 (Repository impl)
+    // En Fase 0 se conectan a fuentes locales temporales.
+    // En F2/F3 migran a Room/DataStore completos sin cambiar Presentation.
 
-    lateinit var recipeRepository: RecipeRepository
-    lateinit var favoritesRepository: FavoritesRepository
-    lateinit var userPrefsRepository: UserPrefsRepository
+    val recipeRepository: RecipeRepository by lazy {
+        RecipeRepositoryImpl()
+    }
+
+    val favoritesRepository: FavoritesRepository by lazy {
+        FavoritesRepositoryImpl(
+            context = appContext,
+            recipeRepository = recipeRepository
+        )
+    }
+
+    val userPrefsRepository: UserPrefsRepository by lazy {
+        UserPrefsRepositoryImpl(appContext)
+    }
 
     // ── Casos de Uso ─────────────────────────────────────────────────
 

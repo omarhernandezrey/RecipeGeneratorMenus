@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +33,7 @@ class HomeViewModel(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private var loadJob: Job? = null
 
     init {
         loadMenuForDay("Lunes")
@@ -43,7 +45,8 @@ class HomeViewModel(
     }
 
     private fun loadMenuForDay(day: String) {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _isLoading.value = true
             getMenuForDayUseCase(day).collect { recipeList ->
                 _recipes.value = recipeList

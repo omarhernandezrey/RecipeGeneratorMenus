@@ -30,5 +30,6 @@ data class Recipe(
     /** "Lunes" | "Martes" | ... | "Domingo" */
     val dayOfWeek: String,
     val ingredients: List<Ingredient> = emptyList(),
+    val ingredientTags: List<String> = emptyList(),
     val steps: List<RecipeStep> = emptyList()
 )

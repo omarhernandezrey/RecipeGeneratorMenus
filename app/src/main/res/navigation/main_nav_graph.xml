@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.recipe_generator.presentation.home.HomeFragment"
+        android:label="Inicio" />
+
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.example.recipe_generator.presentation.favorites.FavoritesFragment"
+        android:label="Favoritos" />
+
+    <fragment
+        android:id="@+id/generatorFragment"
+        android:name="com.example.recipe_generator.presentation.generator.MenuGeneratorFragment"
+        android:label="Generador" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.recipe_generator.presentation.settings.SettingsFragment"
+        android:label="Ajustes" />
+</navigation>

@@ -478,7 +478,15 @@ private fun IngredientsList(recipe: Recipe) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = ingredient,
+                        text = buildString {
+                            append(ingredient.quantity)
+                            if (ingredient.unit.isNotBlank()) {
+                                append(" ")
+                                append(ingredient.unit)
+                            }
+                            append(" ")
+                            append(ingredient.name)
+                        },
                         style = MaterialTheme.typography.bodyLarge,
                         color = OnSurface
                     )

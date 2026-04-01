@@ -1,6 +1,7 @@
 package com.example.recipe_generator.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -27,13 +28,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import com.example.recipe_generator.R
 import com.example.recipe_generator.presentation.theme.Background
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
@@ -43,7 +43,6 @@ import com.example.recipe_generator.presentation.theme.spacing_3
 import com.example.recipe_generator.presentation.theme.spacing_4
 import com.example.recipe_generator.presentation.theme.spacing_6
 
-private const val PROFILE_IMAGE_URL = "https://lh3.googleusercontent.com/aida-public/AB6AXuB2xtj_r97gsEUurBmuOwkrxnpW7yFeqbQN49f2Q79dIXXT3KFVXeIrQYLSYkUT_TrcscsTFavakiUZ_SKEOnTS-t8yDUZ5Nk2sh8TR1sSgmFlPphMmtbSvy4Gs81b8aaCXpo_JpPWBRZIWe6CNJ4d0rMGaUqI1arpd0k-UxOq2s8N1yD8P_bYtik4H5hSLeTp7dSRrkcOVhoQlK3CNBReGwEWVL741RcR7k91urFLVQXuqDRlBUmY9T6jfUa37KCR9ePusAJ272j4"
 private val TopBarSlotWidth = 84.dp
 private val TopBarRowHeight = 64.dp
 
@@ -108,22 +107,16 @@ fun EditorialTopAppBar(
 
 @Composable
 fun DefaultProfileAvatar(
-    modifier: Modifier = Modifier,
-    imageUrl: String = PROFILE_IMAGE_URL
+    modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-
     Box(
         modifier = modifier
             .size(40.dp)
             .clip(CircleShape)
             .background(SurfaceContainer)
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(imageUrl)
-                .crossfade(true)
-                .build(),
+        Image(
+            painter = painterResource(id = R.drawable.img_placeholder),
             contentDescription = "Perfil",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop

@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.map
 private const val FAVORITES_DATASTORE_NAME = "favorites_preferences"
 private val Context.favoritesDataStore by preferencesDataStore(name = FAVORITES_DATASTORE_NAME)
 
-class FavoritesRepository(private val context: Context) {
+class LegacyFavoritesRepository(private val context: Context) {
     private val favoriteRecipeIdsKey = stringSetPreferencesKey("favorite_recipe_ids")
 
     val favoriteRecipeIds: Flow<Set<String>> = context.favoritesDataStore.data.map { preferences ->

@@ -34,10 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -82,14 +78,17 @@ private val languageOptions = listOf("Español", "Inglés", "Portugués")
 
 @Composable
 fun SettingsScreen(
+    selectedDiets: Set<String> = emptySet(),
+    onToggleDiet: (String) -> Unit = {},
+    defaultPortions: Int = 2,
+    onPortionsChange: (Int) -> Unit = {},
+    selectedTheme: String = "Claro",
+    onThemeSelect: (String) -> Unit = {},
+    selectedLanguage: String = "Español",
+    onLanguageSelect: (String) -> Unit = {},
     selectedNavItem: Int = 3,
     onNavItemSelected: (Int) -> Unit = {}
 ) {
-    var selectedDiets by remember { mutableStateOf(setOf("Vegetariano", "Sin Gluten")) }
-    var defaultPortions by remember { mutableIntStateOf(2) }
-    var selectedTheme by remember { mutableStateOf("Claro") }
-    var selectedLanguage by remember { mutableStateOf("Español") }
-
     val surfaceBg = com.example.recipe_generator.presentation.theme.Surface
 
     Box(
@@ -99,16 +98,13 @@ fun SettingsScreen(
     ) {
         SettingsContent(
             selectedDiets = selectedDiets,
-            onToggleDiet = { label ->
-                selectedDiets = if (label in selectedDiets)
-                    selectedDiets - label else selectedDiets + label
-            },
+            onToggleDiet = onToggleDiet,
             defaultPortions = defaultPortions,
-            onPortionsChange = { defaultPortions = it },
+            onPortionsChange = onPortionsChange,
             selectedTheme = selectedTheme,
-            onThemeSelect = { selectedTheme = it },
+            onThemeSelect = onThemeSelect,
             selectedLanguage = selectedLanguage,
-            onLanguageSelect = { selectedLanguage = it }
+            onLanguageSelect = onLanguageSelect
         )
 
         Box(
