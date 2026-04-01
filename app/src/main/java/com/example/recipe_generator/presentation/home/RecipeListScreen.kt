@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.recipe_generator.R
 import com.example.recipe_generator.domain.model.Recipe
-import com.example.recipe_generator.data.legacy.LegacyRecipeData
+import com.example.recipe_generator.data.legacy.getMenuForDayAsDomainModel
 import com.example.recipe_generator.presentation.components.DayTabLayout
 import com.example.recipe_generator.presentation.components.DifficultyChip
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
@@ -75,7 +75,7 @@ fun RecipeListScreen(
                     .padding(horizontal = spacing_6),
                 verticalArrangement = Arrangement.spacedBy(spacing_10)
             ) {
-                val recipesForDay = LegacyRecipeData.getMenuForDayAsDomainModel(selectedDay)
+                val recipesForDay = getMenuForDayAsDomainModel(selectedDay)
 
                 recipesForDay.forEach { recipe ->
                     RecipeSection(

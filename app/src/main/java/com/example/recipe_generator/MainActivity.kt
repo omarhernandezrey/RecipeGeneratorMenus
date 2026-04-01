@@ -30,7 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.recipe_generator.data.legacy.FavoritesRepository
-import com.example.recipe_generator.data.legacy.LegacyRecipeData.getAllRecipesAsDomainModel
+import com.example.recipe_generator.data.legacy.getAllRecipesAsDomainModel
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
