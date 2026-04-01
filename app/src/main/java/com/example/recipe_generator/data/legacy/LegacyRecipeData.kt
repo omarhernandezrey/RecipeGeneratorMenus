@@ -30,7 +30,7 @@ val weeklyMenus = mapOf(
         Recipe(
             id = "1",
             title = "Scrambled Eggs with Avocado",
-            imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuD-skupaaoHmltsTInwWb1dIMEL5ju1swLEhsPoOygIAO2q2WkhSbwWBZ5XVlj3Ydyy3cx06JiqmCaXirYHYS7-o39xNqBjWyL5q95kJt4KTslbtGKH-p1IkzZqs6QzgLmhdvZ3fwiKOkrUJw5K9E5wZuVHV3CAOJH6Zy2i-qkLwjqiV4dqUspuxujiFO-TLVqJ3gmTmd0qUJ3j4NO5OgYmn2eEIXISYj1z9ZpFRPhT4JXU_Hsd_5y3TGR9Ni8k7H2TmiTCF3N03Ns",
+            imageUrl = "img_placeholder",
             timeInMinutes = 15,
             calories = 350,
             difficulty = "Fácil",
@@ -43,7 +43,7 @@ val weeklyMenus = mapOf(
         Recipe(
             id = "2",
             title = "Ensalada de Quinoa y Vegetales Rostizados",
-            imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuAerh3Tc_sf8AoOJhTh69161Gv5EGI_35uhHQMgiEPAoLi9wKd0G1Iow8Ew8LZ340V_QC5-4yjcEKLt9IgAO8UvJznBSfP6PQEo1NAg-gVJtOLrACNzn9lHBUVkhfmLWaFXKpffd5VvncMnisOTSCBF-doOGPdG-p_5FEilp-BCBGuPtNNSrgQM7L6DPShmU5A0VFfQ_b7jd5dRroXaYKLaA2dthdDOrfIVAmZVdJatOgbhb5T5OKZzUNbC_iEG8nd--M6s7AxrknI",
+            imageUrl = "img_placeholder",
             timeInMinutes = 25,
             calories = 520,
             difficulty = "Medio",
@@ -83,7 +83,7 @@ val weeklyMenus = mapOf(
         Recipe(
             id = "3",
             title = "Tomato & Basil Soup",
-            imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCCI-KpLGASvL0cR8555kBm2kXT6iF8DfysL0o-KI_fy6hVP1mORYGcTrCXFUF5i20D-aSddb3Yj_M1v1EMCkPs1lGZg2dD_0FeF5c13z1-KYAlt09KuqbfFJRGLmslj-2oX-e8VsLhp2fEtu8PQtZ7ngRCk8L0YNDX0tSEMA_gRrInkO7fKUcKv7ftivjf1YiBik5yfcuqNWUZmp6_nJsk5PGJqKAT5V-NZy9ZbzxUaCuHKnTMFUTir_6k55MWz1jauQYfx6wXbWk",
+            imageUrl = "img_placeholder",
             timeInMinutes = 20,
             calories = 310,
             difficulty = "Fácil",
@@ -98,7 +98,7 @@ val weeklyMenus = mapOf(
         Recipe(
             id = "4",
             title = "Greek Yogurt with Granola",
-            imageUrl = "https://www.themealdb.com/images/media/meals/y2irzl1585563479.jpg",
+            imageUrl = "img_placeholder",
             timeInMinutes = 5,
             calories = 280,
             difficulty = "Fácil",
@@ -111,7 +111,7 @@ val weeklyMenus = mapOf(
         Recipe(
             id = "5",
             title = "Grilled Chicken Breast",
-            imageUrl = "https://www.themealdb.com/images/media/meals/wyxwsp1486979827.jpg",
+            imageUrl = "img_placeholder",
             timeInMinutes = 30,
             calories = 450,
             difficulty = "Medio",
@@ -124,7 +124,7 @@ val weeklyMenus = mapOf(
         Recipe(
             id = "6",
             title = "Vegetable Stir Fry",
-            imageUrl = "https://www.themealdb.com/images/media/meals/rwvw8q1765660071.jpg",
+            imageUrl = "img_placeholder",
             timeInMinutes = 18,
             calories = 320,
             difficulty = "Fácil",
@@ -139,7 +139,7 @@ val weeklyMenus = mapOf(
         Recipe(
             id = "7",
             title = "Croissants & Jam",
-            imageUrl = "https://www.themealdb.com/images/media/meals/7mxnzz1593350801.jpg",
+            imageUrl = "img_placeholder",
             timeInMinutes = 25,
             calories = 320,
             difficulty = "Medio",
@@ -152,7 +152,7 @@ val weeklyMenus = mapOf(
         Recipe(
             id = "8",
             title = "Mediterranean Pasta Salad",
-            imageUrl = "https://www.themealdb.com/images/media/meals/wvqpwt1468339226.jpg",
+            imageUrl = "img_placeholder",
             timeInMinutes = 20,
             calories = 580,
             difficulty = "Medio",
@@ -165,7 +165,7 @@ val weeklyMenus = mapOf(
         Recipe(
             id = "9",
             title = "Baked Salmon",
-            imageUrl = "https://www.themealdb.com/images/media/meals/ikizdm1763760862.jpg",
+            imageUrl = "img_placeholder",
             timeInMinutes = 25,
             calories = 420,
             difficulty = "Medio",
@@ -182,10 +182,70 @@ fun getMenuForDay(day: String): List<Recipe> {
     return weeklyMenus[day] ?: weeklyMenus["Lunes"]!!
 }
 
+fun getMenuForDayAsDomainModel(day: String): List<com.example.recipe_generator.domain.model.Recipe> {
+    return getMenuForDay(day).map { legacyRecipe ->
+        com.example.recipe_generator.domain.model.Recipe(
+            id = legacyRecipe.id,
+            title = legacyRecipe.title,
+            imageRes = legacyRecipe.imageUrl,
+            timeInMinutes = legacyRecipe.timeInMinutes,
+            calories = legacyRecipe.calories,
+            difficulty = legacyRecipe.difficulty,
+            category = legacyRecipe.category,
+            categorySubtitle = legacyRecipe.categorySubtitle,
+            description = legacyRecipe.description,
+            isFavorite = legacyRecipe.isFavorite,
+            rating = legacyRecipe.rating,
+            proteinGrams = legacyRecipe.proteinGrams,
+            carbsGrams = legacyRecipe.carbsGrams,
+            fatGrams = legacyRecipe.fatGrams,
+            dayOfWeek = day,
+            ingredients = emptyList(),
+            steps = legacyRecipe.steps.mapIndexed { index, recipeStep -> 
+                com.example.recipe_generator.domain.model.RecipeStep(
+                    stepNumber = index + 1,
+                    title = recipeStep.title,
+                    description = recipeStep.description
+                )
+            }
+        )
+    }
+}
+
 fun getAllRecipes(): List<Recipe> {
     return weeklyMenus.values.flatten()
 }
 
 fun getFeaturedRecipeDetail(): Recipe {
     return weeklyMenus["Lunes"]!!.first { it.id == "2" }
+}
+
+fun getAllRecipesAsDomainModel(): List<com.example.recipe_generator.domain.model.Recipe> {
+    return getAllRecipes().map { legacyRecipe ->
+        com.example.recipe_generator.domain.model.Recipe(
+            id = legacyRecipe.id,
+            title = legacyRecipe.title,
+            imageRes = legacyRecipe.imageUrl,
+            timeInMinutes = legacyRecipe.timeInMinutes,
+            calories = legacyRecipe.calories,
+            difficulty = legacyRecipe.difficulty,
+            category = legacyRecipe.category,
+            categorySubtitle = legacyRecipe.categorySubtitle,
+            description = legacyRecipe.description,
+            isFavorite = legacyRecipe.isFavorite,
+            rating = legacyRecipe.rating,
+            proteinGrams = legacyRecipe.proteinGrams,
+            carbsGrams = legacyRecipe.carbsGrams,
+            fatGrams = legacyRecipe.fatGrams,
+            dayOfWeek = "Lunes",
+            ingredients = emptyList(),
+            steps = legacyRecipe.steps.mapIndexed { index, recipeStep -> 
+                com.example.recipe_generator.domain.model.RecipeStep(
+                    stepNumber = index + 1,
+                    title = recipeStep.title,
+                    description = recipeStep.description
+                )
+            }
+        )
+    }
 }

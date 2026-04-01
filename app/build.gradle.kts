@@ -54,7 +54,6 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.ui.text.google.fonts)
-    implementation(libs.coil.compose)
     implementation(libs.androidx.datastore.preferences)
 
     // Lifecycle Runtime Compose — collectAsStateWithLifecycle() (F0-08)

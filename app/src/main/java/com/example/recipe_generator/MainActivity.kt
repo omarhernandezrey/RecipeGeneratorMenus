@@ -30,7 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.recipe_generator.data.legacy.FavoritesRepository
-import com.example.recipe_generator.data.legacy.getAllRecipes
+import com.example.recipe_generator.data.legacy.LegacyRecipeData.getAllRecipesAsDomainModel
+import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
 import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
@@ -68,7 +69,7 @@ private enum class TopLevelDestination {
 
 @Composable
 private fun MainAppContent() {
-    val allRecipes = remember { getAllRecipes() }
+    val allRecipes = remember { getAllRecipesAsDomainModel() }
     val context = LocalContext.current.applicationContext
     val favoritesRepository = remember { FavoritesRepository(context) }
     val coroutineScope = rememberCoroutineScope()
@@ -191,7 +192,7 @@ private fun MainAppContent() {
 
                 else -> {
                     PlaceholderScreen(
-                        title = "Inicio",
+                        title = currentDestination.getTitleForDestination(),
                         selectedNavItem = destinationToIndex(currentDestination),
                         onNavItemSelected = { index ->
                             currentDestination = indexToDestination(index)
@@ -218,6 +219,15 @@ private fun indexToDestination(index: Int): TopLevelDestination {
         2 -> TopLevelDestination.Generator
         3 -> TopLevelDestination.Settings
         else -> TopLevelDestination.Home
+    }
+}
+
+private fun TopLevelDestination.getTitleForDestination(): String {
+    return when (this) {
+        TopLevelDestination.Home -> "Inicio"
+        TopLevelDestination.Favorites -> "Favoritos"
+        TopLevelDestination.Generator -> "Generador"
+        TopLevelDestination.Settings -> "Ajustes"
     }
 }
 

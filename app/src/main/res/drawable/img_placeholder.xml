@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Fondo degradado simulado con rectángulo -->
+    <path
+        android:pathData="M0,0 L200,0 L200,200 L0,200 Z"
+        android:fillColor="#EDE7F6" />
+    <!-- Icono de plato/comida -->
+    <path
+        android:pathData="M100,55 C75.1,55 55,75.1 55,100 C55,124.9 75.1,145 100,145 C124.9,145 145,124.9 145,100 C145,75.1 124.9,55 100,55 Z M100,135 C80.7,135 65,119.3 65,100 C65,80.7 80.7,65 100,65 C119.3,65 135,80.7 135,100 C135,119.3 119.3,135 100,135 Z"
+        android:fillColor="#7E57C2" />
+    <!-- Tenedor izquierdo -->
+    <path
+        android:pathData="M80,72 L80,92 L77,92 L77,105 L83,105 L83,92 L80,92 L80,72 Z M76,72 L76,88 L78,88 L78,72 Z M82,72 L82,88 L84,88 L84,72 Z"
+        android:fillColor="#7E57C2" />
+    <!-- Cuchillo derecho -->
+    <path
+        android:pathData="M120,72 L120,105 L118,105 L118,90 C114,88 112,84 112,80 L112,72 Z"
+        android:fillColor="#7E57C2" />
+</vector>

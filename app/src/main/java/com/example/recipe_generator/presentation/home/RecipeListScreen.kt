@@ -21,14 +21,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.SubcomposeAsyncImage
-import coil.request.ImageRequest
-import com.example.recipe_generator.data.legacy.Recipe
-import com.example.recipe_generator.data.legacy.getMenuForDay
+import com.example.recipe_generator.R
+import com.example.recipe_generator.domain.model.Recipe
+import com.example.recipe_generator.data.legacy.LegacyRecipeData
 import com.example.recipe_generator.presentation.components.DayTabLayout
 import com.example.recipe_generator.presentation.components.DifficultyChip
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
@@ -76,7 +75,7 @@ fun RecipeListScreen(
                     .padding(horizontal = spacing_6),
                 verticalArrangement = Arrangement.spacedBy(spacing_10)
             ) {
-                val recipesForDay = getMenuForDay(selectedDay)
+                val recipesForDay = LegacyRecipeData.getMenuForDayAsDomainModel(selectedDay)
 
                 recipesForDay.forEach { recipe ->
                     RecipeSection(
@@ -202,8 +201,6 @@ fun RecipeCard(
     onToggleFavorite: () -> Unit = {},
     onClick: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(rounded_md),
@@ -218,42 +215,11 @@ fun RecipeCard(
                     .clip(RoundedCornerShape(topStart = rounded_md, topEnd = rounded_md))
                     .clickable(onClick = onClick)
             ) {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(recipe.imageUrl)
-                        .crossfade(true)
-                        .build(),
+                androidx.compose.foundation.Image(
+                    painter = painterResource(id = R.drawable.img_placeholder),
                     contentDescription = recipe.title,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    loading = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(SurfaceContainerLow),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(32.dp),
-                                color = Primary
-                            )
-                        }
-                    },
-                    error = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(SurfaceContainerLow),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Star,
-                                contentDescription = "Sin imagen",
-                                modifier = Modifier.size(48.dp),
-                                tint = Primary
-                            )
-                        }
-                    }
+                    contentScale = ContentScale.Crop
                 )
 
                 IconButton(
