@@ -1127,7 +1127,246 @@ SettingsViewModel --> UserPrefsRepository : uses >
 | **DI** | `class` | `AppContainer` |
 | **Presentation** | `ViewModel` | `HomeViewModel`, `RecipeDetailViewModel`, `FavoritesViewModel`, `MenuGeneratorViewModel`, `SettingsViewModel` |
 
-*Las secciones siguientes se completan en las tareas F1-09 y F1-10.*
+---
+
+## 9. Diagrama de Secuencia UML
+
+### 9.1 Descripción del flujo principal
+
+El flujo analizado corresponde al caso de uso central de la aplicación: **el usuario selecciona una receta en la pantalla de inicio, visualiza su detalle y la agrega a favoritos**. Este flujo involucra las capas de Presentación, Dominio y Datos de la arquitectura MVVM + Clean Architecture.
+
+**Actores y participantes:**
+
+| Participante | Capa | Rol |
+|---|---|---|
+| `Usuario` | — | Actor externo que interactúa con la UI |
+| `RecipeListScreen` | Presentación | Pantalla que lista las recetas disponibles |
+| `HomeViewModel` | Presentación | Gestiona el estado de la lista de recetas |
+| `RecipeDetailScreen` | Presentación | Pantalla que muestra el detalle de una receta |
+| `RecipeDetailViewModel` | Presentación | Gestiona el estado del detalle y la acción de favorito |
+| `GetRecipeByIdUseCase` | Dominio | Caso de uso: obtener receta por ID |
+| `ToggleFavoriteUseCase` | Dominio | Caso de uso: alternar estado de favorito |
+| `RecipeRepository` | Dominio | Contrato/interfaz del repositorio |
+| `RecipeRepositoryImpl` | Datos | Implementación concreta del repositorio |
+| `RecipeDao` | Datos | Data Access Object de Room (recetas) |
+| `FavoritesDao` | Datos | Data Access Object de Room (favoritos) |
+
+---
+
+### 9.2 Diagrama PlantUML — Flujo: Seleccionar receta → Ver detalle → Agregar a favoritos
+
+```plantuml
+@startuml SD-01-SeleccionarRecetaYFavorito
+title SD-01 : Seleccionar Receta → Ver Detalle → Agregar a Favoritos
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBackgroundColor #EDE7F6
+skinparam sequenceLifeLineBorderColor #7E57C2
+skinparam sequenceArrowColor #512DA8
+skinparam noteBorderColor #7E57C2
+skinparam noteBackgroundColor #F3E5F5
+
+actor       "Usuario"                 as U
+participant "RecipeListScreen"        as RLS
+participant "HomeViewModel"           as HVM
+participant "RecipeDetailScreen"      as RDS
+participant "RecipeDetailViewModel"   as RDVM
+participant "GetRecipeByIdUseCase"    as GUC
+participant "ToggleFavoriteUseCase"   as TUC
+participant "RecipeRepositoryImpl"    as REPO
+database    "RecipeDao (Room)"        as RDAO
+database    "FavoritesDao (Room)"     as FDAO
+
+== Inicialización de la lista ==
+
+U -> RLS : Abre la aplicación
+activate RLS
+RLS -> HVM : collectAsStateWithLifecycle(uiState)
+activate HVM
+HVM -> GUC : invoke()
+activate GUC
+GUC -> REPO : getAllRecipes()
+activate REPO
+REPO -> RDAO : getAllRecipes() : Flow<List<RecipeEntity>>
+activate RDAO
+RDAO --> REPO : Flow<List<RecipeEntity>>
+deactivate RDAO
+REPO --> GUC : Flow<List<Recipe>>
+deactivate REPO
+GUC --> HVM : Flow<List<Recipe>>
+deactivate GUC
+HVM --> RLS : HomeUiState.Success(recipes)
+deactivate HVM
+RLS --> U : Muestra lista de recetas
+deactivate RLS
+
+== Selección de receta ==
+
+U -> RLS : Toca una RecipeCard
+activate RLS
+RLS -> RLS : onRecipeSelected(recipeId)
+note right of RLS
+  Se actualiza selectedRecipeId
+  en MainActivity — navega a
+  RecipeDetailScreen
+end note
+RLS --> U : Navega a detalle
+deactivate RLS
+
+== Carga del detalle ==
+
+U -> RDS : Ve RecipeDetailScreen(recipeId)
+activate RDS
+RDS -> RDVM : collectAsStateWithLifecycle(uiState)
+activate RDVM
+RDVM -> GUC : invoke(recipeId)
+activate GUC
+GUC -> REPO : getRecipeById(recipeId)
+activate REPO
+REPO -> RDAO : getRecipeById(id) : Flow<RecipeEntity?>
+activate RDAO
+RDAO --> REPO : Flow<RecipeEntity?>
+deactivate RDAO
+REPO --> GUC : Flow<Recipe?>
+deactivate REPO
+GUC --> RDVM : Flow<Recipe?>
+deactivate GUC
+RDVM --> RDS : DetailUiState.Success(recipe, isFavorite=false)
+deactivate RDVM
+RDS --> U : Muestra título, imagen, ingredientes, pasos
+deactivate RDS
+
+== Agregar a favoritos ==
+
+U -> RDS : Toca ícono de favorito ♥
+activate RDS
+RDS -> RDVM : onToggleFavorite(recipeId)
+activate RDVM
+note right of RDVM
+  Optimistic update:
+  isFavorite = true (inmediato)
+end note
+RDVM -> TUC : invoke(recipeId)
+activate TUC
+TUC -> REPO : toggleFavorite(recipeId)
+activate REPO
+REPO -> FDAO : insertFavorite(FavoriteEntity(recipeId))
+activate FDAO
+FDAO --> REPO : Unit
+deactivate FDAO
+REPO --> TUC : Unit
+deactivate REPO
+TUC --> RDVM : Unit
+deactivate TUC
+RDVM --> RDS : DetailUiState.Success(recipe, isFavorite=true)
+deactivate RDVM
+RDS --> U : Ícono cambia a relleno ♥ \n Snackbar: "Guardado en favoritos"
+deactivate RDS
+
+@enduml
+```
+
+---
+
+### 9.3 Descripción paso a paso
+
+**Fase 1 — Inicialización de la lista (pasos 1–8)**
+
+1. El usuario abre la aplicación; `MainActivity` monta `RecipeListScreen`.
+2. `RecipeListScreen` observa el `HomeUiState` mediante `collectAsStateWithLifecycle`.
+3. `HomeViewModel` invoca `GetRecipeByIdUseCase` (o `GetAllRecipesUseCase`) al iniciarse.
+4. El caso de uso delega en `RecipeRepositoryImpl.getAllRecipes()`.
+5. `RecipeRepositoryImpl` consulta `RecipeDao` que retorna un `Flow<List<RecipeEntity>>`.
+6. El flujo se mapea a `Flow<List<Recipe>>` (objetos de dominio) y sube hasta el ViewModel.
+7. El ViewModel emite `HomeUiState.Success(recipes)` al Composable.
+8. La pantalla renderiza las `RecipeCard` con la lista de recetas.
+
+**Fase 2 — Selección de receta (pasos 9–11)**
+
+9. El usuario toca una `RecipeCard`; se invoca `onRecipeSelected(recipeId)`.
+10. `MainActivity` actualiza `selectedRecipeId` (estado hoisted).
+11. La navegación muestra `RecipeDetailScreen` pasando el `recipeId`.
+
+**Fase 3 — Carga del detalle (pasos 12–19)**
+
+12. `RecipeDetailScreen` recibe el `recipeId` y obtiene su `RecipeDetailViewModel`.
+13. El ViewModel invoca `GetRecipeByIdUseCase(recipeId)`.
+14. El caso de uso consulta `RecipeRepositoryImpl.getRecipeById(id)`.
+15. Room devuelve un `Flow<RecipeEntity?>` desde `RecipeDao`.
+16. El mapper convierte la entidad a `Recipe` (modelo de dominio).
+17. El ViewModel emite `DetailUiState.Success(recipe, isFavorite=false)`.
+18. La pantalla renderiza el hero de imagen, ingredientes y pasos de preparación.
+
+**Fase 4 — Agregar a favoritos (pasos 20–28)**
+
+19. El usuario toca el ícono de favorito (corazón vacío).
+20. `RecipeDetailScreen` llama `onToggleFavorite(recipeId)`.
+21. `RecipeDetailViewModel` aplica **optimistic update**: actualiza `isFavorite = true` de inmediato en el `UiState`, sin esperar confirmación de BD.
+22. Se invoca `ToggleFavoriteUseCase(recipeId)`.
+23. El caso de uso llama `RecipeRepositoryImpl.toggleFavorite(recipeId)`.
+24. `RecipeRepositoryImpl` inserta un `FavoriteEntity` en `FavoritesDao` (Room/SQLite).
+25. Room confirma la inserción.
+26. El resultado sube de vuelta al ViewModel (ya sincronizado con el optimistic update).
+27. El `DetailUiState` emite `isFavorite=true` definitivo.
+28. La UI: el ícono ♥ cambia a relleno y aparece el `Snackbar` con "Guardado en favoritos".
+
+---
+
+### 9.4 Flujo alternativo — Eliminar de favoritos
+
+Si el usuario vuelve a tocar el ícono cuando `isFavorite = true`:
+
+```plantuml
+@startuml SD-02-EliminarFavorito
+title SD-02 : Eliminar receta de favoritos (flujo alternativo)
+skinparam sequenceArrowColor #512DA8
+skinparam sequenceParticipantBackgroundColor #EDE7F6
+
+actor       "Usuario"               as U
+participant "RecipeDetailScreen"    as RDS
+participant "RecipeDetailViewModel" as RDVM
+participant "ToggleFavoriteUseCase" as TUC
+participant "RecipeRepositoryImpl"  as REPO
+database    "FavoritesDao (Room)"   as FDAO
+
+U -> RDS : Toca ícono ♥ (isFavorite=true)
+activate RDS
+RDS -> RDVM : onToggleFavorite(recipeId)
+activate RDVM
+note right of RDVM
+  Optimistic update:
+  isFavorite = false
+end note
+RDVM -> TUC : invoke(recipeId)
+activate TUC
+TUC -> REPO : toggleFavorite(recipeId)
+activate REPO
+REPO -> FDAO : deleteFavorite(recipeId)
+activate FDAO
+FDAO --> REPO : Unit
+deactivate FDAO
+REPO --> TUC : Unit
+deactivate REPO
+TUC --> RDVM : Unit
+deactivate TUC
+RDVM --> RDS : DetailUiState.Success(recipe, isFavorite=false)
+deactivate RDVM
+RDS --> U : Ícono cambia a vacío ♡ \n Snackbar: "Eliminado de favoritos"
+deactivate RDS
+
+@enduml
+```
+
+---
+
+### 9.5 Notas técnicas sobre el diseño
+
+| Aspecto | Decisión técnica |
+|---|---|
+| **Optimistic update** | El ViewModel actualiza el estado de la UI antes de confirmar con Room, garantizando respuesta inmediata (< 16 ms) |
+| **Flow / corrutinas** | Toda comunicación BD→Repo→UseCase→VM usa `Flow<T>` con colección en `viewModelScope` |
+| **Snackbar** | Se gestiona mediante `SnackbarHostState` hoisted en `MainActivity`, evitando acoplamiento entre screens |
+| **Navegación** | Se usa estado hoisted (`selectedRecipeId`) en `MainActivity` en lugar de `NavHost` en esta entrega; se migrará a Navigation Component en FASE 2 (F2-XX) |
+| **Sin efectos secundarios en UseCase** | Los casos de uso son puros: solo coordinan repositorios y no acceden a `Context` ni a recursos Android |
 
 ---
 
