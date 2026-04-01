@@ -172,7 +172,44 @@ El proyecto se desarrolla con la siguiente pila tecnológica, aprobada por el do
 | SDK objetivo | API 35 — Android 15 |
 | IDE | Android Studio Panda 2025.3.2 |
 
-*Las secciones siguientes se completan en las tareas F1-03 a F1-10.*
+---
+
+## 3. Objetivo General
+
+**Desarrollar** una aplicación móvil nativa para Android denominada
+*Recipe Generator — Generador de Menús Semanales*, **mediante** la implementación
+de Jetpack Compose con Material Design 3, arquitectura MVVM + Clean Architecture,
+Room Database y Navigation Component, **con el fin de** proporcionar a los usuarios
+una herramienta digital intuitiva que les permita planificar, visualizar y personalizar
+sus menús alimenticios semanales de forma local, eficiente y sin dependencia de
+servicios externos.
+
+### Desglose estructural del objetivo general
+
+La formulación del objetivo sigue la estructura académica estándar:
+
+| Componente | Contenido |
+|---|---|
+| **Verbo infinitivo** | Desarrollar |
+| **Qué** | Una aplicación móvil nativa para Android — *Recipe Generator* |
+| **Cómo** | Mediante Jetpack Compose + Material Design 3, arquitectura MVVM + Clean Architecture (3 capas: Presentation / Domain / Data), Room Database como fuente de verdad local, Navigation Component para la navegación entre pantallas, StateFlow + Coroutines para el manejo del estado, y DataStore Preferences para la persistencia de configuración |
+| **Para qué** | Proporcionar a los usuarios una herramienta que les permita planificar, explorar y personalizar sus menús semanales (Lunes–Domingo) de forma organizada, saludable y completamente offline |
+
+### Justificación del objetivo
+
+La selección de **Jetpack Compose** como framework de UI responde a la aprobación
+explícita del docente y al hecho de ser la tecnología oficial recomendada por Google
+para el desarrollo moderno de interfaces en Android. Este framework permite cumplir
+íntegramente los lineamientos LF1 a LF8 del módulo mediante estrategias de
+compatibilidad documentadas en la tabla de equivalencias del Plan Maestro v3.0
+(Actividades, Fragmentos con `ComposeView`, `AndroidView{}` para controles
+específicos, `LazyColumn` como equivalente de `ListView`, entre otros).
+
+La elección de **Room Database** garantiza persistencia de datos completamente local
+y sin dependencia de backend externo, lo cual es coherente con el alcance definido
+para la versión 1.0 de la aplicación.
+
+*Las secciones siguientes se completan en las tareas F1-04 a F1-10.*
 
 ---
 
