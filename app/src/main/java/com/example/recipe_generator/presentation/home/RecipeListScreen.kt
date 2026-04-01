@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
-import com.example.recipe_generator.data.Recipe
-import com.example.recipe_generator.data.getMenuForDay
+import com.example.recipe_generator.data.legacy.Recipe
+import com.example.recipe_generator.data.legacy.getMenuForDay
 import com.example.recipe_generator.presentation.components.DayTabLayout
 import com.example.recipe_generator.presentation.components.DifficultyChip
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar

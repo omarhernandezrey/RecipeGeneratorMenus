@@ -53,8 +53,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
-import com.example.recipe_generator.data.Recipe
-import com.example.recipe_generator.data.getFeaturedRecipeDetail
+import com.example.recipe_generator.data.legacy.Recipe
+import com.example.recipe_generator.data.legacy.getFeaturedRecipeDetail
 import com.example.recipe_generator.presentation.components.DetailEditorialTopAppBar
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding

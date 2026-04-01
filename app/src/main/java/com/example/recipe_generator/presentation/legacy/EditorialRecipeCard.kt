@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.recipe_generator.data.Recipe
+import com.example.recipe_generator.data.legacy.Recipe
 import com.example.recipe_generator.presentation.theme.Primary
 import com.example.recipe_generator.presentation.theme.Secondary
 

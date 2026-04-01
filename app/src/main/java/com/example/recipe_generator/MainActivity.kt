@@ -29,8 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.recipe_generator.data.FavoritesRepository
-import com.example.recipe_generator.data.getAllRecipes
+import com.example.recipe_generator.data.legacy.FavoritesRepository
+import com.example.recipe_generator.data.legacy.getAllRecipes
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
 import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             RecipeGeneratorTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    RecipeGeneratorApp()
+                    MainAppContent()
                 }
             }
         }
@@ -67,7 +67,7 @@ private enum class TopLevelDestination {
 }
 
 @Composable
-private fun RecipeGeneratorApp() {
+private fun MainAppContent() {
     val allRecipes = remember { getAllRecipes() }
     val context = LocalContext.current.applicationContext
     val favoritesRepository = remember { FavoritesRepository(context) }
@@ -276,7 +276,7 @@ private fun PlaceholderScreen(
 @Composable
 fun RecipeListScreenPreview() {
     RecipeGeneratorTheme {
-        RecipeGeneratorApp()
+        MainAppContent()
     }
 }
 
