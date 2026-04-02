@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.recipe_generator.presentation.auth.AuthScreen
 import com.example.recipe_generator.presentation.auth.AuthViewModel
+import com.example.recipe_generator.presentation.home.HomeScreen
 import com.example.recipe_generator.presentation.theme.RecipeGeneratorTheme
 
 /**
@@ -44,9 +45,12 @@ class MainActivity : AppCompatActivity() {
 
         if (currentUser != null) {
             // Usuario autenticado - mostrar app normal
-            // TODO: Implementar composable principal de la app
-            androidx.compose.material3.Text("Usuario autenticado: ${currentUser?.email}")
-            // MainAppScreen()
+            HomeScreen(
+                userEmail = currentUser?.email ?: "Usuario",
+                onLogout = {
+                    authViewModel.logout()
+                }
+            )
         } else {
             // Usuario no autenticado - mostrar login
             AuthScreen(
