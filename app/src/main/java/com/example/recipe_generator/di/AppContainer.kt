@@ -2,9 +2,11 @@ package com.example.recipe_generator.di
 
 import android.content.Context
 import com.example.recipe_generator.data.local.AppDatabase
+import com.example.recipe_generator.data.repository.FirebaseAuthRepository
 import com.example.recipe_generator.data.repository.RecipeRepositoryImpl
 import com.example.recipe_generator.data.repository.RoomFavoritesRepositoryImpl
 import com.example.recipe_generator.data.repository.UserPrefsRepositoryImpl
+import com.example.recipe_generator.domain.repository.AuthRepository
 import com.example.recipe_generator.domain.repository.FavoritesRepository
 import com.example.recipe_generator.domain.repository.RecipeRepository
 import com.example.recipe_generator.domain.repository.UserPrefsRepository
@@ -12,6 +14,7 @@ import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
 import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
 import com.example.recipe_generator.domain.usecase.GetRecipeDetailUseCase
 import com.example.recipe_generator.domain.usecase.ToggleFavoriteUseCase
+import com.google.firebase.auth.FirebaseAuth
 
 /**
  * Contenedor de dependencias manual — sin Hilt ni Dagger.
@@ -42,8 +45,17 @@ class AppContainer(private val context: Context) {
         AppDatabase.getInstance(appContext)
     }
 
+    // ── Firebase Authentication ────────────────────────────────────────
+    private val firebaseAuth: FirebaseAuth by lazy {
+        FirebaseAuth.getInstance()
+    }
+
     // ── Repositorios (interfaces de Dominio, impls de Datos) ──────────
     // En F3-29 FavoritesRepository migra a Room.
+
+    val authRepository: AuthRepository by lazy {
+        FirebaseAuthRepository(firebaseAuth)
+    }
 
     val recipeRepository: RecipeRepository by lazy {
         RecipeRepositoryImpl(database.recipeDao())
