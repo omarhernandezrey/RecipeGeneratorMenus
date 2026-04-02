@@ -36,9 +36,18 @@ val weeklyMenus = mapOf(
             difficulty = "Fácil",
             category = "Desayuno",
             categorySubtitle = "Impulso de Energía",
+            description = "Huevos revueltos cremosos acompañados de aguacate fresco, tostadas integrales y un toque de limón.",
             proteinGrams = 16,
             carbsGrams = 14,
-            fatGrams = 21
+            fatGrams = 21,
+            ingredients = listOf("3 Huevos grandes", "1/2 Aguacate maduro", "2 rebanadas Pan integral"),
+            ingredientTags = listOf("Mantequilla", "Sal y pimienta", "Limón"),
+            steps = listOf(
+                RecipeStep("Batir los huevos", "Bate los huevos en un tazón con sal y pimienta hasta integrar bien."),
+                RecipeStep("Cocinar a fuego bajo", "Derrite mantequilla en sartén a fuego bajo. Agrega los huevos y revuelve suavemente."),
+                RecipeStep("Preparar aguacate", "Aplasta el aguacate con un tenedor, agrega limón y sal al gusto."),
+                RecipeStep("Servir", "Sirve los huevos sobre tostadas con el aguacate al lado.")
+            )
         ),
         Recipe(
             id = "2",
@@ -89,9 +98,18 @@ val weeklyMenus = mapOf(
             difficulty = "Fácil",
             category = "Cena",
             categorySubtitle = "Ligero y Acogedor",
+            description = "Sopa cremosa de tomates frescos con albahaca aromática, perfecta para una cena reconfortante.",
             proteinGrams = 9,
             carbsGrams = 28,
-            fatGrams = 12
+            fatGrams = 12,
+            ingredients = listOf("5 Tomates maduros", "1 Cebolla mediana", "2 dientes Ajo"),
+            ingredientTags = listOf("Albahaca fresca", "Crema de leche", "Aceite de oliva"),
+            steps = listOf(
+                RecipeStep("Sofreír base", "Sofríe cebolla y ajo en aceite de oliva hasta transparentar."),
+                RecipeStep("Añadir tomates", "Agrega tomates picados, sal y azúcar. Cocina 10 min a fuego medio."),
+                RecipeStep("Licuar", "Tritura todo con una batidora hasta obtener textura suave."),
+                RecipeStep("Servir", "Sirve caliente con albahaca fresca y un toque de crema.")
+            )
         )
     ),
     "Martes" to listOf(
@@ -104,9 +122,17 @@ val weeklyMenus = mapOf(
             difficulty = "Fácil",
             category = "Desayuno",
             categorySubtitle = "Impulso de Energía",
+            description = "Yogur griego cremoso con granola crujiente, miel y frutas rojas frescas.",
             proteinGrams = 14,
             carbsGrams = 30,
-            fatGrams = 8
+            fatGrams = 8,
+            ingredients = listOf("200g Yogur griego natural", "1/2 taza Granola", "1 taza Frutas rojas"),
+            ingredientTags = listOf("Miel", "Semillas de lino", "Canela"),
+            steps = listOf(
+                RecipeStep("Servir yogur", "Coloca el yogur griego en un tazón o vaso ancho."),
+                RecipeStep("Añadir granola", "Esparce la granola sobre el yogur para añadir textura crujiente."),
+                RecipeStep("Decorar", "Agrega las frutas rojas, un chorrito de miel y espolvorea canela.")
+            )
         ),
         Recipe(
             id = "5",
@@ -117,9 +143,18 @@ val weeklyMenus = mapOf(
             difficulty = "Medio",
             category = "Almuerzo",
             categorySubtitle = "Equilibrado y Nutritivo",
+            description = "Pechuga de pollo a la plancha marinada con hierbas mediterráneas y servida con ensalada.",
             proteinGrams = 38,
             carbsGrams = 24,
-            fatGrams = 18
+            fatGrams = 18,
+            ingredients = listOf("2 Pechugas de pollo", "1 limón", "2 dientes Ajo"),
+            ingredientTags = listOf("Orégano", "Tomillo", "Aceite de oliva"),
+            steps = listOf(
+                RecipeStep("Marinar el pollo", "Mezcla ajo, limón, orégano y tomillo. Marina el pollo 15 minutos."),
+                RecipeStep("Calentar plancha", "Precalienta la plancha o sartén a fuego alto con un poco de aceite."),
+                RecipeStep("Cocinar el pollo", "Cocina cada pechuga 6-7 minutos por lado hasta dorar bien."),
+                RecipeStep("Reposar y servir", "Deja reposar 3 minutos antes de cortar. Sirve con ensalada verde.")
+            )
         ),
         Recipe(
             id = "6",
@@ -130,9 +165,18 @@ val weeklyMenus = mapOf(
             difficulty = "Fácil",
             category = "Cena",
             categorySubtitle = "Ligero y Acogedor",
+            description = "Salteado de vegetales coloridos al wok con salsa de soya, jengibre y aceite de sésamo.",
             proteinGrams = 11,
             carbsGrams = 36,
-            fatGrams = 10
+            fatGrams = 10,
+            ingredients = listOf("1 Pimiento rojo", "1 Zanahoria", "1 taza Brócoli"),
+            ingredientTags = listOf("Salsa de soya", "Jengibre", "Aceite de sésamo"),
+            steps = listOf(
+                RecipeStep("Preparar vegetales", "Corta todos los vegetales en juliana o floretes similares."),
+                RecipeStep("Calentar wok", "Calienta el wok a fuego muy alto. Agrega aceite de sésamo."),
+                RecipeStep("Saltear", "Saltea los vegetales 5 minutos removiendo constantemente."),
+                RecipeStep("Sazonar", "Agrega salsa de soya y jengibre rallado. Cocina 2 minutos más.")
+            )
         )
     ),
     "Miércoles" to listOf(
@@ -145,9 +189,17 @@ val weeklyMenus = mapOf(
             difficulty = "Medio",
             category = "Desayuno",
             categorySubtitle = "Impulso de Energía",
+            description = "Croissants de mantequilla recién horneados con mermelada artesanal de frutos rojos.",
             proteinGrams = 7,
             carbsGrams = 34,
-            fatGrams = 14
+            fatGrams = 14,
+            ingredients = listOf("4 Croissants de mantequilla", "4 cucharadas Mermelada frutos rojos", "Mantequilla"),
+            ingredientTags = listOf("Mermelada", "Café", "Jugo de naranja"),
+            steps = listOf(
+                RecipeStep("Precalentar horno", "Precalienta el horno a 180°C durante 5 minutos."),
+                RecipeStep("Calentar croissants", "Coloca los croissants en bandeja y calienta 5-7 minutos hasta crujir."),
+                RecipeStep("Servir", "Acompaña con mermelada abundante y una bebida caliente.")
+            )
         ),
         Recipe(
             id = "8",
@@ -158,9 +210,18 @@ val weeklyMenus = mapOf(
             difficulty = "Medio",
             category = "Almuerzo",
             categorySubtitle = "Equilibrado y Nutritivo",
+            description = "Ensalada de pasta con aceitunas, queso feta, tomates cherry y vinagreta mediterránea.",
             proteinGrams = 19,
             carbsGrams = 71,
-            fatGrams = 21
+            fatGrams = 21,
+            ingredients = listOf("250g Pasta fusilli", "100g Queso feta", "1/2 taza Aceitunas negras"),
+            ingredientTags = listOf("Tomates cherry", "Albahaca", "Vinagreta"),
+            steps = listOf(
+                RecipeStep("Cocinar pasta", "Hierve la pasta al dente según instrucciones. Escurre y enfría."),
+                RecipeStep("Preparar vinagreta", "Mezcla aceite de oliva, vinagre balsámico, orégano y sal."),
+                RecipeStep("Mezclar ensalada", "Combina pasta con aceitunas, feta y tomates cherry."),
+                RecipeStep("Aderezar y servir", "Vierte la vinagreta, mezcla bien y sirve a temperatura ambiente.")
+            )
         ),
         Recipe(
             id = "9",
@@ -171,9 +232,18 @@ val weeklyMenus = mapOf(
             difficulty = "Medio",
             category = "Cena",
             categorySubtitle = "Ligero y Acogedor",
+            description = "Filete de salmón al horno con costra de hierbas, limón y ajo, servido con vegetales.",
             proteinGrams = 33,
             carbsGrams = 8,
-            fatGrams = 24
+            fatGrams = 24,
+            ingredients = listOf("2 filetes Salmón (200g c/u)", "1 Limón", "3 dientes Ajo"),
+            ingredientTags = listOf("Eneldo", "Perejil", "Aceite de oliva"),
+            steps = listOf(
+                RecipeStep("Preparar marinada", "Mezcla ajo picado, eneldo, perejil, aceite y jugo de limón."),
+                RecipeStep("Marinar salmón", "Unta la mezcla sobre el salmón y deja reposar 10 minutos."),
+                RecipeStep("Hornear", "Hornea a 200°C por 12-15 minutos hasta que el salmón se desmenuce."),
+                RecipeStep("Servir", "Sirve con rodajas de limón y vegetales al vapor.")
+            )
         )
     ),
     // F3-26: Jueves — 3 recetas nuevas
