@@ -2,16 +2,15 @@ package com.example.recipe_generator.presentation.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.fragment.findNavController
+import com.example.recipe_generator.R
 import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
-import com.example.recipe_generator.presentation.detail.RecipeDetailScreen
+import com.example.recipe_generator.presentation.detail.RecipeDetailActivity
 import com.example.recipe_generator.presentation.navigation.ComposeScreenFragment
 import com.example.recipe_generator.presentation.navigation.TopLevelDestination
 import kotlinx.coroutines.launch
@@ -29,45 +28,30 @@ class HomeFragment : ComposeScreenFragment() {
             .getFavoriteIds()
             .collectAsStateWithLifecycle(initialValue = emptySet())
         val coroutineScope = rememberCoroutineScope()
-        var selectedRecipeId by rememberSaveable { mutableStateOf<String?>(null) }
 
-        val selectedRecipe = recipes
-            .firstOrNull { it.id == selectedRecipeId }
-            ?.let { recipe ->
-                recipe.copy(isFavorite = recipe.id in favoriteRecipeIds)
-            }
-
-        if (selectedRecipe != null) {
-            RecipeDetailScreen(
-                recipe = selectedRecipe,
-                selectedNavItem = TopLevelDestination.Home.navItemIndex,
-                onNavItemSelected = ::navigateToTopLevel,
-                isFavorite = selectedRecipe.id in favoriteRecipeIds,
-                onToggleFavorite = { recipeId ->
-                    coroutineScope.launch {
-                        appContainer.favoritesRepository.toggleFavorite(recipeId)
-                    }
-                },
-                onBackClick = { selectedRecipeId = null }
-            )
-        } else {
-            RecipeListScreen(
-                selectedDay = selectedDay,
-                recipes = recipes,
-                onDaySelected = homeViewModel::selectDay,
-                selectedNavItem = TopLevelDestination.Home.navItemIndex,
-                onNavItemSelected = ::navigateToTopLevel,
-                favoriteRecipeIds = favoriteRecipeIds,
-                onToggleFavorite = { recipeId ->
-                    coroutineScope.launch {
-                        appContainer.favoritesRepository.toggleFavorite(recipeId)
-                    }
-                },
-                onRecipeSelected = { recipe ->
-                    selectedRecipeId = recipe.id
+        RecipeListScreen(
+            selectedDay = selectedDay,
+            recipes = recipes,
+            onDaySelected = homeViewModel::selectDay,
+            selectedNavItem = TopLevelDestination.Home.navItemIndex,
+            onNavItemSelected = ::navigateToTopLevel,
+            favoriteRecipeIds = favoriteRecipeIds,
+            onToggleFavorite = { recipeId ->
+                coroutineScope.launch {
+                    appContainer.favoritesRepository.toggleFavorite(recipeId)
                 }
-            )
-        }
+            },
+            // F3-05: lanza RecipeDetailActivity con Intent.putExtra(recipeId) — LF5
+            onRecipeSelected = { recipe ->
+                startActivity(
+                    RecipeDetailActivity.newIntent(requireContext(), recipe.id)
+                )
+            },
+            // F2-04/F2-05: navega al layout de dos paneles (LeftMenu + Content)
+            onProfileClick = {
+                findNavController().navigate(R.id.action_home_to_leftMenu)
+            }
+        )
     }
 }
 

@@ -175,6 +175,269 @@ val weeklyMenus = mapOf(
             carbsGrams = 8,
             fatGrams = 24
         )
+    ),
+    // F3-26: Jueves — 3 recetas nuevas
+    "Jueves" to listOf(
+        Recipe(
+            id = "10",
+            title = "Smoothie Bowl de Frutas",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 10,
+            calories = 290,
+            difficulty = "Fácil",
+            category = "Desayuno",
+            categorySubtitle = "Impulso de Energía",
+            description = "Bowl refrescante con frutas tropicales, semillas y granola crujiente.",
+            proteinGrams = 8,
+            carbsGrams = 52,
+            fatGrams = 7,
+            ingredients = listOf("1 taza Mango", "1 Banana", "1/2 taza Leche de coco"),
+            ingredientTags = listOf("Granola", "Semillas de chía", "Frutas frescas"),
+            steps = listOf(
+                RecipeStep("Licuar frutas", "Procesa el mango y la banana con leche de coco hasta obtener una crema espesa."),
+                RecipeStep("Servir en bowl", "Vierte en un bowl y decora con granola, frutas y semillas de chía.")
+            )
+        ),
+        Recipe(
+            id = "11",
+            title = "Pollo al Limón con Arroz",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 35,
+            calories = 490,
+            difficulty = "Medio",
+            category = "Almuerzo",
+            categorySubtitle = "Equilibrado y Nutritivo",
+            description = "Pechuga de pollo marinada en limón y hierbas, servida con arroz integral.",
+            proteinGrams = 42,
+            carbsGrams = 38,
+            fatGrams = 12,
+            ingredients = listOf("2 pechugas Pollo", "1 Limón", "1 taza Arroz integral"),
+            ingredientTags = listOf("Ajo", "Romero", "Aceite de oliva"),
+            steps = listOf(
+                RecipeStep("Marinar pollo", "Mezcla jugo de limón, ajo y romero. Marina el pollo 20 minutos."),
+                RecipeStep("Cocinar arroz", "Hierve el arroz integral según instrucciones del paquete."),
+                RecipeStep("Asar pollo", "Cocina el pollo en sartén a fuego medio 6 minutos por lado.")
+            )
+        ),
+        Recipe(
+            id = "12",
+            title = "Crema de Calabaza",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 30,
+            calories = 280,
+            difficulty = "Fácil",
+            category = "Cena",
+            categorySubtitle = "Ligero y Acogedor",
+            description = "Crema suave de calabaza con especias cálidas y crema de coco.",
+            proteinGrams = 6,
+            carbsGrams = 32,
+            fatGrams = 14,
+            ingredients = listOf("500g Calabaza", "1 taza Caldo vegetal", "200ml Leche de coco"),
+            ingredientTags = listOf("Jengibre", "Cúrcuma", "Pimienta negra"),
+            steps = listOf(
+                RecipeStep("Cortar y asar", "Corta la calabaza en cubos y asa en horno 20 min a 180°C."),
+                RecipeStep("Licuar", "Procesa la calabaza asada con el caldo hasta obtener crema suave."),
+                RecipeStep("Condimentar", "Calienta con leche de coco, jengibre y cúrcuma. Sirve caliente.")
+            )
+        )
+    ),
+    // F3-26: Viernes — 3 recetas nuevas
+    "Viernes" to listOf(
+        Recipe(
+            id = "13",
+            title = "Tostadas con Aguacate y Huevo",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 12,
+            calories = 380,
+            difficulty = "Fácil",
+            category = "Desayuno",
+            categorySubtitle = "Impulso de Energía",
+            description = "Pan integral tostado con aguacate cremoso y huevo pochado perfecto.",
+            proteinGrams = 18,
+            carbsGrams = 28,
+            fatGrams = 22,
+            ingredients = listOf("2 rebanadas Pan integral", "1 Aguacate maduro", "2 Huevos"),
+            ingredientTags = listOf("Sal de mar", "Pimienta", "Limón"),
+            steps = listOf(
+                RecipeStep("Tostar pan", "Tuesta las rebanadas de pan hasta que estén doradas."),
+                RecipeStep("Preparar aguacate", "Aplasta el aguacate con limón, sal y pimienta."),
+                RecipeStep("Pochar huevos", "Escalfa los huevos en agua con vinagre blanco por 3 minutos.")
+            )
+        ),
+        Recipe(
+            id = "14",
+            title = "Tacos de Frijoles Negros",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 20,
+            calories = 430,
+            difficulty = "Fácil",
+            category = "Almuerzo",
+            categorySubtitle = "Equilibrado y Nutritivo",
+            description = "Tacos vegetarianos con frijoles negros, pico de gallo y queso fresco.",
+            proteinGrams = 16,
+            carbsGrams = 55,
+            fatGrams = 14,
+            ingredients = listOf("1 lata Frijoles negros", "8 Tortillas maíz", "2 Tomates"),
+            ingredientTags = listOf("Cilantro", "Cebolla", "Queso fresco"),
+            steps = listOf(
+                RecipeStep("Calentar frijoles", "Calienta los frijoles con comino y ajo en sartén."),
+                RecipeStep("Pico de gallo", "Pica tomate, cebolla y cilantro. Mezcla con limón."),
+                RecipeStep("Armar tacos", "Coloca frijoles en tortillas calientes y agrega pico de gallo.")
+            )
+        ),
+        Recipe(
+            id = "15",
+            title = "Ensalada Caprese",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 8,
+            calories = 260,
+            difficulty = "Fácil",
+            category = "Cena",
+            categorySubtitle = "Ligero y Acogedor",
+            description = "Clásica ensalada italiana con tomate, mozzarella fresca y albahaca.",
+            proteinGrams = 14,
+            carbsGrams = 8,
+            fatGrams = 18,
+            ingredients = listOf("3 Tomates maduros", "200g Mozzarella fresca", "Albahaca fresca"),
+            ingredientTags = listOf("Aceite de oliva virgen", "Sal gruesa", "Pimienta"),
+            steps = listOf(
+                RecipeStep("Cortar ingredientes", "Corta tomate y mozzarella en rodajas de 1cm."),
+                RecipeStep("Montar ensalada", "Intercala tomate y mozzarella. Añade albahaca entre cada capa."),
+                RecipeStep("Aderezar", "Rocía con aceite de oliva, sal gruesa y pimienta al gusto.")
+            )
+        )
+    ),
+    // F3-26: Sábado — 3 recetas nuevas
+    "Sábado" to listOf(
+        Recipe(
+            id = "16",
+            title = "Pancakes de Avena con Arándanos",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 20,
+            calories = 340,
+            difficulty = "Fácil",
+            category = "Desayuno",
+            categorySubtitle = "Impulso de Energía",
+            description = "Pancakes esponjosos de avena sin azúcar refinada con arándanos frescos.",
+            proteinGrams = 12,
+            carbsGrams = 48,
+            fatGrams = 10,
+            ingredients = listOf("1 taza Avena molida", "2 Huevos", "1/2 taza Leche"),
+            ingredientTags = listOf("Arándanos", "Miel", "Canela"),
+            steps = listOf(
+                RecipeStep("Mezclar masa", "Combina avena, huevos y leche hasta obtener masa homogénea."),
+                RecipeStep("Cocinar", "Vierte cucharadas de masa en sartén antiadherente a fuego medio."),
+                RecipeStep("Servir", "Acompaña con arándanos frescos y un toque de miel.")
+            )
+        ),
+        Recipe(
+            id = "17",
+            title = "Paella Vegetariana",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 45,
+            calories = 520,
+            difficulty = "Difícil",
+            category = "Almuerzo",
+            categorySubtitle = "Equilibrado y Nutritivo",
+            description = "Paella española con vegetales de temporada, azafrán y pimentón ahumado.",
+            proteinGrams = 14,
+            carbsGrams = 82,
+            fatGrams = 16,
+            ingredients = listOf("2 tazas Arroz bomba", "1 Pimiento rojo", "1 Calabacín"),
+            ingredientTags = listOf("Azafrán", "Pimentón ahumado", "Caldo vegetal"),
+            steps = listOf(
+                RecipeStep("Sofreír vegetales", "Saltea pimiento, calabacín y tomate en aceite de oliva."),
+                RecipeStep("Añadir arroz", "Agrega el arroz y sofríe 2 min. Incorpora el azafrán."),
+                RecipeStep("Cocinar a fuego lento", "Vierte el caldo caliente y cocina 18 min sin remover.")
+            )
+        ),
+        Recipe(
+            id = "18",
+            title = "Sopa de Lentejas Rojas",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 25,
+            calories = 310,
+            difficulty = "Fácil",
+            category = "Cena",
+            categorySubtitle = "Ligero y Acogedor",
+            description = "Reconfortante sopa de lentejas rojas con curry suave y leche de coco.",
+            proteinGrams = 18,
+            carbsGrams = 38,
+            fatGrams = 8,
+            ingredients = listOf("1 taza Lentejas rojas", "1 lata Tomates pelados", "200ml Leche de coco"),
+            ingredientTags = listOf("Curry en polvo", "Cúrcuma", "Cilantro"),
+            steps = listOf(
+                RecipeStep("Sofrito base", "Saltea cebolla y ajo. Añade curry y cúrcuma, cocina 1 min."),
+                RecipeStep("Añadir lentejas", "Incorpora lentejas, tomates y caldo. Hierve 15 min."),
+                RecipeStep("Finalizar", "Agrega leche de coco y ajusta sal. Sirve con cilantro.")
+            )
+        )
+    ),
+    // F3-26: Domingo — 3 recetas nuevas
+    "Domingo" to listOf(
+        Recipe(
+            id = "19",
+            title = "French Toast con Frutas",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 15,
+            calories = 360,
+            difficulty = "Fácil",
+            category = "Desayuno",
+            categorySubtitle = "Impulso de Energía",
+            description = "Torrija francesa esponjosa con miel y frutas frescas de temporada.",
+            proteinGrams = 14,
+            carbsGrams = 44,
+            fatGrams = 16,
+            ingredients = listOf("4 rebanadas Pan brioche", "3 Huevos", "1/2 taza Leche"),
+            ingredientTags = listOf("Canela", "Vainilla", "Frutas mixtas"),
+            steps = listOf(
+                RecipeStep("Preparar mezcla", "Bate huevos, leche, canela y vainilla en un tazón."),
+                RecipeStep("Remojar pan", "Sumerge cada rebanada en la mezcla por 30 segundos."),
+                RecipeStep("Dorar y servir", "Cocina en mantequilla hasta dorar. Sirve con frutas y miel.")
+            )
+        ),
+        Recipe(
+            id = "20",
+            title = "Arroz con Pollo Colombiano",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 50,
+            calories = 540,
+            difficulty = "Difícil",
+            category = "Almuerzo",
+            categorySubtitle = "Equilibrado y Nutritivo",
+            description = "Clásico arroz con pollo colombiano con cilantro, zanahoria y arvejas.",
+            proteinGrams = 38,
+            carbsGrams = 58,
+            fatGrams = 14,
+            ingredients = listOf("500g Pollo", "2 tazas Arroz", "1 Zanahoria"),
+            ingredientTags = listOf("Cilantro", "Arvejas", "Caldo de pollo"),
+            steps = listOf(
+                RecipeStep("Cocinar pollo", "Hierve el pollo con cebolla y ajo hasta suavizar. Reserva el caldo."),
+                RecipeStep("Sofreír", "Sofríe arroz con zanahoria y arvejas en aceite hasta dorar."),
+                RecipeStep("Cocinar junto", "Agrega el pollo desmechado y el caldo. Cocina 20 min a fuego bajo.")
+            )
+        ),
+        Recipe(
+            id = "21",
+            title = "Sopa de Tomate Rostizado",
+            imageUrl = "img_placeholder",
+            timeInMinutes = 35,
+            calories = 200,
+            difficulty = "Fácil",
+            category = "Cena",
+            categorySubtitle = "Ligero y Acogedor",
+            description = "Sopa de tomates rostizados con albahaca fresca y un toque de crema.",
+            proteinGrams = 5,
+            carbsGrams = 22,
+            fatGrams = 10,
+            ingredients = listOf("6 Tomates maduros", "1 Cebolla", "3 dientes Ajo"),
+            ingredientTags = listOf("Albahaca fresca", "Crema de leche", "Pan tostado"),
+            steps = listOf(
+                RecipeStep("Rostizar", "Asa tomates, cebolla y ajo en horno 200°C por 25 minutos."),
+                RecipeStep("Licuar", "Procesa todo junto con caldo hasta obtener sopa suave."),
+                RecipeStep("Servir", "Cuela, calienta y sirve con albahaca y un chorrito de crema.")
+            )
+        )
     )
 )
 

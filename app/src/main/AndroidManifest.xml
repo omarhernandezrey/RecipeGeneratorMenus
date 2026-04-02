@@ -26,6 +26,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- F3-04: Segunda Activity — LF5: pila de actividades, Intent + putExtra -->
+        <activity
+            android:name=".presentation.detail.RecipeDetailActivity"
+            android:exported="false"
+            android:label="Detalle Receta"
+            android:theme="@style/Theme.RecipeGenerator"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- F3-25: AppWidget — LF7: widget en escritorio del dispositivo -->
+        <receiver
+            android:name=".widget.RecipeWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/recipe_widget_info" />
+        </receiver>
     </application>
 
 </manifest>
