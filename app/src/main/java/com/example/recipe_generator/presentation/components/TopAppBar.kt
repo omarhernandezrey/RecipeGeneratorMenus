@@ -1,14 +1,12 @@
 package com.example.recipe_generator.presentation.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,21 +25,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.recipe_generator.R
 import com.example.recipe_generator.presentation.theme.Background
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
 import com.example.recipe_generator.presentation.theme.PrimaryFixedDim
-import com.example.recipe_generator.presentation.theme.SurfaceContainer
 import com.example.recipe_generator.presentation.theme.spacing_3
 import com.example.recipe_generator.presentation.theme.spacing_4
-import com.example.recipe_generator.presentation.theme.spacing_6
 
 private val TopBarSlotWidth = 84.dp
 private val TopBarRowHeight = 64.dp
@@ -109,19 +102,7 @@ fun EditorialTopAppBar(
 fun DefaultProfileAvatar(
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(SurfaceContainer)
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.img_placeholder),
-            contentDescription = "Perfil",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-    }
+    InitialProfileAvatar(initial = "U", modifier = modifier)
 }
 
 @Composable
