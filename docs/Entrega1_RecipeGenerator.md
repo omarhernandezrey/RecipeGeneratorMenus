@@ -162,14 +162,14 @@ El proyecto se desarrolla con la siguiente pila tecnológica, aprobada por el do
 | Lenguaje | Kotlin 2.2.10 |
 | UI | Jetpack Compose + Material Design 3 |
 | Arquitectura | MVVM + Clean Architecture (Presentation / Domain / Data) |
-| Navegación | Navigation Component — `navController.navigate()` |
+| Navegación | Navigation Component — `NavHostFragment` + `main_nav_graph.xml` |
 | Base de datos | Room Database (SQLite local) |
 | Persistencia liviana | DataStore Preferences |
 | Estado | `StateFlow` + `collectAsStateWithLifecycle()` |
 | Concurrencia | Kotlin Coroutines + Flow (`viewModelScope`) |
 | Build | Gradle Kotlin DSL + Version Catalog (`libs.versions.toml`) |
 | SDK mínimo | API 24 — Android 7.0 Nougat |
-| SDK objetivo | API 35 — Android 15 |
+| SDK objetivo | API 36 — Android 16 |
 | IDE | Android Studio Panda 2025.3.2 |
 
 ---
@@ -315,7 +315,282 @@ los ajustes guardados en DataStore se restauran correctamente al reiniciar.
 | OE-04 | Implementar | Navegación entre Activities y Fragments | NavHost, Intent, Fragment + ComposeView | LF5, LF6 |
 | OE-05 | Persistir | Datos locales con Room y DataStore | Room DB (21 recetas), DataStore Preferences | LF1, LF2 |
 
-*Las secciones siguientes se completan en las tareas F1-05 a F1-10.*
+## 5. Requerimientos Funcionales
+
+Los requerimientos funcionales de la aplicación se definen a continuación con foco en la
+primera entrega documental y en la arquitectura ya aprobada para el proyecto.
+
+| ID | Requerimiento funcional | Prioridad | Criterio de aceptación |
+|---|---|---|---|
+| RF-01 | El sistema debe permitir visualizar el menú semanal organizado por día y por tipo de comida. | Alta | El usuario puede cambiar de día y ver recetas de desayuno, almuerzo y cena en la pantalla principal. |
+| RF-02 | El sistema debe permitir consultar el detalle completo de una receta. | Alta | Al seleccionar una receta se muestran imagen, tiempo, calorías, ingredientes y pasos. |
+| RF-03 | El sistema debe permitir marcar y desmarcar recetas como favoritas. | Alta | El usuario puede activar o desactivar el favorito y el estado visual cambia de inmediato. |
+| RF-04 | El sistema debe mostrar una pantalla exclusiva para favoritos. | Alta | Existe una vista con solo recetas favoritas y esta se actualiza al cambiar el estado de favorito. |
+| RF-05 | El sistema debe permitir filtrar favoritos por texto y categoría. | Media | El usuario puede escribir una búsqueda y seleccionar categoría para reducir el listado. |
+| RF-06 | El sistema debe generar un menú según preferencias del usuario. | Alta | El usuario puede combinar dificultad, tipo de comida, dietas y porciones para obtener resultados. |
+| RF-07 | El sistema debe permitir configurar preferencias persistentes. | Alta | Tema, idioma, porciones y dietas se guardan y se restauran al reiniciar la aplicación. |
+| RF-08 | El sistema debe incorporar un panel lateral con accesos rápidos a módulos complementarios. | Media | El usuario puede abrir opciones como perfil, fotos, video, web y controles desde el menú lateral. |
+| RF-09 | El sistema debe reproducir un video local dentro de la aplicación. | Media | El módulo de video carga un recurso local y el usuario puede reproducirlo y pausarlo. |
+| RF-10 | El sistema debe permitir visualizar una página web desde un `WebView`. | Media | El usuario escribe o selecciona una URL y el contenido se carga dentro de la app. |
+| RF-11 | El sistema debe incluir una pantalla de demostración de controles del módulo. | Media | Se muestran y responden controles como `Button`, `Checkbox`, `RadioButton`, `Switch`, `Dropdown` y listas. |
+| RF-12 | El sistema debe funcionar sin depender de servicios backend externos. | Alta | Las recetas, favoritos y preferencias pueden consultarse y modificarse con persistencia local. |
+
+---
+
+## 6. Requerimientos No Funcionales
+
+| ID | Requerimiento no funcional | Tipo | Criterio verificable |
+|---|---|---|---|
+| RNF-01 | La aplicación debe ser compatible con Android API 24 en adelante. | Compatibilidad | El proyecto compila con `minSdk 24` y `targetSdk 36`. |
+| RNF-02 | La aplicación debe mantener una experiencia completamente offline en su operación base. | Disponibilidad | Las funciones principales continúan operando sin conexión a Internet. |
+| RNF-03 | La pantalla principal debe mostrarse en un tiempo máximo de 3 segundos en un dispositivo de gama media con datos locales. | Rendimiento | El usuario puede abrir la app y ver contenido inicial sin tiempos de espera prolongados. |
+| RNF-04 | Las interacciones locales deben responder en menos de 300 ms para cambios de filtros y favoritos. | Rendimiento | Cambios de estado como favoritos o filtros se reflejan sin percepción de bloqueo. |
+| RNF-05 | El código debe mantener separación estricta entre Presentation, Domain y Data. | Mantenibilidad | Las dependencias entre capas se conservan unidireccionales y el proyecto sigue MVVM + Clean Architecture. |
+| RNF-06 | La interfaz debe ser consistente y usable en orientación vertical sobre teléfonos Android. | Usabilidad | Todas las pantallas principales son navegables y legibles sin solapamientos. |
+| RNF-07 | Los controles táctiles deben respetar tamaños recomendados y contraste suficiente. | Accesibilidad | Botones, switches y elementos interactivos son visibles y accionables en pantallas móviles. |
+| RNF-08 | La persistencia de favoritos y preferencias debe sobrevivir al cierre de la aplicación. | Confiabilidad | Al cerrar y abrir de nuevo, el usuario recupera su configuración y favoritos previos. |
+| RNF-09 | La solución debe evitar dependencias innecesarias de terceros para carga remota de datos o imágenes. | Seguridad / mantenibilidad | La base del proyecto funciona con recursos y datos locales sin servicios externos obligatorios. |
+| RNF-10 | La documentación de la Entrega 1 debe estar estructurada bajo formato académico APA. | Documentación | El documento incluye carátula, tabla de contenido, cuerpo temático y referencias. |
+
+---
+
+## 7. Diagrama de Casos de Uso
+
+```mermaid
+flowchart LR
+    U[Usuario]
+    CU1((Ver menú semanal))
+    CU2((Ver detalle de receta))
+    CU3((Gestionar favoritos))
+    CU4((Generar menú personalizado))
+    CU5((Configurar preferencias))
+    CU6((Usar panel lateral))
+    CU7((Consultar fotos, video y web))
+    CU8((Explorar controles de interfaz))
+
+    U --> CU1
+    U --> CU2
+    U --> CU3
+    U --> CU4
+    U --> CU5
+    U --> CU6
+    U --> CU7
+    U --> CU8
+    CU1 --> CU2
+    CU2 --> CU3
+    CU6 --> CU7
+```
+
+### Descripción resumida de casos de uso
+
+- **CU-01 Ver menú semanal:** permite consultar las recetas por día y tipo de comida.
+- **CU-02 Ver detalle de receta:** expone información ampliada de una receta específica.
+- **CU-03 Gestionar favoritos:** permite agregar o quitar recetas favoritas.
+- **CU-04 Generar menú personalizado:** construye propuestas de menú con filtros seleccionados.
+- **CU-05 Configurar preferencias:** almacena tema, idioma, porciones y dietas.
+- **CU-06 Usar panel lateral:** habilita navegación a módulos auxiliares.
+- **CU-07 Consultar fotos, video y web:** cubre los componentes multimedia solicitados.
+- **CU-08 Explorar controles de interfaz:** demuestra controles LF7 y LF8 dentro de Compose.
+
+---
+
+## 8. Diagrama de Clases
+
+```mermaid
+classDiagram
+    class MainActivity
+    class ComposeScreenFragment
+    class HomeFragment
+    class FavoritesFragment
+    class MenuGeneratorFragment
+    class SettingsFragment
+    class HomeViewModel
+    class FavoritesViewModel
+    class MenuGeneratorViewModel
+    class SettingsViewModel
+    class RecipeDetailViewModel
+    class AppContainer
+    class RecipeRepository
+    class FavoritesRepository
+    class UserPrefsRepository
+    class RecipeRepositoryImpl
+    class FavoritesRepositoryImpl
+    class UserPrefsRepositoryImpl
+    class GenerateMenuUseCase
+    class GetMenuForDayUseCase
+    class ToggleFavoriteUseCase
+    class GetRecipeDetailUseCase
+    class Recipe
+    class Ingredient
+    class RecipeStep
+    class UserPreferences
+
+    ComposeScreenFragment <|-- HomeFragment
+    ComposeScreenFragment <|-- FavoritesFragment
+    ComposeScreenFragment <|-- MenuGeneratorFragment
+    ComposeScreenFragment <|-- SettingsFragment
+
+    HomeFragment --> HomeViewModel
+    FavoritesFragment --> FavoritesViewModel
+    MenuGeneratorFragment --> MenuGeneratorViewModel
+    SettingsFragment --> SettingsViewModel
+
+    HomeViewModel --> GetMenuForDayUseCase
+    FavoritesViewModel --> ToggleFavoriteUseCase
+    FavoritesViewModel --> GetRecipeDetailUseCase
+    MenuGeneratorViewModel --> GenerateMenuUseCase
+    SettingsViewModel --> UserPrefsRepository
+    RecipeDetailViewModel --> GetRecipeDetailUseCase
+    RecipeDetailViewModel --> ToggleFavoriteUseCase
+
+    AppContainer --> RecipeRepositoryImpl
+    AppContainer --> FavoritesRepositoryImpl
+    AppContainer --> UserPrefsRepositoryImpl
+
+    RecipeRepositoryImpl ..|> RecipeRepository
+    FavoritesRepositoryImpl ..|> FavoritesRepository
+    UserPrefsRepositoryImpl ..|> UserPrefsRepository
+
+    RecipeRepository --> Recipe
+    Recipe --> Ingredient
+    Recipe --> RecipeStep
+    UserPrefsRepository --> UserPreferences
+```
+
+### Interpretación del diagrama
+
+El diagrama de clases resume la arquitectura del proyecto en tres capas:
+
+- **Presentation:** `MainActivity`, `Fragments`, pantallas Compose y `ViewModels`.
+- **Domain:** casos de uso y contratos de repositorio.
+- **Data:** implementaciones concretas de repositorios y persistencia local.
+
+---
+
+## 9. Diagrama de Secuencia
+
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant Home as HomeFragment
+    participant VM as HomeViewModel
+    participant DayUC as GetMenuForDayUseCase
+    participant Repo as RecipeRepository
+    participant Detail as RecipeDetailViewModel
+    participant FavUC as ToggleFavoriteUseCase
+    participant FavRepo as FavoritesRepository
+
+    Usuario->>Home: Selecciona una receta
+    Home->>VM: onRecipeSelected(recipeId)
+    VM->>DayUC: obtener recetas del día actual
+    DayUC->>Repo: getRecipesForDay(selectedDay)
+    Repo-->>DayUC: lista de recetas
+    DayUC-->>VM: receta seleccionada
+    VM-->>Home: estado con receta elegida
+    Home->>Detail: loadRecipe(recipeId)
+    Detail->>Repo: getRecipeById(recipeId)
+    Repo-->>Detail: detalle completo
+    Detail-->>Usuario: muestra RecipeDetail
+    Usuario->>Detail: pulsa favorito
+    Detail->>FavUC: toggleFavorite(recipeId)
+    FavUC->>FavRepo: toggleFavorite(recipeId)
+    FavRepo-->>FavUC: estado actualizado
+    FavUC-->>Detail: favorito actualizado
+    Detail-->>Usuario: icono y estado persisten
+```
+
+---
+
+## 10. Wireframes / Mockups
+
+Los siguientes wireframes de baja fidelidad representan la estructura objetivo de la UI.
+
+### 10.1 MainScreen — NavBar + Content
+
+```text
+┌──────────────────────────────────────────────┐
+│ TopAppBar: Recipe Generator                  │
+├──────────────────────────────────────────────┤
+│ Tabs por día: Lun Mar Mie Jue Vie Sab Dom    │
+├──────────────────────────────────────────────┤
+│ Lista / grid de recetas del día              │
+│ ┌──────────────────────────────────────────┐ │
+│ │ Card receta: imagen + título + meta     │ │
+│ └──────────────────────────────────────────┘ │
+│ ┌──────────────────────────────────────────┐ │
+│ │ Card receta: imagen + título + meta     │ │
+│ └──────────────────────────────────────────┘ │
+├──────────────────────────────────────────────┤
+│ BottomNavigation: Inicio | Fav | Gen | Set   │
+└──────────────────────────────────────────────┘
+```
+
+### 10.2 LeftMenu Panel
+
+```text
+┌──────────────────────────────┐
+│ Menu lateral                 │
+├──────────────────────────────┤
+│ • Perfil                     │
+│ • Fotos                      │
+│ • Video                      │
+│ • Web                        │
+│ • Controles                  │
+└──────────────────────────────┘
+```
+
+### 10.3 FavoritesScreen
+
+```text
+┌──────────────────────────────────────────────┐
+│ TopAppBar: Favoritos                         │
+├──────────────────────────────────────────────┤
+│ Buscar receta [______________]               │
+│ Categoria [Todos v]                          │
+├──────────────────────────────────────────────┤
+│ Grid de recetas favoritas                    │
+│ ┌────────────┐  ┌────────────┐               │
+│ │ Imagen     │  │ Imagen     │               │
+│ │ Título     │  │ Título     │               │
+│ │ Meta       │  │ Meta       │               │
+│ └────────────┘  └────────────┘               │
+└──────────────────────────────────────────────┘
+```
+
+### 10.4 RecipeDetail
+
+```text
+┌──────────────────────────────────────────────┐
+│ Imagen hero                                  │
+├──────────────────────────────────────────────┤
+│ Título receta                [♡ / ♥]         │
+│ Tiempo | Calorías | Dificultad               │
+├──────────────────────────────────────────────┤
+│ Ingredientes                                  │
+│ - ingrediente 1                               │
+│ - ingrediente 2                               │
+├──────────────────────────────────────────────┤
+│ Preparación                                   │
+│ 1. Paso uno                                   │
+│ 2. Paso dos                                   │
+└──────────────────────────────────────────────┘
+```
+
+### 10.5 SettingsScreen
+
+```text
+┌──────────────────────────────────────────────┐
+│ TopAppBar: Ajustes                           │
+├──────────────────────────────────────────────┤
+│ Tema oscuro                [Switch]          │
+│ Idioma: ( ) ES ( ) EN ( ) PT                 │
+│ Porciones por defecto      [ 4 personas v ]  │
+│ Dietas preferidas          [x] Veg [ ] Keto  │
+│                           [x] Fit  [ ] Low C │
+├──────────────────────────────────────────────┤
+│ Botón Guardar                                │
+└──────────────────────────────────────────────┘
+```
 
 ---
 
@@ -324,11 +599,19 @@ los ajustes guardados en DataStore se restauran correctamente al reiniciar.
 Google LLC. (2024). *Jetpack Compose — Android Developers*.
 https://developer.android.com/jetpack/compose
 
-Google LLC. (2024). *Material Design 3 for Android*.
-https://m3.material.io/develop/android/jetpack-compose
-
 Google LLC. (2024). *Guide to app architecture — Android Developers*.
 https://developer.android.com/topic/architecture
 
-Politécnico Grancolombiano. (2026). *Plan Maestro Recipe Generator v3.0 —
-Herramientas de Programación Móvil I*. Bogotá, Colombia.
+Google LLC. (2024). *Navigation component for Android*.
+https://developer.android.com/guide/navigation
+
+Google LLC. (2024). *Save data in a local database using Room*.
+https://developer.android.com/training/data-storage/room
+
+Google LLC. (2024). *DataStore for local persistence*.
+https://developer.android.com/topic/libraries/architecture/datastore
+
+Material Design. (2024). *Material Design 3 for Android*.
+https://m3.material.io/develop/android/jetpack-compose
+
+Politécnico Grancolombiano. (2026). *Plan Maestro Recipe Generator v3.0 — Herramientas de Programación Móvil I*. Bogotá, Colombia.

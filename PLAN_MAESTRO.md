@@ -95,8 +95,8 @@ Este documento es el Plan Maestro de Desarrollo para la aplicación Recipe Gener
 |---|---|
 | **Lenguaje** | Kotlin 2.2.10 |
 | **SDK Mínimo** | API 24 — Android 7.0 Nougat (~95% de dispositivos activos) |
-| **SDK Objetivo** | API 35 — Android 15 |
-| **UI Framework** | Android Views (XML Layouts) + Fragments + Activities |
+| **SDK Objetivo** | API 36 — Android 16 |
+| **UI Framework** | Jetpack Compose + Fragments + `ComposeView` |
 | **Arquitectura** | MVVM + Clean Architecture (3 capas explícitas) |
 | **Base de Datos** | Room Database (SQLite) — completamente local, sin backend externo |
 | **Persistencia Liviana** | DataStore Preferences (tema, idioma, porciones por defecto) |
@@ -233,14 +233,14 @@ Establece los fundamentos arquitectónicos. Debe completarse antes de cualquier 
 |---|---|---|---|---|
 | F0-01 | ARQUITECTURA | **Definir arquitectura MVVM + Clean Architecture** — Layers: Presentation / Domain / Data | 1-2 | ✅ COMPLETADO |
 | F0-02 | ARQUITECTURA | **Refactorizar estructura de paquetes por capas** — presentation/ · domain/ · data/ · di/ · widget/ | 1-2 | ✅ COMPLETADO |
-| F0-03 | ARQUITECTURA | **Migrar estado a ViewModels con StateFlow** — Un ViewModel por pantalla principal | 1-2 | ⬜ PENDIENTE |
-| F0-04 | ARQUITECTURA | **Implementar inyección de dependencias manual** — AppContainer en Application class (sin Hilt) | 1-2 | ⬜ PENDIENTE |
-| F0-05 | ARQUITECTURA | **Migrar de Jetpack Compose a Views XML + Fragments** — Requisito académico: actividades y fragmentos (LF5, LF6) | 1-2 | ⬜ PENDIENTE |
-| F0-06 | ARQUITECTURA | **Configurar NavHostFragment + nav_graph.xml** — Navegación declarativa entre fragmentos | 1-2 | ⬜ PENDIENTE |
-| F0-07 | BACKEND | **Agregar dependencias Room al build.gradle.kts** — room-runtime + room-ktx + kapt room-compiler | 1 | ⬜ PENDIENTE |
-| F0-08 | BACKEND | **Agregar dependencias Kotlin Coroutines** — kotlinx-coroutines-android | 1 | ⬜ PENDIENTE |
-| F0-09 | DOCS | **Actualizar README con arquitectura y dependencias reales** — Corregir minSdk(24), compileSdk(35), stack tecnológico | 1 | ⬜ PENDIENTE |
-| F0-10 | DATOS | **Eliminar archivos legacy: RecipeCard.kt, EditorialRecipeCard.kt** — No se usan en ninguna pantalla activa | 1 | ⬜ PENDIENTE |
+| F0-03 | ARQUITECTURA | **Migrar estado a ViewModels con StateFlow** — `collectAsStateWithLifecycle()` en cada Composable | 1-2 | ✅ COMPLETADO |
+| F0-04 | ARQUITECTURA | **Implementar inyección de dependencias manual** — `AppContainer` en `Application` class (sin Hilt) | 1-2 | ✅ COMPLETADO |
+| F0-05 | ARQUITECTURA | **Confirmar Jetpack Compose como UI principal** — Mantener Compose, reemplazar UI legacy y hostear cada pantalla en `ComposeView` | 1-2 | ✅ COMPLETADO |
+| F0-06 | ARQUITECTURA | **Configurar Navigation Component con Fragments + ComposeView** — `nav_graph.xml` con destinos `Fragment` | 1-2 | ✅ COMPLETADO |
+| F0-07 | BACKEND | **Agregar dependencias Room al `build.gradle.kts`** — `room-runtime` + `room-ktx` + `ksp room-compiler` | 1 | ✅ COMPLETADO |
+| F0-08 | BACKEND | **Agregar dependencias Compose BOM + Material3 + Navigation + Coroutines + Lifecycle** | 1 | ✅ COMPLETADO |
+| F0-09 | DOCS | **Actualizar README con arquitectura real** — Stack Compose + MVVM + Clean + Room. Corregir `minSdk(24)` y SDK objetivo | 1 | ✅ COMPLETADO |
+| F0-10 | DATOS | **Eliminar archivos legacy: `RecipeCard.kt`, `EditorialRecipeCard.kt`** — Limpiar imports de Coil y URLs externas | 1 | ✅ COMPLETADO |
 
 ---
 
@@ -250,31 +250,31 @@ Establece los fundamentos arquitectónicos. Debe completarse antes de cualquier 
 
 ### Checklist Rápido Entrega 1 — Semana 3
 
-- ⬜ [F1-01] Redactar título de la aplicación
-- ⬜ [F1-02] Redactar descripción completa — Propósito + público objetivo + alcance
-- ⬜ [F1-03] Objetivo General (verbo + qué + cómo + para qué)
-- ⬜ [F1-04] 4–5 Objetivos Específicos medibles — Alineados con LF1–LF8
-- ⬜ [F1-05] Requerimientos Funcionales (mín. 10 RF-XX)
-- ⬜ [F1-06] Requerimientos No Funcionales — Rendimiento, seguridad, usabilidad
-- ⬜ [F1-07] Diagrama Casos de Uso UML
-- ⬜ [F1-08] Diagrama de Clases UML
-- ⬜ [F1-09] Diagrama de Secuencia UML (flujo principal)
-- ⬜ [F1-10] Wireframes de la interfaz gráfica — MainActivity + 2 fragmentos + RecipeDetailActivity
-- ⬜ [F1-11] Entregar Documento Entrega 1 normas APA — Carátula + TOC + referencias
+- ✅ [F1-01] Redactar título de la aplicación
+- ✅ [F1-02] Redactar descripción completa — Propósito + público objetivo + alcance
+- ✅ [F1-03] Objetivo General (verbo + qué + cómo + para qué)
+- ✅ [F1-04] 4–5 Objetivos Específicos medibles — Alineados con LF1–LF8
+- ✅ [F1-05] Requerimientos Funcionales (mín. 10 RF-XX)
+- ✅ [F1-06] Requerimientos No Funcionales — Rendimiento, seguridad, usabilidad
+- ✅ [F1-07] Diagrama Casos de Uso UML
+- ✅ [F1-08] Diagrama de Clases UML
+- ✅ [F1-09] Diagrama de Secuencia UML (flujo principal)
+- ✅ [F1-10] Wireframes de la interfaz gráfica — MainScreen + RecipeDetail + LeftMenu panel
+- ✅ [F1-11] Entregar Documento Entrega 1 normas APA — Carátula + TOC + referencias
 
 | ID | Categoría | Tarea / Descripción | Semana | Estado |
 |---|---|---|---|---|
-| F1-01 | DOCS | **Redactar Título de la aplicación** — "Recipe Generator — Generador de Menús Semanales" | 3 | ⬜ PENDIENTE |
-| F1-02 | DOCS | **Redactar Descripción completa del proyecto** — Propósito, público objetivo, alcance funcional | 3 | ⬜ PENDIENTE |
-| F1-03 | DOCS | **Definir Objetivo General del proyecto** — Verbo infinitivo + qué + cómo + para qué | 3 | ⬜ PENDIENTE |
-| F1-04 | DOCS | **Definir 4-5 Objetivos Específicos medibles** — Alineados con LF1-LF8 del módulo | 3 | ⬜ PENDIENTE |
-| F1-05 | DOCS | **Levantar Requerimientos Funcionales (mín. 10 RF-XX)** — RF-01: Ver menú semanal, RF-02: Buscar receta, etc. | 3 | ⬜ PENDIENTE |
-| F1-06 | DOCS | **Levantar Requerimientos No Funcionales** — Rendimiento, seguridad, usabilidad, portabilidad | 3 | ⬜ PENDIENTE |
-| F1-07 | DOCS | **Crear Diagrama de Casos de Uso UML** — Actor: Usuario. CU: Ver menú, buscar, favorito, generar, configurar | 3 | ⬜ PENDIENTE |
-| F1-08 | DOCS | **Crear Diagrama de Clases UML** — Entidades: Recipe, RecipeStep, Ingredient, UserPrefs, Repos (interfaces) | 3 | ⬜ PENDIENTE |
-| F1-09 | DOCS | **Crear Diagrama de Secuencia UML (flujo principal)** — Seleccionar receta → ver detalle → agregar favorito | 3 | ⬜ PENDIENTE |
-| F1-10 | DOCS | **Diseñar wireframes de la interfaz gráfica** — MainActivity + 2 fragmentos + RecipeDetailActivity | 3 | ⬜ PENDIENTE |
-| F1-11 | DOCS | **Entregar Documento Entrega 1 en normas APA** — Carátula, TOC, cuerpo, referencias | 3 | ⬜ PENDIENTE |
+| F1-01 | DOCS | **Redactar Título de la aplicación** — "Recipe Generator — Generador de Menús Semanales" | 3 | ✅ COMPLETADO |
+| F1-02 | DOCS | **Redactar Descripción completa del proyecto** — Propósito, público objetivo, alcance funcional | 3 | ✅ COMPLETADO |
+| F1-03 | DOCS | **Definir Objetivo General del proyecto** — Verbo infinitivo + qué + cómo + para qué | 3 | ✅ COMPLETADO |
+| F1-04 | DOCS | **Definir 4-5 Objetivos Específicos medibles** — Alineados con LF1-LF8 del módulo | 3 | ✅ COMPLETADO |
+| F1-05 | DOCS | **Levantar Requerimientos Funcionales (mín. 10 RF-XX)** — RF-01: Ver menú semanal, RF-02: Buscar receta, etc. | 3 | ✅ COMPLETADO |
+| F1-06 | DOCS | **Levantar Requerimientos No Funcionales** — Rendimiento, seguridad, usabilidad, portabilidad | 3 | ✅ COMPLETADO |
+| F1-07 | DOCS | **Crear Diagrama de Casos de Uso UML** — Actor: Usuario. CU: Ver menú, buscar, favorito, generar, configurar | 3 | ✅ COMPLETADO |
+| F1-08 | DOCS | **Crear Diagrama de Clases UML** — Entidades: Recipe, RecipeStep, Ingredient, UserPrefs, Repos (interfaces) | 3 | ✅ COMPLETADO |
+| F1-09 | DOCS | **Crear Diagrama de Secuencia UML (flujo principal)** — Seleccionar receta → ver detalle → agregar favorito | 3 | ✅ COMPLETADO |
+| F1-10 | DOCS | **Diseñar wireframes / mockups de la UI en Compose** — MainScreen (NavBar + Content) + RecipeDetail + LeftMenu panel | 3 | ✅ COMPLETADO |
+| F1-11 | DOCS | **Entregar Documento Entrega 1 en normas APA** — Carátula, TOC, cuerpo, referencias | 3 | ✅ COMPLETADO |
 
 ---
 
@@ -460,11 +460,11 @@ Establece los fundamentos arquitectónicos. Debe completarse antes de cualquier 
 
 | FASE | N.º TAREAS | SEMANAS | ENTREGA | ESTADO |
 |---|---|---|---|---|
-| **FASE 0** — Arquitectura Base | 10 | 1–2 | Prerequisito | ✅ 2/10 |
-| **FASE 1** — Planificación | 11 | 3 | Entrega 1 | ⬜ 0/11 |
+| **FASE 0** — Arquitectura Base | 10 | 1–2 | Prerequisito | ✅ 10/10 |
+| **FASE 1** — Planificación | 11 | 3 | Entrega 1 | ✅ 11/11 |
 | **FASE 2** — Implementación Base | 25 | 4–5 | Entrega 2 | ⬜ 0/25 |
 | **FASE 3** — App Completa | 43 | 6–8 | Entrega 3 | ⬜ 0/43 |
-| **TOTAL DEL PROYECTO** | **89 tareas** | **1–8** | **Proyecto Grupal** | **1% completado (1/89)** |
+| **TOTAL DEL PROYECTO** | **89 tareas** | **1–8** | **Proyecto Grupal** | **24% completado (21/89)** |
 
 ---
 

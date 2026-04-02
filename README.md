@@ -2,14 +2,12 @@
 
 Aplicacion Android nativa desarrollada para la materia **Herramientas de Programacion Movil I** del **Politecnico Grancolombiano**.
 
-La rama `JULIAN-F0-F10` deja cerrada la base de la **Fase 0** con:
+El estado actual del repositorio deja integradas las contribuciones de **Julian** en la **Fase 0** y de **Omar** en la **Fase 1 (Entrega 1)**.
 
-- Jetpack Compose + Material Design 3 como UI principal
-- Navigation Component con `Fragments` hosteando `ComposeView`
-- Arquitectura por capas `presentation / domain / data / di / widget`
-- Inyeccion manual de dependencias con `AppContainer`
-- Room y DataStore configurados en Gradle
-- Limpieza de restos legacy de Coil e imagenes remotas
+## Estado consolidado
+
+- **Fase 0** completada: arquitectura base, navegacion con `Fragments` + `ComposeView`, ViewModels con `StateFlow`, `AppContainer`, Gradle alineado y limpieza legacy.
+- **Fase 1** completada: documento de Entrega 1 en [docs/Entrega1_RecipeGenerator.md](docs/Entrega1_RecipeGenerator.md) con titulo, descripcion, objetivos, requerimientos, UML, wireframes y referencias.
 
 ## Stack tecnico
 
@@ -24,22 +22,34 @@ La rama `JULIAN-F0-F10` deja cerrada la base de la **Fase 0** con:
 | Persistencia | DataStore Preferences |
 | Base de datos | Room (dependencias preparadas para F2) |
 | Estado reactivo | `StateFlow` + `collectAsStateWithLifecycle()` |
-| SDK | `minSdk 24` / `compileSdk 35` / `targetSdk 35` |
+| SDK | `minSdk 24` / `compileSdk 36` / `targetSdk 36` |
 
-## Estado actual de Fase 0
+## Fase 0 completada
 
-### Implementado
+- `F0-01` Arquitectura MVVM + Clean Architecture definida.
+- `F0-02` Estructura reorganizada por capas `presentation / domain / data / di / widget`.
+- `F0-03` Estado migrado a ViewModels con `StateFlow`.
+- `F0-04` Inyeccion manual con `AppContainer` inicializado desde `RecipeGeneratorApp`.
+- `F0-05` Jetpack Compose confirmado como UI principal con `ComposeView` por `Fragment`.
+- `F0-06` `Navigation Component` configurado con `main_nav_graph.xml`.
+- `F0-07` Dependencias de Room agregadas via `ksp`.
+- `F0-08` Compose BOM, Material 3, Navigation, Coroutines y Lifecycle alineados.
+- `F0-09` README y stack tecnico actualizados.
+- `F0-10` Componentes legacy, imports de Coil y referencias remotas eliminados.
 
-- `F0-01` Definicion de arquitectura MVVM + Clean Architecture
-- `F0-02` Reorganizacion de paquetes por capas
-- `F0-03` Base de ViewModels con `StateFlow`
-- `F0-04` `AppContainer` real inicializado desde `RecipeGeneratorApp`
-- `F0-05` Compose confirmado como framework principal
-- `F0-06` Navegacion base con `NavHostFragment` y destinos por `Fragment`
-- `F0-07` Dependencias Room agregadas al proyecto
-- `F0-08` Dependencias Compose, Navigation y Lifecycle alineadas
-- `F0-09` README actualizado al stack real
-- `F0-10` Limpieza de referencias a Coil, URLs remotas y componentes legacy removidos
+## Fase 1 completada
+
+- `F1-01` Titulo de la aplicacion.
+- `F1-02` Descripcion completa del proyecto.
+- `F1-03` Objetivo general.
+- `F1-04` Objetivos especificos alineados con LF1-LF8.
+- `F1-05` Requerimientos funcionales.
+- `F1-06` Requerimientos no funcionales.
+- `F1-07` Diagrama de casos de uso UML.
+- `F1-08` Diagrama de clases UML.
+- `F1-09` Diagrama de secuencia.
+- `F1-10` Wireframes / mockups de la UI.
+- `F1-11` Documento de Entrega 1 en formato APA.
 
 ### Nota de transicion
 
@@ -109,10 +119,10 @@ MainActivity
 
 ## Configuracion de build
 
-- `compileSdk = 35`
+- `compileSdk = 36`
 - `minSdk = 24`
-- `targetSdk = 35`
-- Room con `kapt`
+- `targetSdk = 36`
+- Room con `ksp`
 - Compose BOM + Material 3
 - Navigation Compose y Navigation Fragment
 - Lifecycle Runtime Compose + ViewModel KTX

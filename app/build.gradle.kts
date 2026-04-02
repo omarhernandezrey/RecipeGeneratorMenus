@@ -8,12 +8,13 @@ plugins {
 
 android {
     namespace = "com.example.recipe_generator"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.recipe_generator"
         minSdk = 24
-        targetSdk = 35
+        //noinspection EditedTargetSdkVersion
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -53,18 +54,15 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.kotlinx.coroutines.android)
     
-    // Explicitly use the BOM and force foundation versions to ensure binary compatibility
+    // Keep Compose artifacts aligned through the BOM and version catalog.
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
-    
-    // Forcing specific versions to fix NoSuchMethodError: FlowRow
-    implementation("androidx.compose.foundation:foundation:1.7.6")
-    implementation("androidx.compose.foundation:foundation-layout:1.7.6")
-    
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.material3)
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.androidx.datastore.preferences)
 
