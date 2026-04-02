@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -125,142 +126,189 @@ fun MenuGeneratorScreen(
             .background(surfaceBg)
     ) {
         val topContentPadding = editorialTopBarContentPadding()
+        val bottomContentPadding = editorialBottomBarContentPadding()
 
         // Scrollable Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = topContentPadding, bottom = editorialBottomBarContentPadding())
-                .verticalScroll(rememberScrollState())
-        ) {
-            Spacer(modifier = Modifier.height(spacing_6))
-
-            // Preferencias Dietéticas Section
-            Column(modifier = Modifier.padding(horizontal = spacing_6)) {
-                Text(
-                    text = "Preferencias Dietéticas",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = OnSurface,
-                    modifier = Modifier.padding(bottom = spacing_4)
+                .padding(
+                    top = topContentPadding,
+                    bottom = bottomContentPadding + spacing_6
                 )
-                
-                // Diet options in grid
-                Column(verticalArrangement = Arrangement.spacedBy(spacing_4)) {
-                    for (row in 0..2) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(spacing_4)
-                        ) {
-                            for (col in 0..1) {
-                                val i = row * 2 + col
-                                if (i < dietOptions.size) {
-                                    val opt = dietOptions[i]
-                                    val selected = opt.label in selectedDiets
-                                    DietOptionChip(
-                                        option = opt,
-                                        selected = selected,
-                                        onClick = { onToggleDiet(opt.label) },
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = spacing_6)
+        ) {
+            Spacer(modifier = Modifier.height(spacing_10))
+
+            // ═══════════════════════════════════════════════════════════
+            // SECTION 1: HERO + TITLE
+            // ═══════════════════════════════════════════════════════════
+            Text(
+                text = "Generador de Menú",
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.ExtraBold,
+                color = OnSurface,
+                fontSize = 32.sp
+            )
+            Text(
+                text = "Personaliza tu experiencia culinaria semanal con precisión editorial.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = OnSurfaceVariant.copy(alpha = 0.7f),
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(top = spacing_2)
+            )
+
+            Spacer(modifier = Modifier.height(spacing_10))
+
+            // ═══════════════════════════════════════════════════════════
+            // SECTION 2: PREFERENCIAS DIETÉTICAS (BENTO GRID)
+            // ═══════════════════════════════════════════════════════════
+            Text(
+                text = "Preferencias Dietéticas",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = OnSurface,
+                modifier = Modifier.padding(bottom = spacing_3, start = spacing_2)
+            )
+
+            // Diet options in grid (3 rows × 2 cols)
+            Column(verticalArrangement = Arrangement.spacedBy(spacing_3)) {
+                for (row in 0..2) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(spacing_3)
+                    ) {
+                        for (col in 0..1) {
+                            val i = row * 2 + col
+                            if (i < dietOptions.size) {
+                                val opt = dietOptions[i]
+                                val selected = opt.label in selectedDiets
+                                DietOptionChip(
+                                    option = opt,
+                                    selected = selected,
+                                    onClick = { onToggleDiet(opt.label) },
+                                    modifier = Modifier.weight(1f)
+                                )
                             }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(spacing_12))
+            Spacer(modifier = Modifier.height(spacing_10))
 
-            // Dificultad Card
-            Box(modifier = Modifier.padding(horizontal = spacing_6)) {
-                DifficultyCard(
-                    level = difficultyLevel,
-                    onLevelChange = { onDifficultySelected(sliderValueToDifficultyLabel(it)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+            // ═══════════════════════════════════════════════════════════
+            // SECTION 3: DIFICULTAD Y PORCIONES (ASYMMETRIC LAYOUT)
+            // ═══════════════════════════════════════════════════════════
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing_6)
+            ) {
+                // LEFT: Difficulty Slider (less wide)
+                Box(modifier = Modifier.weight(0.6f)) {
+                    DifficultyCard(
+                        level = difficultyLevel,
+                        onLevelChange = { onDifficultySelected(sliderValueToDifficultyLabel(it)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(spacing_6))
-
-            // Porciones Card
-            Box(modifier = Modifier.padding(horizontal = spacing_6)) {
-                PortionsCard(
-                    count = portions,
-                    onChange = onPortionsChange,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            Spacer(modifier = Modifier.height(spacing_12))
-
-            // Tipos de Recetas Section
-            Column(modifier = Modifier.padding(horizontal = spacing_6)) {
-                Text(
-                    text = "Tipos de Recetas Preferidas",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = OnSurface,
-                    modifier = Modifier.padding(bottom = spacing_4)
-                )
-                RecipeTypeChips(
-                    selected = selectedRecipeTypes,
-                    onToggle = onToggleRecipeType
-                )
-            }
-
-            Spacer(modifier = Modifier.height(spacing_12))
-
-            // Generate Button
-            Box(modifier = Modifier.padding(horizontal = spacing_6)) {
-                Button(
-                    onClick = onGenerateClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = RoundedCornerShape(rounded_full),
-                            ambientColor = Primary.copy(alpha = 0.20f)
-                        ),
-                    shape = RoundedCornerShape(rounded_full),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.horizontalGradient(listOf(Primary, PrimaryContainer)),
-                                shape = RoundedCornerShape(rounded_full)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "GENERAR MENÚ SEMANAL",
-                            color = Color.White,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
-                        )
-                    }
+                // RIGHT: Portions Stepper (more wide)
+                Box(modifier = Modifier.weight(0.4f)) {
+                    PortionsCard(
+                        count = portions,
+                        onChange = onPortionsChange,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
 
+            Spacer(modifier = Modifier.height(spacing_10))
+
+            // ═══════════════════════════════════════════════════════════
+            // SECTION 4: TIPOS DE RECETAS (MULTISELECT)
+            // ═══════════════════════════════════════════════════════════
+            Text(
+                text = "Tipos de Recetas Preferidas",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = OnSurface,
+                modifier = Modifier.padding(bottom = spacing_2, start = spacing_2)
+            )
+            RecipeTypeChips(
+                selected = selectedRecipeTypes,
+                onToggle = onToggleRecipeType
+            )
+
+            Spacer(modifier = Modifier.height(spacing_10))
+
+            // ═══════════════════════════════════════════════════════════
+            // SECTION 5: GENERATION CONTROL
+            // ═══════════════════════════════════════════════════════════
+            // Progress Bar (inactive)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(SurfaceContainer.copy(alpha = 0.4f))
+            )
+
+            Spacer(modifier = Modifier.height(spacing_6))
+
+            // Generate Button (Gradient + Shadow)
+            Button(
+                onClick = onGenerateClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .shadow(
+                        elevation = 16.dp,
+                        shape = RoundedCornerShape(rounded_full),
+                        ambientColor = Primary.copy(alpha = 0.25f)
+                    ),
+                shape = RoundedCornerShape(rounded_full),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Primary, PrimaryContainer)
+                            ),
+                            shape = RoundedCornerShape(rounded_full)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "GENERAR MENÚ SEMANAL",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.8.sp
+                    )
+                }
+            }
+
+            // Status Message
             if (isGenerating || generatedRecipes.isNotEmpty()) {
                 Text(
                     text = if (isGenerating) {
                         "Generando menú..."
                     } else {
-                        "Resultados generados: ${generatedRecipes.size}"
+                        "✓ Menú generado: ${generatedRecipes.size} receta${if (generatedRecipes.size != 1) "s" else ""}"
                     },
-                    modifier = Modifier.padding(horizontal = spacing_6, vertical = spacing_4),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = OnSurfaceVariant
+                    modifier = Modifier.padding(vertical = spacing_4),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isGenerating) OnSurfaceVariant else Secondary,
+                    fontWeight = FontWeight.Medium
                 )
             }
 
-            Spacer(modifier = Modifier.height(spacing_12))
+            Spacer(modifier = Modifier.height(spacing_6))
         }
 
         // Bottom Nav Bar
@@ -278,7 +326,7 @@ fun MenuGeneratorScreen(
                 .fillMaxWidth()
                 .background(surfaceBg)
         ) {
-            HomeEditorialTopAppBar(title = "Menú Semanal")
+            HomeEditorialTopAppBar(title = "Generador de Menú")
         }
     }
 }
