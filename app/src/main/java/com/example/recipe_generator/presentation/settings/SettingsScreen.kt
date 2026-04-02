@@ -17,32 +17,38 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
@@ -55,16 +61,13 @@ import com.example.recipe_generator.presentation.theme.OnSecondaryContainer
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Outline
-import com.example.recipe_generator.presentation.theme.OutlineVariant
 import com.example.recipe_generator.presentation.theme.Primary
 import com.example.recipe_generator.presentation.theme.SecondaryContainer
 import com.example.recipe_generator.presentation.theme.SurfaceContainerHighest
 import com.example.recipe_generator.presentation.theme.SurfaceContainerLow
-import com.example.recipe_generator.presentation.theme.SurfaceContainerLowest
 import com.example.recipe_generator.presentation.theme.rounded_full
 import com.example.recipe_generator.presentation.theme.rounded_lg
 import com.example.recipe_generator.presentation.theme.rounded_md
-import com.example.recipe_generator.presentation.theme.rounded_sm
 import com.example.recipe_generator.presentation.theme.spacing_1
 import com.example.recipe_generator.presentation.theme.spacing_10
 import com.example.recipe_generator.presentation.theme.spacing_2
@@ -73,8 +76,8 @@ import com.example.recipe_generator.presentation.theme.spacing_4
 import com.example.recipe_generator.presentation.theme.spacing_6
 
 private val dietLabels = listOf("Vegetariano", "Vegano", "Sin Gluten", "Keto", "Paleo")
-private val themeOptions = listOf("Claro", "Oscuro", "Sistema")
 private val languageOptions = listOf("Español", "Inglés", "Portugués")
+private val portionOptions = (1..10).map { it.toString() }
 
 @Composable
 fun SettingsScreen(
@@ -107,10 +110,7 @@ fun SettingsScreen(
             onLanguageSelect = onLanguageSelect
         )
 
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-        ) {
+        Box(modifier = Modifier.align(Alignment.BottomCenter)) {
             EditorialBottomNavBar(
                 selectedItem = selectedNavItem,
                 onItemSelected = onNavItemSelected
@@ -128,6 +128,7 @@ fun SettingsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SettingsContent(
     selectedDiets: Set<String>,
@@ -146,14 +147,14 @@ private fun SettingsContent(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(spacing_10)
     ) {
-        // Section 1: Preferencias de Cocina
+        // ── Sección 1: Preferencias de Cocina ─────────────────────────
         Column(
             modifier = Modifier.padding(horizontal = spacing_6),
             verticalArrangement = Arrangement.spacedBy(spacing_6)
         ) {
             SectionHeader(icon = Icons.Outlined.Tune, title = "Preferencias de Cocina")
 
-            // Diet MultiSelect card
+            // Dietas: chips multi-selección
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -169,14 +170,11 @@ private fun SettingsContent(
                         color = OnSurfaceVariant,
                         letterSpacing = 1.2.sp
                     )
-                    DietChips(
-                        selected = selectedDiets,
-                        onToggle = onToggleDiet
-                    )
+                    DietChips(selected = selectedDiets, onToggle = onToggleDiet)
                 }
             }
 
-            // Default Portions card
+            // F3-20: ExposedDropdownMenuBox para porciones (LF8: Spinner equiv M3)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -184,35 +182,30 @@ private fun SettingsContent(
                     .background(SurfaceContainerLow)
                     .padding(spacing_6)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Porciones por defecto",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = OnSurface
-                        )
-                        Spacer(modifier = Modifier.height(spacing_1))
-                        Text(
-                            text = "Ajuste automático para cada receta",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = OnSurfaceVariant,
-                            fontSize = 12.sp
-                        )
-                    }
-                    PortionsStepper(
-                        count = defaultPortions,
+                Column(verticalArrangement = Arrangement.spacedBy(spacing_4)) {
+                    Text(
+                        text = "Porciones por defecto",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = OnSurfaceVariant,
+                        letterSpacing = 1.2.sp
+                    )
+                    Text(
+                        text = "Ajuste automático para cada receta",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OnSurfaceVariant,
+                        fontSize = 12.sp
+                    )
+                    // ExposedDropdownMenuBox — equivalente M3 de Spinner (LF8 — F3-20)
+                    PortionsDropdown(
+                        selected = defaultPortions,
                         onChange = onPortionsChange
                     )
                 }
             }
         }
 
-        // Section 2: Aplicación
+        // ── Sección 2: Aplicación ──────────────────────────────────────
         Column(
             modifier = Modifier.padding(horizontal = spacing_6),
             verticalArrangement = Arrangement.spacedBy(spacing_6)
@@ -223,12 +216,17 @@ private fun SettingsContent(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(spacing_6)
             ) {
-                ThemeSelector(
-                    selected = selectedTheme,
-                    onSelect = onThemeSelect,
+                // F3-18: Switch M3 para modo oscuro (LF8: Switch/ToggleButton)
+                DarkModeSwitch(
+                    isDarkMode = selectedTheme == "Oscuro",
+                    onToggle = { isDark ->
+                        onThemeSelect(if (isDark) "Oscuro" else "Claro")
+                    },
                     modifier = Modifier.fillMaxWidth()
                 )
-                LanguageSelector(
+
+                // F3-19: RadioButton group para idioma (LF8: RadioGroup equiv Compose)
+                LanguageRadioGroup(
                     selected = selectedLanguage,
                     onSelect = onLanguageSelect,
                     modifier = Modifier.fillMaxWidth()
@@ -236,14 +234,13 @@ private fun SettingsContent(
             }
         }
 
-        // Section 3: Danger & Support
+        // ── Sección 3: Acciones ────────────────────────────────────────
         Column(
             modifier = Modifier
                 .padding(horizontal = spacing_6)
                 .padding(top = spacing_4),
             verticalArrangement = Arrangement.spacedBy(spacing_4)
         ) {
-            // Support button
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -283,17 +280,12 @@ private fun SettingsContent(
                 }
             }
 
-            // Delete button
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(rounded_md))
                     .background(ErrorContainer.copy(alpha = 0.20f))
-                    .border(
-                        width = 1.dp,
-                        color = Error.copy(alpha = 0.10f),
-                        shape = RoundedCornerShape(rounded_md)
-                    )
+                    .border(1.dp, Error.copy(alpha = 0.10f), RoundedCornerShape(rounded_md))
                     .clickable { }
                     .padding(horizontal = spacing_6, vertical = spacing_4)
             ) {
@@ -342,6 +334,170 @@ private fun SettingsContent(
     }
 }
 
+// ── F3-18: Switch M3 para modo oscuro — LF8: Switch/ToggleButton ─────
+
+@Composable
+private fun DarkModeSwitch(
+    isDarkMode: Boolean,
+    onToggle: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(rounded_lg))
+            .background(SurfaceContainerLow)
+            .padding(spacing_6)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Modo Oscuro",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = OnSurface
+                )
+                Spacer(modifier = Modifier.height(spacing_1))
+                Text(
+                    text = if (isDarkMode) "Tema oscuro activo" else "Tema claro activo",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = OnSurfaceVariant,
+                    fontSize = 12.sp
+                )
+            }
+            // Switch M3 — LF8: Switch/ToggleButton (Compose equiv de Switch XML)
+            Switch(
+                checked = isDarkMode,
+                onCheckedChange = onToggle,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = com.example.recipe_generator.presentation.theme.Surface,
+                    checkedTrackColor = Primary,
+                    uncheckedThumbColor = OnSurfaceVariant,
+                    uncheckedTrackColor = SurfaceContainerHighest
+                )
+            )
+        }
+    }
+}
+
+// ── F3-19: RadioButton group para idioma — LF8: RadioGroup (Compose) ─
+
+@Composable
+private fun LanguageRadioGroup(
+    selected: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(rounded_lg))
+            .background(SurfaceContainerLow)
+            .padding(spacing_6)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(spacing_2)) {
+            Text(
+                text = "Idioma",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = OnSurfaceVariant,
+                letterSpacing = 1.2.sp
+            )
+            // RadioButton group — LF8: RadioGroup equiv Compose (F3-19)
+            languageOptions.forEach { option ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(rounded_md))
+                        .clickable { onSelect(option) }
+                        .padding(vertical = spacing_2),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = option == selected,
+                        onClick = { onSelect(option) },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = Primary,
+                            unselectedColor = OnSurfaceVariant
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(spacing_3))
+                    Text(
+                        text = option,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = OnSurface
+                    )
+                }
+            }
+            Text(
+                text = "Requiere reinicio para aplicar cambios globales.",
+                fontSize = 10.sp,
+                fontStyle = FontStyle.Italic,
+                color = OnSurfaceVariant,
+                modifier = Modifier.padding(start = spacing_1)
+            )
+        }
+    }
+}
+
+// ── F3-20: ExposedDropdownMenuBox para porciones — LF8: Spinner M3 ───
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PortionsDropdown(
+    selected: Int,
+    onChange: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it }
+    ) {
+        OutlinedTextField(
+            value = "$selected ${if (selected == 1) "porción" else "porciones"}",
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            label = { Text("Porciones por receta") },
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            portionOptions.forEach { option ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "$option ${if (option == "1") "porción" else "porciones"}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (option.toInt() == selected) Primary else OnSurface,
+                            fontWeight = if (option.toInt() == selected) FontWeight.Bold else FontWeight.Normal
+                        )
+                    },
+                    onClick = {
+                        onChange(option.toInt())
+                        expanded = false
+                    },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    trailingIcon = if (option.toInt() == selected) {
+                        { Icon(Icons.Filled.Check, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp)) }
+                    } else null
+                )
+            }
+        }
+    }
+}
+
+// ── Controles reutilizables ────────────────────────────────────────────
+
 @Composable
 private fun SectionHeader(icon: ImageVector, title: String) {
     Row(
@@ -387,7 +543,6 @@ private fun DietChips(
                 }
             }
         }
-
         if (dietLabels.size > 2) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -409,7 +564,6 @@ private fun DietChips(
                 }
             }
         }
-
         if (dietLabels.size > 4) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -472,199 +626,6 @@ private fun DietChipItem(
                 fontWeight = FontWeight.Medium,
                 color = fg,
                 fontSize = 11.sp
-            )
-        }
-    }
-}
-
-@Composable
-private fun PortionsStepper(
-    count: Int,
-    onChange: (Int) -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .shadow(
-                elevation = 2.dp,
-                shape = RoundedCornerShape(rounded_full)
-            )
-            .clip(RoundedCornerShape(rounded_full))
-            .background(SurfaceContainerLowest)
-            .padding(4.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .clickable { if (count > 1) onChange(count - 1) },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Remove,
-                    contentDescription = "Disminuir",
-                    tint = Primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Text(
-                text = "$count",
-                modifier = Modifier.width(48.dp),
-                textAlign = TextAlign.Center,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = OnSurface
-            )
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .clickable { onChange(count + 1) },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Aumentar",
-                    tint = Primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ThemeSelector(
-    selected: String,
-    onSelect: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(rounded_lg))
-            .background(SurfaceContainerLow)
-            .padding(spacing_6)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(spacing_4)) {
-            Text(
-                text = "Tema",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = OnSurfaceVariant
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(spacing_2)) {
-                themeOptions.forEach { option ->
-                    val isSelected = option == selected
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(rounded_md))
-                            .then(
-                                if (isSelected) Modifier.background(SurfaceContainerLowest)
-                                else Modifier
-                            )
-                            .clickable { onSelect(option) }
-                            .padding(spacing_3)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = option,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = OnSurface
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .border(
-                                        width = 2.dp,
-                                        color = if (isSelected) Primary else OutlineVariant,
-                                        shape = CircleShape
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (isSelected) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(10.dp)
-                                            .clip(CircleShape)
-                                            .background(Primary)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun LanguageSelector(
-    selected: String,
-    onSelect: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(rounded_lg))
-            .background(SurfaceContainerLow)
-            .padding(spacing_6)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(spacing_4)) {
-            Text(
-                text = "Idioma",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = OnSurfaceVariant
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(spacing_2)) {
-                languageOptions.forEach { option ->
-                    val isSelected = option == selected
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(rounded_sm))
-                            .background(
-                                if (isSelected) SurfaceContainerLowest else Color.Transparent
-                            )
-                            .clickable { onSelect(option) }
-                            .padding(horizontal = spacing_4, vertical = spacing_3)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = option,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = OnSurface
-                            )
-                            if (isSelected) {
-                                Icon(
-                                    imageVector = Icons.Filled.Check,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = Primary
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            Text(
-                text = "Requiere reinicio para aplicar cambios globales.",
-                fontSize = 10.sp,
-                fontStyle = FontStyle.Italic,
-                color = OnSurfaceVariant,
-                modifier = Modifier.padding(start = spacing_1)
             )
         }
     }
