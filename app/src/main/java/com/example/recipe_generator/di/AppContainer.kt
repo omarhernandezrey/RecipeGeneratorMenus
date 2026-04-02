@@ -3,6 +3,7 @@ package com.example.recipe_generator.di
 import android.content.Context
 import com.example.recipe_generator.data.local.AppDatabase
 import com.example.recipe_generator.data.repository.FirebaseAuthRepository
+import com.example.recipe_generator.data.repository.MockAuthRepository
 import com.example.recipe_generator.data.repository.RecipeRepositoryImpl
 import com.example.recipe_generator.data.repository.RoomFavoritesRepositoryImpl
 import com.example.recipe_generator.data.repository.UserPrefsRepositoryImpl
@@ -54,7 +55,13 @@ class AppContainer(private val context: Context) {
     // En F3-29 FavoritesRepository migra a Room.
 
     val authRepository: AuthRepository by lazy {
-        FirebaseAuthRepository(firebaseAuth)
+        try {
+            // Intenta usar Firebase, si falla usa Mock para desarrollo
+            FirebaseAuthRepository(firebaseAuth)
+        } catch (e: Exception) {
+            android.util.Log.w("AppContainer", "Firebase no disponible, usando MockAuthRepository: ${e.message}")
+            MockAuthRepository()
+        }
     }
 
     val recipeRepository: RecipeRepository by lazy {

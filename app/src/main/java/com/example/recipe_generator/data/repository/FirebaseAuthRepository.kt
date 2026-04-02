@@ -22,25 +22,40 @@ class FirebaseAuthRepository(
      * Emite el usuario autenticado actual. Observa cambios en tiempo real
      */
     override fun getCurrentUser(): Flow<User?> = callbackFlow {
-        val authStateListener = FirebaseAuth.AuthStateListener { auth ->
-            val currentUser = auth.currentUser
-            val user = if (currentUser != null) {
-                User(
-                    uid = currentUser.uid,
-                    email = currentUser.email ?: "",
-                    displayName = currentUser.displayName,
-                    photoUrl = currentUser.photoUrl?.toString()
-                )
-            } else {
-                null
+        try {
+            val authStateListener = FirebaseAuth.AuthStateListener { auth ->
+                try {
+                    val currentUser = auth.currentUser
+                    val user = if (currentUser != null) {
+                        User(
+                            uid = currentUser.uid,
+                            email = currentUser.email ?: "",
+                            displayName = currentUser.displayName,
+                            photoUrl = currentUser.photoUrl?.toString()
+                        )
+                    } else {
+                        null
+                    }
+                    trySend(user)
+                } catch (e: Exception) {
+                    // Si hay error al procesar el usuario, envía null
+                    trySend(null)
+                }
             }
-            trySend(user)
-        }
 
-        firebaseAuth.addAuthStateListener(authStateListener)
+            firebaseAuth.addAuthStateListener(authStateListener)
 
-        awaitClose {
-            firebaseAuth.removeAuthStateListener(authStateListener)
+            awaitClose {
+                try {
+                    firebaseAuth.removeAuthStateListener(authStateListener)
+                } catch (e: Exception) {
+                    // Ignorar errores al remover listener
+                }
+            }
+        } catch (e: Exception) {
+            // Si hay error al crear listener, emite null
+            trySend(null)
+            awaitClose()
         }
     }
 
@@ -59,6 +74,8 @@ class FirebaseAuthRepository(
             )
         )
     } catch (e: Exception) {
+        // Log de error para debugging
+        android.util.Log.e("FirebaseAuth", "Error en signUp: ${e.message}", e)
         Result.failure(e)
     }
 
@@ -77,6 +94,7 @@ class FirebaseAuthRepository(
             )
         )
     } catch (e: Exception) {
+        android.util.Log.e("FirebaseAuth", "Error en signIn: ${e.message}", e)
         Result.failure(e)
     }
 

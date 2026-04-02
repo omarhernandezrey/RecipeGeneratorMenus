@@ -30,6 +30,7 @@
       }
     }
   ],
-  "configuration_version": "1"
+  "configuration_version": "1",
+  "is_dev_config": true
 }
 

@@ -4,12 +4,13 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.recipe_generator.presentation.auth.AuthScreen
 import com.example.recipe_generator.presentation.auth.AuthViewModel
-import com.example.recipe_generator.ui.theme.RecipeGeneratorTheme
+import com.example.recipe_generator.presentation.theme.RecipeGeneratorTheme
 
 /**
  * Single host activity for the app shell.
@@ -26,28 +27,35 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             RecipeGeneratorTheme {
-                val authViewModel: AuthViewModel = viewModel(
-                    factory = AuthViewModelFactory(
-                        authRepository = (application as RecipeGeneratorApp).container.authRepository
-                    )
-                )
-
-                val currentUser by authViewModel.currentUser.collectAsState()
-
-                if (currentUser != null) {
-                    // Usuario autenticado - mostrar app normal
-                    setContentView(R.layout.activity_main)
-                } else {
-                    // Usuario no autenticado - mostrar login
-                    AuthScreen(
-                        viewModel = authViewModel,
-                        onAuthSuccess = {
-                            // Recargar para mostrar app principal
-                            recreate()
-                        }
-                    )
-                }
+                AppContent()
             }
+        }
+    }
+
+    @Composable
+    private fun AppContent() {
+        val authViewModel: AuthViewModel = viewModel(
+            factory = AuthViewModelFactory(
+                authRepository = (application as RecipeGeneratorApp).container.authRepository
+            )
+        )
+
+        val currentUser by authViewModel.currentUser.collectAsState()
+
+        if (currentUser != null) {
+            // Usuario autenticado - mostrar app normal
+            // TODO: Implementar composable principal de la app
+            androidx.compose.material3.Text("Usuario autenticado: ${currentUser?.email}")
+            // MainAppScreen()
+        } else {
+            // Usuario no autenticado - mostrar login
+            AuthScreen(
+                viewModel = authViewModel,
+                onAuthSuccess = {
+                    // El ViewModel ya ha actualizado el estado de currentUser
+                    // Esta recomposición será automática cuando currentUser cambie
+                }
+            )
         }
     }
 }
