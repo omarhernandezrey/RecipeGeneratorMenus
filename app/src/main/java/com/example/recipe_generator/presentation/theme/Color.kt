@@ -46,3 +46,37 @@ val Error = Color(0xFFBA1A1A)
 val OnError = Color(0xFFFFFFFF)
 val ErrorContainer = Color(0xFFFFDAD6)
 val OnErrorContainer = Color(0xFF93000A)
+
+// ── Dark Theme Color Tokens — F3-18 ────────────────────────────────
+val DarkPrimary = Color(0xFFCFBDFF)
+val DarkOnPrimary = Color(0xFF22005D)
+val DarkPrimaryContainer = Color(0xFF3D008F)
+val DarkOnPrimaryContainer = Color(0xFFE8DDFF)
+
+val DarkSecondary = Color(0xFF4AF8E3)
+val DarkOnSecondary = Color(0xFF00374F)
+val DarkSecondaryContainer = Color(0xFF004F45)
+val DarkOnSecondaryContainer = Color(0xFF4AF8E3)
+
+val DarkTertiary = Color(0xFFFFB4C7)
+val DarkOnTertiary = Color(0xFF67002B)
+val DarkTertiaryContainer = Color(0xFF91003D)
+val DarkOnTertiaryContainer = Color(0xFFFFB4C7)
+
+val DarkBackground = Color(0xFF1B1B1E)
+val DarkSurface = Color(0xFF1B1B1E)
+val DarkSurfaceContainer = Color(0xFF2F2C35)
+val DarkSurfaceContainerLow = Color(0xFF262329)
+val DarkSurfaceContainerHigh = Color(0xFF3A3641)
+val DarkSurfaceContainerHighest = Color(0xFF454148)
+val DarkOnSurface = Color(0xFFE5E1E6)
+val DarkOnSurfaceVariant = Color(0xFFCBC3D9)
+val DarkSurfaceTint = Color(0xFFCFBDFF)
+
+val DarkOutline = Color(0xFF958EA4)
+val DarkOutlineVariant = Color(0xFF494456)
+
+val DarkError = Color(0xFFFFB4AB)
+val DarkOnError = Color(0xFF690005)
+val DarkErrorContainer = Color(0xFF93000A)
+val DarkOnErrorContainer = Color(0xFFFFDAD6)

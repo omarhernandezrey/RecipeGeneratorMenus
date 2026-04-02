@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,7 +66,14 @@ class RecipeDetailActivity : AppCompatActivity() {
         viewModel.loadRecipe(recipeId)
 
         setContent {
-            RecipeGeneratorTheme {
+            // F3-18: aplica darkTheme desde DataStore al igual que los Fragments
+            val preferences by container.userPrefsRepository
+                .getUserPreferences()
+                .collectAsStateWithLifecycle(
+                    initialValue = com.example.recipe_generator.domain.model.UserPreferences()
+                )
+
+            RecipeGeneratorTheme(darkTheme = preferences.theme == "Oscuro") {
                 val recipe = viewModel.recipe.collectAsStateWithLifecycle().value
                 val isFavorite = viewModel.isFavorite.collectAsStateWithLifecycle().value
 

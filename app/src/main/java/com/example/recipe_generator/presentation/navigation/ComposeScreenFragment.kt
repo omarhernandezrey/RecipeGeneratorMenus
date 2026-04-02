@@ -5,12 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.recipe_generator.RecipeGeneratorApp
+import com.example.recipe_generator.domain.model.UserPreferences
 import com.example.recipe_generator.presentation.theme.RecipeGeneratorTheme
 
 abstract class ComposeScreenFragment : Fragment() {
@@ -23,10 +26,18 @@ abstract class ComposeScreenFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        // Capturar fuera del composable para no llamar requireActivity() en cada recomposición
+        val userPrefsRepository = appContainer.userPrefsRepository
+
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                RecipeGeneratorTheme {
+                // F3-18: lee preferencia de tema desde DataStore y aplica darkTheme
+                val preferences by userPrefsRepository
+                    .getUserPreferences()
+                    .collectAsStateWithLifecycle(initialValue = UserPreferences())
+
+                RecipeGeneratorTheme(darkTheme = preferences.theme == "Oscuro") {
                     ScreenContent()
                 }
             }

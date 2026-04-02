@@ -1,48 +1,101 @@
 package com.example.recipe_generator.data.repository
 
 import com.example.recipe_generator.data.legacy.getAllRecipesAsDomainModel
+import com.example.recipe_generator.data.local.dao.RecipeDao
+import com.example.recipe_generator.data.mapper.toEntity
+import com.example.recipe_generator.data.mapper.toDomain
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.domain.repository.RecipeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 /**
- * Implementación del repositorio de recetas — Capa de Datos.
+ * Implementación del repositorio de recetas — F2-18 / F2-21.
  *
- * En Fase 0 usa la fuente local legacy como seed para desacoplar la UI
- * de los datos mock. En F2 la implementación se cambia a Room sin tocar
- * la capa de Presentación.
+ * Dos modos de operación:
+ * - Con RecipeDao (producción): fuente de verdad = Room.
+ * - Sin RecipeDao (tests unitarios): fuente de verdad = datos legacy en memoria.
  *
  * Capa: Data
  */
-class RecipeRepositoryImpl : RecipeRepository {
-    private val recipes = MutableStateFlow(getAllRecipesAsDomainModel())
+class RecipeRepositoryImpl(
+    private val recipeDao: RecipeDao? = null
+) : RecipeRepository {
 
-    override fun getAllRecipes(): Flow<List<Recipe>> = recipes
+    /** Fuente in-memory para tests unitarios (cuando recipeDao es null). */
+    private val inMemoryRecipes = if (recipeDao == null)
+        MutableStateFlow(getAllRecipesAsDomainModel()) else null
+
+    // ── Queries ───────────────────────────────────────────────────────
+
+    override fun getAllRecipes(): Flow<List<Recipe>> =
+        if (recipeDao != null)
+            recipeDao.getAllRecipes().map { entities -> entities.map { it.toDomain() } }
+        else
+            inMemoryRecipes!!
 
     override fun getRecipesByDay(day: String): Flow<List<Recipe>> =
-        recipes.map { allRecipes -> allRecipes.filter { it.dayOfWeek == day } }
+        if (recipeDao != null)
+            recipeDao.getRecipesByDay(day).map { entities -> entities.map { it.toDomain() } }
+        else
+            inMemoryRecipes!!.map { all -> all.filter { it.dayOfWeek == day } }
 
     override fun getRecipesByCategory(category: String): Flow<List<Recipe>> =
-        recipes.map { allRecipes ->
-            allRecipes.filter { it.category.equals(category, ignoreCase = true) }
-        }
+        if (recipeDao != null)
+            recipeDao.getRecipesByCategory(category).map { entities -> entities.map { it.toDomain() } }
+        else
+            inMemoryRecipes!!.map { all ->
+                all.filter { it.category.equals(category, ignoreCase = true) }
+            }
 
     override fun getRecipeById(id: String): Flow<Recipe?> =
-        recipes.map { allRecipes -> allRecipes.firstOrNull { it.id == id } }
-
-    override fun searchRecipes(query: String): Flow<List<Recipe>> =
-        recipes.map { allRecipes ->
-            allRecipes.filter { recipe ->
-                recipe.title.contains(query, ignoreCase = true) ||
-                    recipe.description.contains(query, ignoreCase = true)
+        if (recipeDao != null) {
+            flow {
+                val entity = recipeDao.getRecipeById(id)
+                if (entity != null) {
+                    val ingredients = recipeDao.getIngredientsByRecipeId(id)
+                    val steps = recipeDao.getStepsByRecipeId(id)
+                    emit(entity.toDomain(ingredients, steps))
+                } else {
+                    emit(null)
+                }
             }
+        } else {
+            inMemoryRecipes!!.map { all -> all.firstOrNull { it.id == id } }
         }
 
+    override fun searchRecipes(query: String): Flow<List<Recipe>> =
+        if (recipeDao != null)
+            recipeDao.searchRecipes(query).map { entities -> entities.map { it.toDomain() } }
+        else
+            inMemoryRecipes!!.map { all ->
+                all.filter { recipe ->
+                    recipe.title.contains(query, ignoreCase = true) ||
+                        recipe.description.contains(query, ignoreCase = true)
+                }
+            }
+
+    // ── Escritura ─────────────────────────────────────────────────────
+
     override suspend fun insertAll(recipes: List<Recipe>) {
-        this.recipes.value = recipes
+        if (recipeDao != null) {
+            recipeDao.insertRecipes(recipes.map { it.toEntity() })
+            recipes.forEach { recipe ->
+                if (recipe.ingredients.isNotEmpty()) {
+                    recipeDao.insertIngredients(recipe.ingredients.map { it.toEntity(recipe.id) })
+                }
+                if (recipe.steps.isNotEmpty()) {
+                    recipeDao.insertSteps(recipe.steps.map { it.toEntity(recipe.id) })
+                }
+            }
+        } else {
+            inMemoryRecipes!!.value = recipes
+        }
     }
 
-    override suspend fun count(): Int = recipes.value.size
+    override suspend fun count(): Int =
+        if (recipeDao != null) recipeDao.count()
+        else inMemoryRecipes!!.value.size
 }

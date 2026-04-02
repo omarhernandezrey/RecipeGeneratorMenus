@@ -46,7 +46,7 @@ class AppContainer(private val context: Context) {
     // En F3-29 FavoritesRepository migra a Room.
 
     val recipeRepository: RecipeRepository by lazy {
-        RecipeRepositoryImpl()
+        RecipeRepositoryImpl(database.recipeDao())
     }
 
     val favoritesRepository: FavoritesRepository by lazy {

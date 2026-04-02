@@ -1,5 +1,7 @@
 package com.example.recipe_generator.presentation.detail
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -39,6 +41,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -268,11 +271,20 @@ private fun QuickInfoChip(icon: ImageVector, text: String, iconTint: Color = Pri
 
 @Composable
 private fun ActionHub(isFavorite: Boolean, onFavoriteClick: () -> Unit) {
-    val favoriteColors = if (isFavorite) {
-        listOf(Primary, PrimaryContainer)
-    } else {
-        listOf(SurfaceContainerHigh, SurfaceContainerHighest)
-    }
+    // F3-07: animateColorAsState() para animación suave al cambiar favorito
+    val favStartColor by animateColorAsState(
+        targetValue = if (isFavorite) Primary else SurfaceContainerHigh,
+        animationSpec = tween(400), label = "favStart"
+    )
+    val favEndColor by animateColorAsState(
+        targetValue = if (isFavorite) PrimaryContainer else SurfaceContainerHighest,
+        animationSpec = tween(400), label = "favEnd"
+    )
+    val favContentColor by animateColorAsState(
+        targetValue = if (isFavorite) OnPrimary else OnSurfaceVariant,
+        animationSpec = tween(400), label = "favContent"
+    )
+    val favoriteColors = listOf(favStartColor, favEndColor)
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -307,12 +319,12 @@ private fun ActionHub(isFavorite: Boolean, onFavoriteClick: () -> Unit) {
                             Icons.Outlined.FavoriteBorder
                         },
                         contentDescription = if (isFavorite) "Eliminar de favoritos" else "Guardar en favoritos",
-                        tint = if (isFavorite) OnPrimary else OnSurfaceVariant,
+                        tint = favContentColor,
                     )
                     Text(
                         text = if (isFavorite) "Guardado" else "Guardar en Favoritos",
                         style = MaterialTheme.typography.labelLarge,
-                        color = if (isFavorite) OnPrimary else OnSurfaceVariant,
+                        color = favContentColor,
                         fontWeight = FontWeight.Bold
                     )
                 }

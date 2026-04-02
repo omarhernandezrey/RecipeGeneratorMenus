@@ -1,11 +1,13 @@
 package com.example.recipe_generator.data.local.entity
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 /**
  * Entidad Room — RecipeEntity.
  *
  * Representa la tabla "recipes" en SQLite.
- * Anotaciones @Entity, @PrimaryKey etc. se agregarán en F2-16
- * cuando se configure Room en build.gradle.kts (F0-07).
+ * F2-16: Anotaciones Room activadas.
  *
  * IMPORTANTE: Esta clase es SOLO de la capa de Datos.
  * La capa de Presentación NUNCA debe importar esta clase.
@@ -13,9 +15,9 @@ package com.example.recipe_generator.data.local.entity
  *
  * Capa: Data
  */
-// @Entity(tableName = "recipes")  ← se activa en F2-16
+@Entity(tableName = "recipes")
 data class RecipeEntity(
-    // @PrimaryKey
+    @PrimaryKey
     val id: String,
     val title: String,
     val imageRes: String,
@@ -30,5 +32,7 @@ data class RecipeEntity(
     val proteinGrams: Int = 0,
     val carbsGrams: Int = 0,
     val fatGrams: Int = 0,
-    val dayOfWeek: String
+    val dayOfWeek: String,
+    /** Tags de ingredientes serializados con "|". Ej: "Mantequilla|Sal y pimienta|Limón" */
+    val ingredientTags: String = ""
 )

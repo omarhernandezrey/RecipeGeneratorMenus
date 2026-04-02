@@ -573,7 +573,14 @@ fun getAllRecipesAsDomainModel(): List<com.example.recipe_generator.domain.model
                 carbsGrams = legacyRecipe.carbsGrams,
                 fatGrams = legacyRecipe.fatGrams,
                 dayOfWeek = day,
-                ingredients = emptyList(),
+                ingredients = legacyRecipe.ingredients.map { text ->
+                    com.example.recipe_generator.domain.model.Ingredient(
+                        id = 0,
+                        name = text,
+                        quantity = "",
+                        unit = ""
+                    )
+                },
                 ingredientTags = legacyRecipe.ingredientTags,
                 steps = legacyRecipe.steps.mapIndexed { index, recipeStep ->
                     com.example.recipe_generator.domain.model.RecipeStep(

@@ -41,6 +41,7 @@ fun RecipeEntity.toDomain(
     fatGrams = fatGrams,
     dayOfWeek = dayOfWeek,
     ingredients = ingredients.map { it.toDomain() },
+    ingredientTags = ingredientTags.split("|").filter { it.isNotBlank() },
     steps = steps.map { it.toDomain() }
 )
 
@@ -75,7 +76,8 @@ fun Recipe.toEntity(): RecipeEntity = RecipeEntity(
     proteinGrams = proteinGrams,
     carbsGrams = carbsGrams,
     fatGrams = fatGrams,
-    dayOfWeek = dayOfWeek
+    dayOfWeek = dayOfWeek,
+    ingredientTags = ingredientTags.joinToString("|")
 )
 
 fun Ingredient.toEntity(recipeId: String): IngredientEntity = IngredientEntity(

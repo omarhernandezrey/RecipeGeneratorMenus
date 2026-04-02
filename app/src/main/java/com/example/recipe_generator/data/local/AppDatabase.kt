@@ -5,24 +5,35 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.recipe_generator.data.local.dao.FavoriteDao
+import com.example.recipe_generator.data.local.dao.RecipeDao
 import com.example.recipe_generator.data.local.entity.FavoriteEntity
+import com.example.recipe_generator.data.local.entity.IngredientEntity
+import com.example.recipe_generator.data.local.entity.RecipeEntity
+import com.example.recipe_generator.data.local.entity.StepEntity
 
 /**
  * Base de datos Room de la aplicación — AppDatabase.
  *
- * Contiene la tabla de favoritos. F3-29: FavoritesRepository con Room.
- * Singleton — una sola instancia por proceso mediante companion object.
+ * Versión 2: agrega tablas recipes, ingredients y steps (F2-16/17/18).
+ * fallbackToDestructiveMigration() para entorno de desarrollo.
+ * Singleton — una sola instancia por proceso.
  *
  * Capa: Data
  */
 @Database(
-    entities = [FavoriteEntity::class],
-    version = 1,
+    entities = [
+        FavoriteEntity::class,
+        RecipeEntity::class,
+        IngredientEntity::class,
+        StepEntity::class
+    ],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun favoriteDao(): FavoriteDao
+    abstract fun recipeDao(): RecipeDao
 
     companion object {
         @Volatile
@@ -34,7 +45,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "recipe_generator_db"
-                ).build().also { INSTANCE = it }
+                )
+                .fallbackToDestructiveMigration()
+                .build().also { INSTANCE = it }
             }
         }
     }

@@ -1,14 +1,18 @@
 package com.example.recipe_generator
 
 import android.app.Application
+import com.example.recipe_generator.data.legacy.getAllRecipesAsDomainModel
 import com.example.recipe_generator.di.AppContainer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Application class — punto de entrada global de la app.
  *
  * Responsabilidades:
  * - Inicializar el contenedor de dependencias (AppContainer)
- * - Exponer dependencias compartidas al resto de capas
+ * - Sembrar la BD Room con datos legacy si está vacía (F2-20)
  *
  * Capa: Raíz (por encima de Presentation)
  */
@@ -25,5 +29,15 @@ class RecipeGeneratorApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        seedDatabaseIfEmpty()
+    }
+
+    /** Siembra Room con las 21 recetas legacy si la tabla está vacía. */
+    private fun seedDatabaseIfEmpty() {
+        CoroutineScope(Dispatchers.IO).launch {
+            if (container.recipeRepository.count() == 0) {
+                container.recipeRepository.insertAll(getAllRecipesAsDomainModel())
+            }
+        }
     }
 }
