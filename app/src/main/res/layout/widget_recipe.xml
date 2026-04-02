@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- F3-22: Layout del widget — RemoteViews: TextView título + Button abrir app -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FF4800B2"
+    android:padding="16dp">
+
+    <!-- Etiqueta del día -->
+    <TextView
+        android:id="@+id/widget_day_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="RECETA DEL DÍA"
+        android:textColor="#AAFFFFFF"
+        android:textSize="10sp"
+        android:letterSpacing="0.1"
+        android:textStyle="bold" />
+
+    <!-- Título de la receta -->
+    <TextView
+        android:id="@+id/widget_recipe_title"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="Cargando receta..."
+        android:textColor="#FFFFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:paddingTop="4dp" />
+
+    <!-- Fila de metadata: tiempo + calorías -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/widget_recipe_time"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="⏱ 25 min"
+            android:textColor="#CCFFFFFF"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/widget_recipe_calories"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🔥 500 kcal"
+            android:textColor="#CCFFFFFF"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- Botón abrir app (F3-22: Button con PendingIntent) -->
+    <Button
+        android:id="@+id/widget_open_button"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:text="Ver Receta"
+        android:textColor="#FF4800B2"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:background="#FFFFFFFF"
+        style="?android:attr/borderlessButtonStyle" />
+
+</LinearLayout>

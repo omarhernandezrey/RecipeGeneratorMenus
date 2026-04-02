@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    <!-- Fondo circular -->
+    <path
+        android:pathData="M100,10 C50.3,10 10,50.3 10,100 C10,149.7 50.3,190 100,190 C149.7,190 190,149.7 190,100 C190,50.3 149.7,10 100,10 Z"
+        android:fillColor="#D1C4E9" />
+    <!-- Cabeza -->
+    <path
+        android:pathData="M100,50 C83.4,50 70,63.4 70,80 C70,96.6 83.4,110 100,110 C116.6,110 130,96.6 130,80 C130,63.4 116.6,50 100,50 Z"
+        android:fillColor="#7E57C2" />
+    <!-- Cuerpo -->
+    <path
+        android:pathData="M150,170 C148,140 126,122 100,122 C74,122 52,140 50,170 Z"
+        android:fillColor="#7E57C2" />
+</vector>

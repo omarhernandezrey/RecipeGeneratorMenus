@@ -46,7 +46,8 @@ fun RecipeListScreen(
     onNavItemSelected: (Int) -> Unit = {},
     favoriteRecipeIds: Set<String> = emptySet(),
     onToggleFavorite: (String) -> Unit = {},
-    onRecipeSelected: (Recipe) -> Unit = {}
+    onRecipeSelected: (Recipe) -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -148,7 +149,10 @@ fun RecipeListScreen(
                 .fillMaxWidth()
                 .background(Surface)
         ) {
-            HomeEditorialTopAppBar(title = "Menú Semanal")
+            HomeEditorialTopAppBar(
+                title = "Menú Semanal",
+                onProfileClick = onProfileClick
+            )
         }
     }
 }

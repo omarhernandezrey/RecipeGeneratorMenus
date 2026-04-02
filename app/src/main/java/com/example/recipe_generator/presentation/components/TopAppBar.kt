@@ -1,6 +1,7 @@
 package com.example.recipe_generator.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -142,12 +143,27 @@ fun DefaultNotificationsButton(
 
 @Composable
 fun HomeEditorialTopAppBar(
-    title: String
+    title: String,
+    onProfileClick: () -> Unit = {}
 ) {
     EditorialTopAppBar(
         title = title,
         leadingContent = {
-            DefaultProfileAvatar()
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(PrimaryFixedDim.copy(alpha = 0.55f))
+                    .clickable(onClick = onProfileClick),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "O",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Primary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         },
         trailingContent = {
             DefaultNotificationsButton()
