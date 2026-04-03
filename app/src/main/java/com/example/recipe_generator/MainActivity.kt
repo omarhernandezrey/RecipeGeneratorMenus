@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.recipe_generator.presentation.auth.AuthScreen
 import com.example.recipe_generator.presentation.auth.AuthViewModel
 import com.example.recipe_generator.presentation.home.AuthWelcomeScreen
+import com.example.recipe_generator.presentation.leftmenu.MainScreen
 import com.example.recipe_generator.presentation.theme.RecipeGeneratorTheme
 
 /**
@@ -70,8 +71,8 @@ class MainActivity : AppCompatActivity() {
             }
             else -> {
                 // Usuario autenticado y pasó pantalla de bienvenida
-                // TODO: Implementar MainScreen (2 paneles + NavigationBar) según PLAN MAESTRO
-                androidx.compose.material3.Text("APP PRINCIPAL - PLAN MAESTRO\n(En desarrollo)")
+                // Mostrar MainScreen del PLAN MAESTRO (panel izq + panel der)
+                MainScreen()
             }
         }
     }
