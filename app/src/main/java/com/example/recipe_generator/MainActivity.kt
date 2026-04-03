@@ -7,10 +7,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.recipe_generator.presentation.auth.AuthScreen
 import com.example.recipe_generator.presentation.auth.AuthViewModel
-import com.example.recipe_generator.presentation.home.HomeScreen
+import com.example.recipe_generator.presentation.home.AuthWelcomeScreen
 import com.example.recipe_generator.presentation.theme.RecipeGeneratorTheme
 
 /**
@@ -42,24 +43,36 @@ class MainActivity : AppCompatActivity() {
         )
 
         val currentUser by authViewModel.currentUser.collectAsState()
+        val hasSkippedWelcome = androidx.compose.runtime.remember { mutableStateOf(false) }
 
-        if (currentUser != null) {
-            // Usuario autenticado - mostrar app normal
-            HomeScreen(
-                userEmail = currentUser?.email ?: "Usuario",
-                onLogout = {
-                    authViewModel.logout()
-                }
-            )
-        } else {
-            // Usuario no autenticado - mostrar login
-            AuthScreen(
-                viewModel = authViewModel,
-                onAuthSuccess = {
-                    // El ViewModel ya ha actualizado el estado de currentUser
-                    // Esta recomposición será automática cuando currentUser cambie
-                }
-            )
+        when {
+            currentUser == null -> {
+                // Usuario no autenticado - mostrar login
+                AuthScreen(
+                    viewModel = authViewModel,
+                    onAuthSuccess = {
+                        hasSkippedWelcome.value = false
+                    }
+                )
+            }
+            !hasSkippedWelcome.value -> {
+                // Usuario autenticado pero no ha visto pantalla de bienvenida
+                AuthWelcomeScreen(
+                    userEmail = currentUser?.email ?: "Usuario",
+                    onContinueToApp = {
+                        hasSkippedWelcome.value = true
+                    },
+                    onLogout = {
+                        authViewModel.logout()
+                        hasSkippedWelcome.value = false
+                    }
+                )
+            }
+            else -> {
+                // Usuario autenticado y pasó pantalla de bienvenida
+                // TODO: Implementar MainScreen (2 paneles + NavigationBar) según PLAN MAESTRO
+                androidx.compose.material3.Text("APP PRINCIPAL - PLAN MAESTRO\n(En desarrollo)")
+            }
         }
     }
 }
