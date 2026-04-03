@@ -11,8 +11,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.recipe_generator.presentation.auth.AuthScreen
 import com.example.recipe_generator.presentation.auth.AuthViewModel
+import com.example.recipe_generator.presentation.home.AppShell
 import com.example.recipe_generator.presentation.home.AuthWelcomeScreen
-import com.example.recipe_generator.presentation.leftmenu.MainScreen
 import com.example.recipe_generator.presentation.theme.RecipeGeneratorTheme
 
 /**
@@ -70,9 +70,13 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             else -> {
-                // Usuario autenticado y pasó pantalla de bienvenida
-                // Mostrar MainScreen del PLAN MAESTRO (panel izq + panel der)
-                MainScreen()
+                // Usuario autenticado - mostrar app completa con NavigationBar
+                AppShell(
+                    onLogout = {
+                        authViewModel.logout()
+                        hasSkippedWelcome.value = false
+                    }
+                )
             }
         }
     }
