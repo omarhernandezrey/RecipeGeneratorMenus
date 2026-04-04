@@ -71,7 +71,12 @@ class MainActivity : AppCompatActivity() {
             }
             else -> {
                 // Usuario autenticado - mostrar app completa con NavigationBar
+                val container = (application as RecipeGeneratorApp).container
                 AppShell(
+                    getMenuForDayUseCase = container.getMenuForDayUseCase,
+                    favoritesRepository = container.favoritesRepository,
+                    generateMenuUseCase = container.generateMenuUseCase,
+                    userPrefsRepository = container.userPrefsRepository,
                     onLogout = {
                         authViewModel.logout()
                         hasSkippedWelcome.value = false

@@ -1,120 +1,190 @@
 package com.example.recipe_generator.presentation.home
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.example.recipe_generator.presentation.leftmenu.MainScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.recipe_generator.domain.repository.FavoritesRepository
+import com.example.recipe_generator.domain.repository.UserPrefsRepository
+import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
+import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
+import com.example.recipe_generator.presentation.favorites.FavoritesScreen
+import com.example.recipe_generator.presentation.favorites.FavoritesViewModel
+import com.example.recipe_generator.presentation.generator.MenuGeneratorScreen
+import com.example.recipe_generator.presentation.generator.MenuGeneratorViewModel
+import com.example.recipe_generator.presentation.settings.SettingsScreen
+import com.example.recipe_generator.presentation.settings.SettingsViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import kotlinx.coroutines.launch
 
 /**
  * AppShell - Estructura completa de la app con NavigationBar
  *
  * Contiene:
- * - NavigationBar en la parte inferior (4 tabs)
- * - Contenido que cambia según la tab seleccionada
+ * - 4 tabs principales: Inicio, Favoritos, Generador, Ajustes
+ * - Navegación entre tabs via EditorialBottomNavBar (integrado en cada pantalla)
  * - FASE 3: Implementación completa del PLAN MAESTRO
  */
 @Composable
 fun AppShell(
+    getMenuForDayUseCase: GetMenuForDayUseCase,
+    favoritesRepository: FavoritesRepository,
+    generateMenuUseCase: GenerateMenuUseCase,
+    userPrefsRepository: UserPrefsRepository,
     modifier: Modifier = Modifier,
     onLogout: () -> Unit
 ) {
-    // Estado para trackear qué tab está seleccionada
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val coroutineScope = rememberCoroutineScope()
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        bottomBar = {
-            NavigationBar {
-                // Tab 1: Inicio (MainScreen con 2 paneles)
-                NavigationBarItem(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    icon = {
-                        Icon(
-                            Icons.Filled.Home,
-                            contentDescription = "Inicio"
-                        )
-                    },
-                    label = { Text("Inicio") }
-                )
-
-                // Tab 2: Favoritos (Placeholder)
-                NavigationBarItem(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    icon = {
-                        Icon(
-                            Icons.Outlined.FavoriteBorder,
-                            contentDescription = "Favoritos"
-                        )
-                    },
-                    label = { Text("Favoritos") }
-                )
-
-                // Tab 3: Generador de Menú (Placeholder)
-                NavigationBarItem(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    icon = {
-                        Icon(
-                            Icons.Filled.Star,
-                            contentDescription = "Generador"
-                        )
-                    },
-                    label = { Text("Generador") }
-                )
-
-                // Tab 4: Ajustes (Placeholder)
-                NavigationBarItem(
-                    selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 },
-                    icon = {
-                        Icon(
-                            Icons.Filled.Settings,
-                            contentDescription = "Ajustes"
-                        )
-                    },
-                    label = { Text("Ajustes") }
-                )
+    // ── ViewModels ───────────────────────────────────────────────────
+    val homeViewModel: HomeViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return HomeViewModel(getMenuForDayUseCase) as T
             }
         }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            when (selectedTab) {
-                // Tab 0: Inicio con MainScreen (2 paneles: Perfil, Fotos, Video, Web, Controles)
-                0 -> MainScreen()
+    )
 
-                // Tab 1: Favoritos (Placeholder para ahora)
-                1 -> androidx.compose.material3.Text("Favoritos - En desarrollo")
-
-                // Tab 2: Generador de Menú (Placeholder para ahora)
-                2 -> androidx.compose.material3.Text("Generador - En desarrollo")
-
-                // Tab 3: Ajustes (Placeholder para ahora)
-                3 -> androidx.compose.material3.Text("Ajustes - En desarrollo")
+    val favoritesViewModel: FavoritesViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return FavoritesViewModel(favoritesRepository) as T
             }
+        }
+    )
+
+    val generatorViewModel: MenuGeneratorViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return MenuGeneratorViewModel(generateMenuUseCase) as T
+            }
+        }
+    )
+
+    val settingsViewModel: SettingsViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return SettingsViewModel(userPrefsRepository) as T
+            }
+        }
+    )
+
+    // ── Navegación entre tabs ────────────────────────────────────────
+    val onNavigate: (Int) -> Unit = { tab -> selectedTab = tab }
+
+    when (selectedTab) {
+        // ═══════════════════════════════════════════════════════════════
+        // Tab 0: Inicio — RecipeListScreen (Menú Semanal)
+        // ═══════════════════════════════════════════════════════════════
+        0 -> {
+            val selectedDay by homeViewModel.selectedDay.collectAsStateWithLifecycle()
+            val recipes by homeViewModel.recipes.collectAsStateWithLifecycle()
+            val favoriteIds by favoritesRepository
+                .getFavoriteIds()
+                .collectAsStateWithLifecycle(initialValue = emptySet())
+
+            RecipeListScreen(
+                selectedDay = selectedDay,
+                recipes = recipes,
+                onDaySelected = homeViewModel::selectDay,
+                selectedNavItem = 0,
+                onNavItemSelected = onNavigate,
+                favoriteRecipeIds = favoriteIds,
+                onToggleFavorite = { recipeId ->
+                    coroutineScope.launch {
+                        favoritesRepository.toggleFavorite(recipeId)
+                    }
+                },
+                onRecipeSelected = { /* TODO: navegar a detalle */ },
+                onProfileClick = { /* TODO: navegar a perfil/panels */ }
+            )
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Tab 1: Favoritos — FavoritesScreen
+        // ═══════════════════════════════════════════════════════════════
+        1 -> {
+            val filteredRecipes by favoritesViewModel.filteredRecipes.collectAsStateWithLifecycle()
+            val query by favoritesViewModel.searchQuery.collectAsStateWithLifecycle()
+            val selectedCategory by favoritesViewModel.selectedCategory.collectAsStateWithLifecycle()
+
+            val categories = listOf("Todos", "Desayuno", "Almuerzo", "Cena", "Snack")
+
+            FavoritesScreen(
+                recipes = filteredRecipes,
+                categories = categories,
+                query = query,
+                onQueryChange = favoritesViewModel::onSearchQueryChanged,
+                selectedCategory = selectedCategory,
+                onCategorySelected = favoritesViewModel::onCategorySelected,
+                selectedNavItem = 1,
+                onNavItemSelected = onNavigate,
+                onRecipeSelected = { /* TODO: navegar a detalle */ },
+                onRemoveFavorite = { recipeId ->
+                    coroutineScope.launch {
+                        favoritesRepository.toggleFavorite(recipeId)
+                    }
+                }
+            )
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Tab 2: Generador — MenuGeneratorScreen
+        // ═══════════════════════════════════════════════════════════════
+        2 -> {
+            val selectedDiets by generatorViewModel.selectedDiets.collectAsStateWithLifecycle()
+            val selectedDifficulty by generatorViewModel.maxDifficulty.collectAsStateWithLifecycle()
+            val portions by generatorViewModel.portions.collectAsStateWithLifecycle()
+            val selectedTypes by generatorViewModel.selectedTypes.collectAsStateWithLifecycle()
+            val generatedRecipes by generatorViewModel.generatedMenu.collectAsStateWithLifecycle()
+            val isGenerating by generatorViewModel.isGenerating.collectAsStateWithLifecycle()
+
+            MenuGeneratorScreen(
+                selectedNavItem = 2,
+                selectedDiets = selectedDiets,
+                onToggleDiet = generatorViewModel::toggleDiet,
+                selectedDifficulty = selectedDifficulty,
+                onDifficultySelected = generatorViewModel::setDifficulty,
+                portions = portions,
+                onPortionsChange = generatorViewModel::setPortions,
+                selectedRecipeTypes = selectedTypes,
+                onToggleRecipeType = generatorViewModel::toggleType,
+                generatedRecipes = generatedRecipes,
+                isGenerating = isGenerating,
+                onGenerateClick = generatorViewModel::generateMenu,
+                onNavigate = onNavigate
+            )
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Tab 3: Ajustes — SettingsScreen
+        // ═══════════════════════════════════════════════════════════════
+        3 -> {
+            val prefs by settingsViewModel.preferences.collectAsStateWithLifecycle()
+
+            SettingsScreen(
+                selectedDiets = prefs.selectedDiets,
+                onToggleDiet = settingsViewModel::toggleDiet,
+                defaultPortions = prefs.defaultPortions,
+                onPortionsChange = settingsViewModel::saveDefaultPortions,
+                selectedTheme = prefs.theme,
+                onThemeSelect = settingsViewModel::saveTheme,
+                selectedLanguage = prefs.language,
+                onLanguageSelect = settingsViewModel::saveLanguage,
+                selectedNavItem = 3,
+                onNavItemSelected = onNavigate
+            )
         }
     }
 }
-
-
