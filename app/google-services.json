@@ -1,36 +1,39 @@
 {
   "project_info": {
-    "project_number": "123456789",
-    "project_id": "recipe-generator-app",
-    "storage_bucket": "recipe-generator-app.appspot.com"
+    "project_number": "324878374213",
+    "project_id": "recipe-generator-app-417d0",
+    "storage_bucket": "recipe-generator-app-417d0.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789:android:abcdef1234567890",
+        "mobilesdk_app_id": "1:324878374213:android:1ddac5040a17b12dd51a2c",
         "android_client_info": {
           "package_name": "com.example.recipe_generator"
         }
       },
       "oauth_client": [
         {
-          "client_id": "123456789-abcdefg.apps.googleusercontent.com",
+          "client_id": "324878374213-3r1smbjh6qrnc0dp3vfoshav50qt03rf.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDxxx_YOUR_API_KEY_HERE_xxxx"
+          "current_key": "AIzaSyCVcg87BRk7NUjuN2RTTZK60a09cJsFUB4"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324878374213-3r1smbjh6qrnc0dp3vfoshav50qt03rf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
   ],
-  "configuration_version": "1",
-  "is_dev_config": true
+  "configuration_version": "1"
 }
-
