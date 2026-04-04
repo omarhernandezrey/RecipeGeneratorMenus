@@ -71,5 +71,13 @@ class MockAuthRepository : AuthRepository {
     } catch (e: Exception) {
         Result.failure(e)
     }
+
+    // B-09: Mock — simula envío de correo de recuperación
+    override suspend fun sendPasswordReset(email: String): Result<Unit> = try {
+        if (email.isEmpty()) throw IllegalArgumentException("El correo no puede estar vacío")
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 }
 

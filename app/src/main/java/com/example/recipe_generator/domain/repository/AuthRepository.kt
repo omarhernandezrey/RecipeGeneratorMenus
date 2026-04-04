@@ -34,5 +34,10 @@ interface AuthRepository {
      * Actualiza el perfil del usuario
      */
     suspend fun updateUserProfile(displayName: String?, photoUrl: String?): Result<User>
+
+    /**
+     * Envía correo de recuperación de contraseña (B-09)
+     */
+    suspend fun sendPasswordReset(email: String): Result<Unit>
 }
 

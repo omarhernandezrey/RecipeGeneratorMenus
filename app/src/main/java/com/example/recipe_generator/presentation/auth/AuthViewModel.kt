@@ -38,21 +38,41 @@ class AuthViewModel(
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     /**
-     * Registra nuevo usuario
+     * Registra nuevo usuario con nombre de display (B-02)
      */
-    fun signUp(email: String, password: String) {
+    fun signUp(email: String, password: String, displayName: String = "") {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
 
             val result = authRepository.signUp(email, password)
 
-            result.onSuccess {
+            result.onSuccess { user ->
+                if (displayName.isNotBlank()) {
+                    authRepository.updateUserProfile(displayName, null)
+                }
                 _isLoading.value = false
             }.onFailure { error ->
                 _errorMessage.value = error.message ?: "Error al registrar"
                 _isLoading.value = false
             }
+        }
+    }
+
+    /**
+     * Envía correo de recuperación de contraseña (B-09)
+     */
+    fun sendPasswordReset(email: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            val result = authRepository.sendPasswordReset(email)
+            result.onSuccess {
+                _errorMessage.value = "✅ Correo de recuperación enviado a $email"
+            }.onFailure { error ->
+                _errorMessage.value = error.message ?: "Error al enviar correo"
+            }
+            _isLoading.value = false
         }
     }
 

@@ -132,5 +132,16 @@ class FirebaseAuthRepository(
     } catch (e: Exception) {
         Result.failure(e)
     }
+
+    /**
+     * Envía correo de recuperación de contraseña (B-09)
+     */
+    override suspend fun sendPasswordReset(email: String): Result<Unit> = try {
+        firebaseAuth.sendPasswordResetEmail(email).await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        android.util.Log.e("FirebaseAuth", "Error en sendPasswordReset: ${e.message}", e)
+        Result.failure(e)
+    }
 }
 
