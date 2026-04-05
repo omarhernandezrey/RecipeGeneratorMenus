@@ -114,14 +114,14 @@ fun VideoScreen(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(spacing_4))
 
         Text(
-            text = "Video Tutorial",
+            text = "Tutoriales de cocina",
             style = MaterialTheme.typography.headlineMedium,
             color = OnSurface,
             fontWeight = FontWeight.Bold
         )
 
         Text(
-            text = "Aprende a preparar recetas saludables con nuestros tutoriales en video.",
+            text = "Aprende a preparar recetas saludables con nuestros tutoriales paso a paso.",
             style = MaterialTheme.typography.bodyLarge,
             color = OnSurfaceVariant
         )
@@ -228,7 +228,7 @@ fun VideoScreen(modifier: Modifier = Modifier) {
             }
         }
 
-        // Información del video
+        // Descripción del video
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(rounded_lg),
@@ -240,43 +240,15 @@ fun VideoScreen(modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(spacing_4)
             ) {
                 Text(
-                    text = "DETALLES DEL VIDEO",
+                    text = "ACERCA DEL VIDEO",
                     style = MaterialTheme.typography.labelSmall,
                     color = Primary,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp
                 )
-                InfoItem(label = "Implementación", value = "AndroidView { VideoView }")
-                InfoItem(label = "Ciclo de vida", value = "DisposableEffect (pausa/resume)")
-                InfoItem(label = "Control", value = "MediaController nativo")
-                InfoItem(label = "Cumple", value = "LF7 — VideoView en Compose")
-            }
-        }
-
-        // Nota técnica sobre la implementación
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(rounded_lg),
-            colors = CardDefaults.cardColors(
-                containerColor = PrimaryContainer.copy(alpha = 0.20f)
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(spacing_6),
-                verticalArrangement = Arrangement.spacedBy(spacing_2)
-            ) {
                 Text(
-                    text = "Nota de implementación LF7",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Primary,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "VideoView se integra en Jetpack Compose mediante AndroidView{}. " +
-                            "El VideoView es un widget nativo de Android que no tiene " +
-                            "equivalente directo en Compose. AndroidView actúa como " +
-                            "puente entre la UI nativa y Compose.",
+                    text = "Aprende técnicas culinarias paso a paso con nuestros tutoriales. " +
+                            "Usa los controles del reproductor para pausar, retroceder y avanzar.",
                     style = MaterialTheme.typography.bodySmall,
                     color = OnSurfaceVariant
                 )
@@ -287,25 +259,3 @@ fun VideoScreen(modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-private fun InfoItem(label: String, value: String) {
-    androidx.compose.foundation.layout.Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = OnSurfaceVariant,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodySmall,
-            color = OnSurface,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1.5f)
-        )
-    }
-}

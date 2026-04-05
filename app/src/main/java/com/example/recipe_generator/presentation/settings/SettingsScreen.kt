@@ -24,8 +24,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -90,9 +93,33 @@ fun SettingsScreen(
     selectedLanguage: String = "Español",
     onLanguageSelect: (String) -> Unit = {},
     selectedNavItem: Int = 3,
-    onNavItemSelected: (Int) -> Unit = {}
+    onNavItemSelected: (Int) -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     val surfaceBg = com.example.recipe_generator.presentation.theme.Surface
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
+    // AlertDialog de confirmación para cerrar sesión
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Cerrar sesión", fontWeight = FontWeight.Bold) },
+            text = { Text("¿Estás seguro de que deseas cerrar sesión?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutDialog = false
+                    onLogout()
+                }) {
+                    Text("Cerrar sesión", color = Error, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -107,7 +134,8 @@ fun SettingsScreen(
             selectedTheme = selectedTheme,
             onThemeSelect = onThemeSelect,
             selectedLanguage = selectedLanguage,
-            onLanguageSelect = onLanguageSelect
+            onLanguageSelect = onLanguageSelect,
+            onLogoutClick = { showLogoutDialog = true }
         )
 
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {
@@ -123,7 +151,7 @@ fun SettingsScreen(
                 .fillMaxWidth()
                 .background(surfaceBg)
         ) {
-            HomeEditorialTopAppBar(title = "Menú Semanal")
+            HomeEditorialTopAppBar(title = "Ajustes")
         }
     }
 }
@@ -138,7 +166,8 @@ private fun SettingsContent(
     selectedTheme: String,
     onThemeSelect: (String) -> Unit,
     selectedLanguage: String,
-    onLanguageSelect: (String) -> Unit
+    onLanguageSelect: (String) -> Unit,
+    onLogoutClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -174,7 +203,6 @@ private fun SettingsContent(
                 }
             }
 
-            // F3-20: ExposedDropdownMenuBox para porciones (LF8: Spinner equiv M3)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -234,60 +262,23 @@ private fun SettingsContent(
             }
         }
 
-        // ── Sección 3: Acciones ────────────────────────────────────────
+        // ── Sección 3: Cuenta ─────────────────────────────────────────
         Column(
             modifier = Modifier
                 .padding(horizontal = spacing_6)
                 .padding(top = spacing_4),
             verticalArrangement = Arrangement.spacedBy(spacing_4)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(rounded_md))
-                    .background(SurfaceContainerHighest.copy(alpha = 0.50f))
-                    .clickable { }
-                    .padding(horizontal = spacing_6, vertical = spacing_4)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(spacing_3)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = OnSurfaceVariant
-                        )
-                        Text(
-                            text = "Soporte y Comentarios",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = OnSurface
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = null,
-                        tint = OnSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
+            SectionHeader(icon = Icons.AutoMirrored.Outlined.HelpOutline, title = "Cuenta")
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(rounded_md))
-                    .background(ErrorContainer.copy(alpha = 0.20f))
-                    .border(1.dp, Error.copy(alpha = 0.10f), RoundedCornerShape(rounded_md))
-                    .clickable { }
-                    .padding(horizontal = spacing_6, vertical = spacing_4)
+                    .background(ErrorContainer.copy(alpha = 0.15f))
+                    .border(1.dp, Error.copy(alpha = 0.15f), RoundedCornerShape(rounded_md))
+                    .clickable { onLogoutClick() }
+                    .padding(horizontal = spacing_6, vertical = spacing_4 + spacing_2)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -295,14 +286,14 @@ private fun SettingsContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Delete,
+                        imageVector = Icons.Outlined.Logout,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
                         tint = Error
                     )
-                    Spacer(modifier = Modifier.width(spacing_2))
+                    Spacer(modifier = Modifier.width(spacing_3))
                     Text(
-                        text = "Limpiar Base de Datos",
+                        text = "Cerrar sesión",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = Error

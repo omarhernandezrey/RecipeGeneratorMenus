@@ -183,7 +183,8 @@ fun AppShell(
                 selectedLanguage = prefs.language,
                 onLanguageSelect = settingsViewModel::saveLanguage,
                 selectedNavItem = 3,
-                onNavItemSelected = onNavigate
+                onNavItemSelected = onNavigate,
+                onLogout = onLogout
             )
         }
     }

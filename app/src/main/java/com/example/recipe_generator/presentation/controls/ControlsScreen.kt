@@ -123,7 +123,7 @@ fun ControlsScreen(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(spacing_2))
 
         Text(
-            text = "Controles LF8",
+            text = "Panel de Controles",
             style = MaterialTheme.typography.headlineMedium,
             color = OnSurface,
             fontWeight = FontWeight.Bold
@@ -160,8 +160,8 @@ fun ControlsScreen(modifier: Modifier = Modifier) {
         // ── 1. Button / ElevatedButton ────────────────────────────────
         ControlSection(
             icon = Icons.Outlined.Star,
-            title = "Button / ElevatedButton",
-            subtitle = "Equivalente Compose de Button XML"
+            title = "Botones",
+            subtitle = "Botón estándar y botón elevado"
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -186,8 +186,8 @@ fun ControlsScreen(modifier: Modifier = Modifier) {
         // ── 2. IconButton (ImageButton) ──────────────────────────────
         ControlSection(
             icon = Icons.Outlined.Star,
-            title = "IconButton",
-            subtitle = "Equivalente Compose de ImageButton XML"
+            title = "Botón de ícono",
+            subtitle = "Toca el ícono para activar o desactivar"
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -223,8 +223,8 @@ fun ControlsScreen(modifier: Modifier = Modifier) {
         // ── 3. Checkbox ──────────────────────────────────────────────
         ControlSection(
             icon = Icons.Outlined.CheckBox,
-            title = "Checkbox",
-            subtitle = "Equivalente Compose de CheckBox XML"
+            title = "Casillas de verificación",
+            subtitle = "Selecciona una o más opciones"
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(spacing_2)) {
                 CheckboxRow(
@@ -257,8 +257,8 @@ fun ControlsScreen(modifier: Modifier = Modifier) {
         // ── 4. RadioButton Group ─────────────────────────────────────
         ControlSection(
             icon = Icons.Outlined.RadioButtonChecked,
-            title = "RadioButton Group",
-            subtitle = "Equivalente Compose de RadioGroup XML"
+            title = "Selección única",
+            subtitle = "Elige solo una opción del grupo"
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(spacing_2)) {
                 radioOpciones.forEach { opcion ->
@@ -289,8 +289,8 @@ fun ControlsScreen(modifier: Modifier = Modifier) {
         // ── 5. Switch (ToggleButton) ─────────────────────────────────
         ControlSection(
             icon = Icons.Outlined.ToggleOff,
-            title = "Switch",
-            subtitle = "Equivalente Compose de Switch/ToggleButton XML"
+            title = "Interruptor",
+            subtitle = "Activa o desactiva una opción"
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -327,8 +327,8 @@ fun ControlsScreen(modifier: Modifier = Modifier) {
         // ── 6. ExposedDropdownMenuBox (Spinner) ──────────────────────
         ControlSection(
             icon = Icons.Outlined.Star,
-            title = "ExposedDropdownMenuBox",
-            subtitle = "Equivalente Compose de Spinner XML"
+            title = "Menú desplegable",
+            subtitle = "Selecciona una categoría de la lista"
         ) {
             ExposedDropdownMenuBox(
                 expanded = spinnerExpanded,
@@ -367,8 +367,8 @@ fun ControlsScreen(modifier: Modifier = Modifier) {
         // ── 7. Slider (SeekBar) ──────────────────────────────────────
         ControlSection(
             icon = Icons.Outlined.Star,
-            title = "Slider",
-            subtitle = "Equivalente Compose de SeekBar XML (LF7)"
+            title = "Nivel de dificultad",
+            subtitle = "Desliza para ajustar el nivel"
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(spacing_4)) {
                 Row(
