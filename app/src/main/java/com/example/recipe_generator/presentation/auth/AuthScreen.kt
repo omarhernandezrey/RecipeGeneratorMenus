@@ -43,8 +43,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -91,11 +99,14 @@ import com.example.recipe_generator.presentation.theme.spacing_8
  *
  * Capa: Presentation
  */
+// Web Client ID del proyecto Firebase (google-services.json → oauth_client type 3)
+private const val WEB_CLIENT_ID =
+    "324878374213-3r1smbjh6qrnc0dp3vfoshav50qt03rf.apps.googleusercontent.com"
+
 @Composable
 fun AuthScreen(
     viewModel: AuthViewModel,
-    onAuthSuccess: () -> Unit,
-    onGoogleSignIn: () -> Unit = {}
+    onAuthSuccess: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -112,8 +123,42 @@ fun AuthScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
+    // B-07: Credential Manager para Google Sign-In
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(currentUser) {
         if (currentUser != null) onAuthSuccess()
+    }
+
+    // Función que lanza Google One Tap con Credential Manager (B-07)
+    val launchGoogleSignIn: () -> Unit = {
+        scope.launch {
+            try {
+                val credentialManager = CredentialManager.create(context)
+                val googleIdOption = GetGoogleIdOption.Builder()
+                    .setFilterByAuthorizedAccounts(false)
+                    .setServerClientId(WEB_CLIENT_ID)
+                    .setAutoSelectEnabled(false)
+                    .build()
+                val request = GetCredentialRequest.Builder()
+                    .addCredentialOption(googleIdOption)
+                    .build()
+                val result = credentialManager.getCredential(
+                    context = context,
+                    request = request
+                )
+                val googleIdTokenCredential =
+                    GoogleIdTokenCredential.createFrom(result.credential.data)
+                viewModel.signInWithGoogle(googleIdTokenCredential.idToken)
+            } catch (e: GetCredentialException) {
+                android.util.Log.e("GoogleSignIn", "GetCredentialException: ${e.message}", e)
+                viewModel.setError("No se pudo iniciar sesión con Google: ${e.message}")
+            } catch (e: Exception) {
+                android.util.Log.e("GoogleSignIn", "Error inesperado: ${e.message}", e)
+                viewModel.setError("Error inesperado al iniciar sesión con Google")
+            }
+        }
     }
 
     Box(
@@ -396,7 +441,7 @@ fun AuthScreen(
 
             // ── Botón Google (B-04) ────────────────────────────────────
             androidx.compose.material3.OutlinedButton(
-                onClick = onGoogleSignIn,
+                onClick = launchGoogleSignIn,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),

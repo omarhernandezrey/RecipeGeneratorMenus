@@ -79,5 +79,18 @@ class MockAuthRepository : AuthRepository {
     } catch (e: Exception) {
         Result.failure(e)
     }
+
+    // B-08: Mock — simula login con Google
+    override suspend fun signInWithGoogle(idToken: String): Result<User> = try {
+        val user = User(
+            uid = "mock_google_${System.currentTimeMillis()}",
+            email = "usuario@gmail.com",
+            displayName = "Usuario Google"
+        )
+        currentUserFlow.value = user
+        Result.success(user)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 }
 

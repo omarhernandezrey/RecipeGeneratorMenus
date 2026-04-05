@@ -3,6 +3,7 @@ package com.example.recipe_generator.data.repository
 import com.example.recipe_generator.domain.model.User
 import com.example.recipe_generator.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.userProfileChangeRequest
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -141,6 +142,27 @@ class FirebaseAuthRepository(
         Result.success(Unit)
     } catch (e: Exception) {
         android.util.Log.e("FirebaseAuth", "Error en sendPasswordReset: ${e.message}", e)
+        Result.failure(e)
+    }
+
+    /**
+     * Inicia sesión con Google usando idToken de Credential Manager (B-06)
+     * GoogleAuthProvider.getCredential(idToken) → signInWithCredential()
+     */
+    override suspend fun signInWithGoogle(idToken: String): Result<User> = try {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        val result = firebaseAuth.signInWithCredential(credential).await()
+        val user = result.user ?: throw Exception("No se pudo obtener usuario de Google")
+        Result.success(
+            User(
+                uid = user.uid,
+                email = user.email ?: "",
+                displayName = user.displayName,
+                photoUrl = user.photoUrl?.toString()
+            )
+        )
+    } catch (e: Exception) {
+        android.util.Log.e("FirebaseAuth", "Error en signInWithGoogle: ${e.message}", e)
         Result.failure(e)
     }
 }

@@ -60,6 +60,22 @@ class AuthViewModel(
     }
 
     /**
+     * Inicia sesión con Google usando idToken de Credential Manager (B-07)
+     * El idToken lo obtiene AuthScreen con Credential Manager y lo pasa aquí
+     */
+    fun signInWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            authRepository.signInWithGoogle(idToken)
+                .onFailure { error ->
+                    _errorMessage.value = error.message ?: "Error al iniciar sesión con Google"
+                }
+            _isLoading.value = false
+        }
+    }
+
+    /**
      * Envía correo de recuperación de contraseña (B-09)
      */
     fun sendPasswordReset(email: String) {
@@ -109,6 +125,14 @@ class AuthViewModel(
      */
     fun clearError() {
         _errorMessage.value = null
+    }
+
+    /**
+     * Establece un mensaje de error desde la UI (ej. Credential Manager)
+     */
+    fun setError(message: String) {
+        _errorMessage.value = message
+        _isLoading.value = false
     }
 }
 

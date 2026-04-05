@@ -39,5 +39,10 @@ interface AuthRepository {
      * Envía correo de recuperación de contraseña (B-09)
      */
     suspend fun sendPasswordReset(email: String): Result<Unit>
+
+    /**
+     * Inicia sesión con Google usando el idToken de Credential Manager (B-05)
+     */
+    suspend fun signInWithGoogle(idToken: String): Result<User>
 }
 
