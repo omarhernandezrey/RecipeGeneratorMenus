@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.example.recipe_generator.presentation.auth
 
 import androidx.lifecycle.ViewModel
@@ -155,4 +157,3 @@ class AuthViewModel(
         _isLoading.value = false
     }
 }
-

@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.example.recipe_generator.presentation.auth
 
 import androidx.compose.animation.AnimatedVisibility
@@ -5,24 +7,28 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.AlertDialog
@@ -57,6 +63,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -64,6 +71,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.recipe_generator.R
 import com.example.recipe_generator.presentation.theme.Error
 import com.example.recipe_generator.presentation.theme.ErrorContainer
 import com.example.recipe_generator.presentation.theme.OnError
@@ -76,19 +84,19 @@ import com.example.recipe_generator.presentation.theme.Primary
 import com.example.recipe_generator.presentation.theme.PrimaryContainer
 import com.example.recipe_generator.presentation.theme.Secondary
 import com.example.recipe_generator.presentation.theme.SecondaryContainer
-import com.example.recipe_generator.presentation.theme.Surface
 import com.example.recipe_generator.presentation.theme.SurfaceContainerLowest
 import com.example.recipe_generator.presentation.theme.Tertiary
 import com.example.recipe_generator.presentation.theme.rounded_full
 import com.example.recipe_generator.presentation.theme.rounded_lg
 import com.example.recipe_generator.presentation.theme.rounded_md
-import com.example.recipe_generator.presentation.theme.spacing_10
-import com.example.recipe_generator.presentation.theme.spacing_12
 import com.example.recipe_generator.presentation.theme.spacing_2
 import com.example.recipe_generator.presentation.theme.spacing_3
 import com.example.recipe_generator.presentation.theme.spacing_4
+import com.example.recipe_generator.presentation.theme.spacing_5
 import com.example.recipe_generator.presentation.theme.spacing_6
 import com.example.recipe_generator.presentation.theme.spacing_8
+import com.example.recipe_generator.presentation.theme.Surface as SurfaceColor
+import androidx.compose.material3.Surface as MaterialSurface
 
 /**
  * AuthScreen — Pantalla de autenticación con estilo editorial Material Design 3.
@@ -181,129 +189,185 @@ fun AuthScreen(
         }
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Surface,
+                        Color(0xFFF7F4FD),
+                        Primary.copy(alpha = 0.06f),
+                        SurfaceColor,
                         SurfaceContainerLowest
                     )
                 )
             )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = spacing_8),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(spacing_12))
+        val isCompactHeight = maxHeight < 760.dp
+        val horizontalPadding = if (isCompactHeight) spacing_6 else spacing_8
+        val sectionSpacing = if (isCompactHeight) spacing_3 else spacing_4
 
-            // ── Logo + Marca ────────────────────────────────────────────
-            LogoSection()
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .offset(x = (-22).dp, y = 18.dp)
+                    .size(if (isCompactHeight) 156.dp else 196.dp)
+                    .clip(CircleShape)
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Primary.copy(alpha = 0.14f),
+                                Primary.copy(alpha = 0.02f)
+                            )
+                        )
+                    )
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 28.dp, y = (-34).dp)
+                    .size(if (isCompactHeight) 170.dp else 220.dp)
+                    .clip(CircleShape)
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Secondary.copy(alpha = 0.12f),
+                                Secondary.copy(alpha = 0.02f)
+                            )
+                        )
+                    )
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 104.dp, end = 34.dp)
+                    .size(18.dp)
+                    .clip(CircleShape)
+                    .background(Tertiary.copy(alpha = 0.18f))
+            )
 
-            Spacer(modifier = Modifier.height(spacing_10))
-
-            // ── Card de formulario ──────────────────────────────────────
-            androidx.compose.material3.Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(rounded_lg),
-                colors = androidx.compose.material3.CardDefaults.cardColors(
-                    containerColor = SurfaceContainerLowest
-                ),
-                elevation = androidx.compose.material3.CardDefaults.cardElevation(
-                    defaultElevation = 2.dp
-                )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .navigationBarsPadding()
+                    .imePadding()
+                    .padding(
+                        start = horizontalPadding,
+                        end = horizontalPadding,
+                        top = if (isCompactHeight) 28.dp else 40.dp,
+                        bottom = spacing_6
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = if (isCompactHeight) Arrangement.Center else Arrangement.Top
             ) {
-                Column(
+                // ── Logo + Marca ────────────────────────────────────────
+                LogoSection(isCompact = isCompactHeight)
+
+                Spacer(modifier = Modifier.height(sectionSpacing))
+
+                // ── Card de formulario ──────────────────────────────────
+                MaterialSurface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(spacing_8),
-                    verticalArrangement = Arrangement.spacedBy(spacing_4)
+                        .border(
+                            width = 1.dp,
+                            color = Color.White.copy(alpha = 0.72f),
+                            shape = RoundedCornerShape(32.dp)
+                        ),
+                    shape = RoundedCornerShape(32.dp),
+                    color = SurfaceContainerLowest.copy(alpha = 0.94f),
+                    tonalElevation = 0.dp,
+                    shadowElevation = 20.dp
                 ) {
-                    // Título del formulario
-                    Text(
-                        text = if (isSignUp) "Crear cuenta" else "Bienvenido",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = OnSurface,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = if (isSignUp)
-                            "Regístrate para personalizar tu menú semanal"
-                        else
-                            "Inicia sesión para continuar",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(spacing_2))
-
-                    // Campo Nombre (solo en registro — B-02)
-                    AnimatedVisibility(
-                        visible = isSignUp,
-                        enter = fadeIn() + slideInVertically(),
-                        exit = fadeOut()
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = if (isCompactHeight) 22.dp else 28.dp)
+                            .padding(vertical = if (isCompactHeight) 24.dp else 30.dp),
+                        verticalArrangement = Arrangement.spacedBy(if (isCompactHeight) spacing_3 else spacing_4)
                     ) {
-                        Column {
-                            OutlinedTextField(
-                                value = displayName,
-                                onValueChange = {
-                                    displayName = it
-                                    nameError = null
-                                },
-                                label = { Text("Nombre completo") },
-                                placeholder = { Text("Tu nombre y apellido") },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Email,
-                                        contentDescription = null,
-                                        tint = if (nameError != null) Error else Primary
-                                    )
-                                },
-                                isError = nameError != null,
-                                supportingText = nameError?.let {
-                                    { Text(it, color = Error) }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                shape = RoundedCornerShape(rounded_md),
-                                colors = authFieldColors()
-                            )
-                            Spacer(modifier = Modifier.height(spacing_3))
-                        }
-                    }
+                        // Título del formulario
+                        Text(
+                            text = if (isSignUp) "Crear tu cuenta" else "Bienvenido de nuevo",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = OnSurface,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = if (isSignUp)
+                                "Guarda tus preferencias y empieza a organizar tu semana."
+                            else
+                                "Usa tu correo y contraseña para continuar.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = OnSurfaceVariant.copy(alpha = 0.88f)
+                        )
 
-                    // Campo Email
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = {
-                            email = it
-                            emailError = null
-                            viewModel.clearError()
-                        },
-                        label = { Text("Correo electrónico") },
-                        placeholder = { Text("ejemplo@correo.com") },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Email,
-                                contentDescription = null,
-                                tint = if (emailError != null) Error else Primary
-                            )
-                        },
-                        isError = emailError != null,
-                        supportingText = emailError?.let {
-                            { Text(it, color = Error) }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        singleLine = true,
-                        shape = RoundedCornerShape(rounded_md),
-                        colors = authFieldColors()
-                    )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        HorizontalDivider(color = OutlineVariant.copy(alpha = 0.42f))
+
+                        // Campo Nombre (solo en registro — B-02)
+                        AnimatedVisibility(
+                            visible = isSignUp,
+                            enter = fadeIn() + slideInVertically(),
+                            exit = fadeOut()
+                        ) {
+                            Column {
+                                OutlinedTextField(
+                                    value = displayName,
+                                    onValueChange = {
+                                        displayName = it
+                                        nameError = null
+                                    },
+                                    label = { Text("Nombre completo") },
+                                    placeholder = { Text("Tu nombre y apellido") },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Person,
+                                            contentDescription = null,
+                                            tint = if (nameError != null) Error else Primary
+                                        )
+                                    },
+                                    isError = nameError != null,
+                                    supportingText = nameError?.let {
+                                        { Text(it, color = Error) }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(18.dp),
+                                    colors = authFieldColors()
+                                )
+                                Spacer(modifier = Modifier.height(spacing_3))
+                            }
+                        }
+
+                        // Campo Email
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = {
+                                email = it
+                                emailError = null
+                                viewModel.clearError()
+                            },
+                            label = { Text("Correo electrónico") },
+                            placeholder = { Text("ejemplo@correo.com") },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Email,
+                                    contentDescription = null,
+                                    tint = if (emailError != null) Error else Primary
+                                )
+                            },
+                            isError = emailError != null,
+                            supportingText = emailError?.let {
+                                { Text(it, color = Error) }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            singleLine = true,
+                            shape = RoundedCornerShape(18.dp),
+                            colors = authFieldColors()
+                        )
 
                     // Campo Contraseña
                     OutlinedTextField(
@@ -348,7 +412,7 @@ fun AuthScreen(
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         singleLine = true,
-                        shape = RoundedCornerShape(rounded_md),
+                        shape = RoundedCornerShape(18.dp),
                         colors = authFieldColors()
                     )
 
@@ -420,239 +484,238 @@ fun AuthScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(rounded_full),
+                            .height(58.dp),
+                        shape = RoundedCornerShape(22.dp),
                         enabled = !isLoading,
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(22.dp),
-                                color = Color.White,
-                                strokeWidth = 2.5.dp
-                            )
-                        } else {
-                            Text(
-                                text = if (isSignUp) "Crear cuenta" else "Iniciar sesión",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                                color = Color.White
-                            )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = Brush.horizontalGradient(
+                                        colors = listOf(
+                                            Primary,
+                                            PrimaryContainer
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(22.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(22.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.5.dp
+                                )
+                            } else {
+                                Text(
+                                    text = if (isSignUp) "Crear cuenta" else "Iniciar sesión",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    color = Color.White
+                                )
+                            }
                         }
                     }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(spacing_4))
+                        AnimatedVisibility(visible = !isSignUp) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        viewModel.clearError()
+                                        viewModel.clearSuccess()
+                                        showForgotPasswordDialog = true
+                                    }
+                                ) {
+                                    Text(
+                                        text = "¿Olvidaste tu contraseña?",
+                                        color = Primary,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 13.sp
+                                    )
+                                }
+                            }
+                        }
 
-            // ── Recuperar contraseña (B-09) ─────────────────────────────
-            AnimatedVisibility(visible = !isSignUp) {
-                TextButton(
-                    onClick = {
-                        viewModel.clearError()
-                        viewModel.clearSuccess()
-                        showForgotPasswordDialog = true
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = if (isCompactHeight) spacing_2 else spacing_3),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(spacing_4)
+                        ) {
+                            HorizontalDivider(
+                                modifier = Modifier.weight(1f),
+                                color = OutlineVariant
+                            )
+                            Text(
+                                text = "o continúa con",
+                                color = OnSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.weight(1f),
+                                color = OutlineVariant
+                            )
+                        }
+
+                        // ── Botón Google (B-04) ────────────────────────
+                        androidx.compose.material3.OutlinedButton(
+                            onClick = launchGoogleSignIn,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(58.dp),
+                            shape = RoundedCornerShape(22.dp),
+                            enabled = !isLoading,
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp, OutlineVariant.copy(alpha = 0.65f)
+                            ),
+                            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                containerColor = Color.White.copy(alpha = 0.88f)
+                            )
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(spacing_4)
+                            ) {
+                                GoogleIcon()
+                                Text(
+                                    text = "Continuar con Google",
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = OnSurface,
+                                    fontSize = 14.sp,
+                                    letterSpacing = 0.sp
+                                )
+                            }
+                        }
+
                     }
-                ) {
-                    Text(
-                        text = "¿Olvidaste tu contraseña?",
-                        color = Primary,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 13.sp
-                    )
                 }
-            }
 
-            // ── Separador ──────────────────────────────────────────────
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = spacing_4),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(spacing_4)
-            ) {
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = OutlineVariant
-                )
-                Text(
-                    text = "o",
-                    color = OnSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall
-                )
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = OutlineVariant
-                )
-            }
+                Spacer(modifier = Modifier.height(if (isCompactHeight) spacing_4 else spacing_6))
 
-            // ── Botón Google (B-04) ────────────────────────────────────
-            androidx.compose.material3.OutlinedButton(
-                onClick = launchGoogleSignIn,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(rounded_full),
-                enabled = !isLoading,
-                border = androidx.compose.foundation.BorderStroke(
-                    1.dp, OutlineVariant
-                ),
-                colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
-                    containerColor = SurfaceContainerLowest
-                )
-            ) {
+                // ── Toggle Login / Registro ─────────────────────────────
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(spacing_4)
-                ) {
-                    // Ícono G de Google con colores oficiales
-                    GoogleIcon()
-                    Text(
-                        text = "Continuar con Google",
-                        fontWeight = FontWeight.SemiBold,
-                        color = OnSurface,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(spacing_6))
-
-            // ── Toggle Login / Registro ─────────────────────────────────
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = if (isSignUp) "¿Ya tienes cuenta? " else "¿No tienes cuenta? ",
-                    color = OnSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                TextButton(
-                    onClick = {
-                        isSignUp = !isSignUp
-                        emailError = null
-                        passwordError = null
-                        nameError = null
-                        viewModel.clearError()
-                        viewModel.clearSuccess()
-                    },
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                        horizontal = spacing_2
-                    )
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = if (isSignUp) "Inicia sesión" else "Regístrate",
-                        color = Primary,
-                        fontWeight = FontWeight.Bold,
+                        text = if (isSignUp) "¿Ya tienes cuenta? " else "¿No tienes cuenta? ",
+                        color = OnSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium
                     )
+                    TextButton(
+                        onClick = {
+                            isSignUp = !isSignUp
+                            emailError = null
+                            passwordError = null
+                            nameError = null
+                            viewModel.clearError()
+                            viewModel.clearSuccess()
+                        },
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                            horizontal = spacing_2
+                        )
+                    ) {
+                        Text(
+                            text = if (isSignUp) "Inicia sesión" else "Regístrate",
+                            color = Primary,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
-
-            Spacer(modifier = Modifier.height(spacing_10))
         }
     }
 }
 
 // ── Sección de logo y marca ─────────────────────────────────────────────
 @Composable
-private fun LogoSection() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(spacing_4)
+private fun LogoSection(isCompact: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(if (isCompact) spacing_4 else spacing_5)
     ) {
-        // Logo circular con gradiente
         Box(
             modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
+                .size(if (isCompact) 62.dp else 74.dp)
+                .clip(RoundedCornerShape(22.dp))
                 .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(PrimaryContainer, Primary)
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            PrimaryContainer,
+                            Primary
+                        )
                     )
                 ),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "🍽",
-                fontSize = 36.sp,
+                fontSize = if (isCompact) 28.sp else 32.sp,
                 textAlign = TextAlign.Center
             )
         }
 
-        // Nombre de la app
-        Text(
-            text = "Recipe Generator",
-            style = MaterialTheme.typography.headlineMedium,
-            color = Primary,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.5).sp
-        )
-
-        // Subtítulo editorial
-        Text(
-            text = "Generador de Menús Semanales",
-            style = MaterialTheme.typography.bodyMedium,
-            color = OnSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
-
-        // Chips de categoría editorial
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(spacing_3)
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            CategoryChip(text = "⭐ Compose", color = Primary)
-            CategoryChip(text = "🔥 Firebase", color = Tertiary)
-            CategoryChip(text = "🥗 Recetas", color = Secondary)
+            Text(
+                text = "Recipe Generator",
+                style = if (isCompact) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium,
+                color = OnSurface,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.5).sp
+            )
+            Text(
+                text = "Planifica recetas y organiza tu semana en un solo lugar.",
+                style = if (isCompact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium,
+                color = OnSurfaceVariant.copy(alpha = 0.9f),
+                lineHeight = if (isCompact) 18.sp else 20.sp
+            )
         }
-    }
-}
-
-@Composable
-private fun CategoryChip(text: String, color: Color) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(rounded_full))
-            .background(color.copy(alpha = 0.12f))
-            .padding(horizontal = spacing_4, vertical = spacing_2)
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = color,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 10.sp
-        )
     }
 }
 
 // ── Ícono G de Google (colores oficiales) ──────────────────────────────
 @Composable
 private fun GoogleIcon() {
-    Box(
-        modifier = Modifier
-            .size(20.dp)
-            .clip(CircleShape)
-            .background(Color.White),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "G",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = Color(0xFF4285F4),
-            textAlign = TextAlign.Center
-        )
-    }
+    Icon(
+        painter = painterResource(id = R.drawable.google_g_logo),
+        contentDescription = null,
+        modifier = Modifier.size(20.dp),
+        tint = Color.Unspecified
+    )
 }
 
 // ── Colores compartidos para campos ───────────────────────────────────
 @Composable
 private fun authFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = Primary,
-    unfocusedBorderColor = OutlineVariant,
+    unfocusedBorderColor = OutlineVariant.copy(alpha = 0.9f),
+    focusedContainerColor = Color.White.copy(alpha = 0.98f),
+    unfocusedContainerColor = Color(0xFFFCFBFE),
+    disabledContainerColor = Color(0xFFFCFBFE),
+    errorContainerColor = Color(0xFFFFFBFB),
+    focusedTextColor = OnSurface,
+    unfocusedTextColor = OnSurface,
+    focusedLeadingIconColor = Primary,
+    unfocusedLeadingIconColor = Primary.copy(alpha = 0.88f),
+    focusedTrailingIconColor = Outline,
+    unfocusedTrailingIconColor = Outline,
     focusedLabelColor = Primary,
+    unfocusedLabelColor = OnSurfaceVariant,
+    focusedPlaceholderColor = OnSurfaceVariant.copy(alpha = 0.65f),
+    unfocusedPlaceholderColor = OnSurfaceVariant.copy(alpha = 0.65f),
     cursorColor = Primary
 )
 
@@ -801,22 +864,20 @@ private fun validateForm(
     onPasswordError: (String) -> Unit,
     onNameError: (String) -> Unit
 ): Boolean {
-    var valid = true
-
-    if (isSignUp && displayName.isBlank()) {
+    val invalidName = isSignUp && displayName.isBlank()
+    if (invalidName) {
         onNameError("El nombre no puede estar vacío")
-        valid = false
     }
 
-    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+    val invalidEmail = !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    if (invalidEmail) {
         onEmailError("Ingresa un correo electrónico válido")
-        valid = false
     }
 
-    if (password.length < 6) {
+    val invalidPassword = password.length < 6
+    if (invalidPassword) {
         onPasswordError("La contraseña debe tener al menos 6 caracteres")
-        valid = false
     }
 
-    return valid
+    return !(invalidName || invalidEmail || invalidPassword)
 }

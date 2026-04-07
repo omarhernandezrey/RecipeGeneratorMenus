@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.example.recipe_generator
 
 import android.os.Bundle
@@ -59,22 +61,29 @@ class MainActivity : AppCompatActivity() {
         // false → el usuario acaba de hacer login en esta sesión (mostrar welcome)
         var wasAlreadyLoggedIn by remember { mutableStateOf<Boolean?>(null) }
 
-        // Captura el estado inicial UNA sola vez (primera composición con usuario conocido)
+        // Controla si ya pasó por AuthWelcomeScreen en esta sesión
+        var welcomeSeen by remember { mutableStateOf(false) }
+
         LaunchedEffect(currentUser) {
-            if (wasAlreadyLoggedIn == null && currentUser != null) {
-                // Sesión pre-existente: saltar AuthWelcomeScreen
-                wasAlreadyLoggedIn = true
+            when {
+                currentUser == null -> {
+                    wasAlreadyLoggedIn = null
+                    welcomeSeen = false
+                }
+                wasAlreadyLoggedIn == null -> {
+                    // Sesión pre-existente: saltar AuthWelcomeScreen
+                    wasAlreadyLoggedIn = true
+                }
             }
         }
 
-        // Controla si ya pasó por AuthWelcomeScreen en esta sesión
-        var welcomeSeen by remember { mutableStateOf(false) }
+        val handleLogout: () -> Unit = {
+            authViewModel.logout()
+        }
 
         when {
             // ── Sin usuario autenticado → pantalla de login ──────────────
             currentUser == null -> {
-                wasAlreadyLoggedIn = null
-                welcomeSeen = false
                 AuthScreen(
                     viewModel = authViewModel,
                     onAuthSuccess = {
@@ -88,12 +97,8 @@ class MainActivity : AppCompatActivity() {
             wasAlreadyLoggedIn == false && !welcomeSeen -> {
                 AuthWelcomeScreen(
                     userEmail = currentUser?.email ?: "",
-                    onContinueToApp = { welcomeSeen = true },
-                    onLogout = {
-                        authViewModel.logout()
-                        welcomeSeen = false
-                        wasAlreadyLoggedIn = null
-                    }
+                    onContinueToApp = { },
+                    onLogout = handleLogout
                 )
             }
 
@@ -105,11 +110,7 @@ class MainActivity : AppCompatActivity() {
                     favoritesRepository = container.favoritesRepository,
                     generateMenuUseCase = container.generateMenuUseCase,
                     userPrefsRepository = container.userPrefsRepository,
-                    onLogout = {
-                        authViewModel.logout()
-                        welcomeSeen = false
-                        wasAlreadyLoggedIn = null
-                    }
+                    onLogout = handleLogout
                 )
             }
         }

@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.example.recipe_generator.di
 
 import android.content.Context
