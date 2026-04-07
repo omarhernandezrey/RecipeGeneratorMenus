@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -21,11 +22,18 @@ class AuthViewModel(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
-    // Estado del usuario autenticado actual
+    // true mientras Firebase no ha respondido aún (evita flash de AuthScreen al abrir la app)
+    private val _isCheckingAuth = MutableStateFlow(true)
+    val isCheckingAuth: StateFlow<Boolean> = _isCheckingAuth.asStateFlow()
+
+    // Estado del usuario autenticado actual.
+    // SharingStarted.Eagerly inicia el listener de Firebase inmediatamente al crear el ViewModel,
+    // onEach apaga el flag de "verificando" tras la primera respuesta real de Firebase.
     val currentUser: StateFlow<User?> = authRepository.getCurrentUser()
+        .onEach { _isCheckingAuth.value = false }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Lazily,
+            started = SharingStarted.Eagerly,
             initialValue = null
         )
 
@@ -36,6 +44,10 @@ class AuthViewModel(
     // Mensaje de error
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    // Mensaje de éxito (recuperación de contraseña, etc.)
+    private val _successMessage = MutableStateFlow<String?>(null)
+    val successMessage: StateFlow<String?> = _successMessage.asStateFlow()
 
     /**
      * Registra nuevo usuario con nombre de display (B-02)
@@ -82,9 +94,10 @@ class AuthViewModel(
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
+            _successMessage.value = null
             val result = authRepository.sendPasswordReset(email)
             result.onSuccess {
-                _errorMessage.value = "✅ Correo de recuperación enviado a $email"
+                _successMessage.value = "Enlace enviado a $email.\nRevisa tu bandeja de entrada (y spam)."
             }.onFailure { error ->
                 _errorMessage.value = error.message ?: "Error al enviar correo"
             }
@@ -125,6 +138,13 @@ class AuthViewModel(
      */
     fun clearError() {
         _errorMessage.value = null
+    }
+
+    /**
+     * Limpia el mensaje de éxito
+     */
+    fun clearSuccess() {
+        _successMessage.value = null
     }
 
     /**

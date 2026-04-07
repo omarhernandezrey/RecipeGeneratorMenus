@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -67,6 +68,7 @@ import androidx.compose.ui.unit.sp
 import com.example.recipe_generator.presentation.theme.Error
 import com.example.recipe_generator.presentation.theme.ErrorContainer
 import com.example.recipe_generator.presentation.theme.OnError
+import com.example.recipe_generator.presentation.theme.OnSecondaryContainer
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Outline
@@ -74,6 +76,7 @@ import com.example.recipe_generator.presentation.theme.OutlineVariant
 import com.example.recipe_generator.presentation.theme.Primary
 import com.example.recipe_generator.presentation.theme.PrimaryContainer
 import com.example.recipe_generator.presentation.theme.Secondary
+import com.example.recipe_generator.presentation.theme.SecondaryContainer
 import com.example.recipe_generator.presentation.theme.Surface
 import com.example.recipe_generator.presentation.theme.SurfaceContainerLowest
 import com.example.recipe_generator.presentation.theme.Tertiary
@@ -122,6 +125,9 @@ fun AuthScreen(
     val currentUser by viewModel.currentUser.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val successMessage by viewModel.successMessage.collectAsState()
+
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
 
     // B-07: Credential Manager para Google Sign-In
     val context = LocalContext.current
@@ -129,6 +135,21 @@ fun AuthScreen(
 
     LaunchedEffect(currentUser) {
         if (currentUser != null) onAuthSuccess()
+    }
+
+    if (showForgotPasswordDialog) {
+        ForgotPasswordDialog(
+            initialEmail = email,
+            isLoading = isLoading,
+            successMessage = successMessage,
+            errorMessage = errorMessage,
+            onDismiss = {
+                showForgotPasswordDialog = false
+                viewModel.clearError()
+                viewModel.clearSuccess()
+            },
+            onSendReset = { resetEmail -> viewModel.sendPasswordReset(resetEmail) }
+        )
     }
 
     // Función que lanza Google One Tap con Credential Manager (B-07)
@@ -332,18 +353,47 @@ fun AuthScreen(
                         colors = authFieldColors()
                     )
 
-                    // Error de Firebase
-                    AnimatedVisibility(visible = errorMessage != null) {
+                    // Error de Firebase (solo cuando el diálogo no está abierto)
+                    AnimatedVisibility(visible = errorMessage != null && !showForgotPasswordDialog) {
+                        Column(verticalArrangement = Arrangement.spacedBy(spacing_2)) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(rounded_md))
+                                    .background(ErrorContainer)
+                                    .padding(spacing_4)
+                            ) {
+                                Text(
+                                    text = errorMessage ?: "",
+                                    color = OnError,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                            // Sugerencia de Google cuando falla el login
+                            if (!isSignUp) {
+                                Text(
+                                    text = "¿Te registraste con Google? Usa el botón 'Continuar con Google'.",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = OnSurfaceVariant,
+                                    modifier = Modifier.padding(horizontal = spacing_2)
+                                )
+                            }
+                        }
+                    }
+
+                    // Banner de éxito (recuperación enviada, etc.)
+                    AnimatedVisibility(visible = successMessage != null && !showForgotPasswordDialog) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(rounded_md))
-                                .background(ErrorContainer)
+                                .background(SecondaryContainer)
                                 .padding(spacing_4)
                         ) {
                             Text(
-                                text = errorMessage ?: "",
-                                color = OnError,
+                                text = successMessage ?: "",
+                                color = OnSecondaryContainer,
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium
                             )
@@ -400,11 +450,9 @@ fun AuthScreen(
             AnimatedVisibility(visible = !isSignUp) {
                 TextButton(
                     onClick = {
-                        if (email.isNotBlank()) {
-                            viewModel.sendPasswordReset(email)
-                        } else {
-                            emailError = "Ingresa tu correo para recuperar la contraseña"
-                        }
+                        viewModel.clearError()
+                        viewModel.clearSuccess()
+                        showForgotPasswordDialog = true
                     }
                 ) {
                     Text(
@@ -488,6 +536,7 @@ fun AuthScreen(
                         passwordError = null
                         nameError = null
                         viewModel.clearError()
+                        viewModel.clearSuccess()
                     },
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(
                         horizontal = spacing_2
@@ -607,6 +656,141 @@ private fun authFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedLabelColor = Primary,
     cursorColor = Primary
 )
+
+// ── Diálogo de recuperación de contraseña ─────────────────────────────
+@Composable
+private fun ForgotPasswordDialog(
+    initialEmail: String,
+    isLoading: Boolean,
+    successMessage: String?,
+    errorMessage: String?,
+    onDismiss: () -> Unit,
+    onSendReset: (String) -> Unit
+) {
+    var email by remember { mutableStateOf(initialEmail) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = SurfaceContainerLowest,
+        shape = RoundedCornerShape(rounded_lg),
+        title = {
+            Text(
+                text = "Recuperar contraseña",
+                style = MaterialTheme.typography.titleLarge,
+                color = OnSurface,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing_4)) {
+                if (successMessage != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(rounded_md))
+                            .background(SecondaryContainer)
+                            .padding(spacing_4)
+                    ) {
+                        Text(
+                            text = successMessage,
+                            color = OnSecondaryContainer,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = OnSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = {
+                            email = it
+                            emailError = null
+                        },
+                        label = { Text("Correo electrónico") },
+                        placeholder = { Text("ejemplo@correo.com") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Email,
+                                contentDescription = null,
+                                tint = if (emailError != null) Error else Primary
+                            )
+                        },
+                        isError = emailError != null,
+                        supportingText = emailError?.let { { Text(it, color = Error) } },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        singleLine = true,
+                        shape = RoundedCornerShape(rounded_md),
+                        colors = authFieldColors(),
+                        enabled = !isLoading
+                    )
+                    AnimatedVisibility(visible = errorMessage != null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(rounded_md))
+                                .background(ErrorContainer)
+                                .padding(spacing_4)
+                        ) {
+                            Text(
+                                text = errorMessage ?: "",
+                                color = OnError,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            if (successMessage != null) {
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                    shape = RoundedCornerShape(rounded_full)
+                ) {
+                    Text("Cerrar", color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.SemiBold)
+                }
+            } else {
+                Button(
+                    onClick = {
+                        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                            emailError = "Ingresa un correo electrónico válido"
+                        } else {
+                            onSendReset(email)
+                        }
+                    },
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                    shape = RoundedCornerShape(rounded_full)
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = androidx.compose.ui.graphics.Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("Enviar enlace", color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+        },
+        dismissButton = {
+            if (successMessage == null) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancelar", color = Primary)
+                }
+            }
+        }
+    )
+}
 
 // ── Validación del formulario (B-03) ──────────────────────────────────
 private fun validateForm(
