@@ -6,6 +6,11 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -13,6 +18,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.recipe_generator.presentation.auth.AuthScreen
 import com.example.recipe_generator.presentation.auth.AuthViewModel
@@ -55,6 +62,7 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
+        val isCheckingAuth by authViewModel.isCheckingAuth.collectAsState()
         val currentUser by authViewModel.currentUser.collectAsState()
 
         // true  → el usuario ya tenía sesión activa al abrir la app (no mostrar welcome)
@@ -82,6 +90,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         when {
+            // ── Verificando sesión → pantalla de carga ───────────────────
+            // Evita el "flash" de AuthScreen cuando el usuario ya tiene sesión activa
+            isCheckingAuth -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
+            }
+
             // ── Sin usuario autenticado → pantalla de login ──────────────
             currentUser == null -> {
                 AuthScreen(
