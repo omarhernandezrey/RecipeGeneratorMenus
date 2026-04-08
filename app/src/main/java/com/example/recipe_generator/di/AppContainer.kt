@@ -8,16 +8,24 @@ import com.example.recipe_generator.data.repository.FirebaseAuthRepository
 import com.example.recipe_generator.data.repository.MockAuthRepository
 import com.example.recipe_generator.data.repository.RecipeRepositoryImpl
 import com.example.recipe_generator.data.repository.RoomFavoritesRepositoryImpl
+import com.example.recipe_generator.data.repository.UserProfileRepositoryImpl
 import com.example.recipe_generator.data.repository.UserPrefsRepositoryImpl
+import com.example.recipe_generator.data.repository.UserRecipeRepositoryImpl
+import com.example.recipe_generator.data.repository.WeeklyPlanRepositoryImpl
+import com.example.recipe_generator.data.sync.FirestoreWeeklyPlanSync
 import com.example.recipe_generator.domain.repository.AuthRepository
 import com.example.recipe_generator.domain.repository.FavoritesRepository
 import com.example.recipe_generator.domain.repository.RecipeRepository
+import com.example.recipe_generator.domain.repository.UserProfileRepository
 import com.example.recipe_generator.domain.repository.UserPrefsRepository
+import com.example.recipe_generator.domain.repository.UserRecipeRepository
+import com.example.recipe_generator.domain.repository.WeeklyPlanRepository
 import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
 import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
 import com.example.recipe_generator.domain.usecase.GetRecipeDetailUseCase
 import com.example.recipe_generator.domain.usecase.ToggleFavoriteUseCase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 /**
  * Contenedor de dependencias manual — sin Hilt ni Dagger.
@@ -53,6 +61,10 @@ class AppContainer(private val context: Context) {
         FirebaseAuth.getInstance()
     }
 
+    private val firebaseFirestore: FirebaseFirestore by lazy {
+        FirebaseFirestore.getInstance()
+    }
+
     // ── Repositorios (interfaces de Dominio, impls de Datos) ──────────
     // En F3-29 FavoritesRepository migra a Room.
 
@@ -80,6 +92,43 @@ class AppContainer(private val context: Context) {
     val userPrefsRepository: UserPrefsRepository by lazy {
         UserPrefsRepositoryImpl(appContext)
     }
+
+    val userRecipeRepository: UserRecipeRepository by lazy {
+        UserRecipeRepositoryImpl(
+            userRecipeDao = database.userRecipeDao(),
+            weeklyPlanDao = database.weeklyPlanDao()
+        )
+    }
+
+    val weeklyPlanRepository: WeeklyPlanRepository by lazy {
+        WeeklyPlanRepositoryImpl(
+            weeklyPlanDao = database.weeklyPlanDao(),
+            userRecipeDao = database.userRecipeDao(),
+            recipeDao = database.recipeDao()
+        )
+    }
+
+    val userProfileRepository: UserProfileRepository by lazy {
+        UserProfileRepositoryImpl(database.userProfileDao())
+    }
+
+    val firestoreWeeklyPlanSync: FirestoreWeeklyPlanSync by lazy {
+        FirestoreWeeklyPlanSync(
+            firestore = firebaseFirestore,
+            weeklyPlanDao = database.weeklyPlanDao(),
+            userRecipeDao = database.userRecipeDao(),
+            recipeDao = database.recipeDao()
+        )
+    }
+
+    /**
+     * UID actual que debe pasarse a los repositorios de datos por usuario.
+     * Lanza excepción si la capa de presentación intenta usar estos repos
+     * sin tener una sesión autenticada activa.
+     */
+    fun requireAuthenticatedUserId(): String =
+        authRepository.getCurrentUserId()
+            ?: throw IllegalStateException("No hay usuario autenticado")
 
     // ── Casos de Uso ─────────────────────────────────────────────────
 

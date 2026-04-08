@@ -23,6 +23,8 @@ class FirebaseAuthRepository(
     private val firebaseAuth: FirebaseAuth
 ) : AuthRepository {
 
+    override fun getCurrentUserId(): String? = firebaseAuth.currentUser?.uid
+
     /**
      * Emite el usuario autenticado actual. Observa cambios en tiempo real
      */

@@ -11,6 +11,12 @@ import kotlinx.coroutines.flow.Flow
 interface AuthRepository {
 
     /**
+     * Retorna el UID del usuario autenticado actual o null si no hay sesión.
+     * Útil para DI manual y operaciones que necesitan el userId de forma síncrona.
+     */
+    fun getCurrentUserId(): String?
+
+    /**
      * Retorna Flow del usuario autenticado actual (null si no está logueado)
      */
     fun getCurrentUser(): Flow<User?>
@@ -45,4 +51,3 @@ interface AuthRepository {
      */
     suspend fun signInWithGoogle(idToken: String): Result<User>
 }
-

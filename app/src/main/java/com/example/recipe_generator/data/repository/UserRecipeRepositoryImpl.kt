@@ -1,6 +1,7 @@
 package com.example.recipe_generator.data.repository
 
 import com.example.recipe_generator.data.local.dao.UserRecipeDao
+import com.example.recipe_generator.data.local.dao.WeeklyPlanDao
 import com.example.recipe_generator.data.local.entity.UserRecipeEntity
 import com.example.recipe_generator.domain.model.UserRecipe
 import com.example.recipe_generator.domain.repository.UserRecipeRepository
@@ -23,7 +24,8 @@ import org.json.JSONArray
  * Capa: Data
  */
 class UserRecipeRepositoryImpl(
-    private val userRecipeDao: UserRecipeDao
+    private val userRecipeDao: UserRecipeDao,
+    private val weeklyPlanDao: WeeklyPlanDao? = null
 ) : UserRecipeRepository {
 
     // ── Queries ───────────────────────────────────────────────────────
@@ -54,10 +56,12 @@ class UserRecipeRepositoryImpl(
     }
 
     override suspend fun deleteRecipe(recipe: UserRecipe) {
+        weeklyPlanDao?.deleteMealsByRecipeId(recipe.userId, recipe.id)
         userRecipeDao.delete(recipe.toEntity(isSynced = recipe.isSynced))
     }
 
     override suspend fun deleteAllByUser(userId: String) {
+        weeklyPlanDao?.deleteAllByUser(userId)
         userRecipeDao.deleteAllByUser(userId)
     }
 }

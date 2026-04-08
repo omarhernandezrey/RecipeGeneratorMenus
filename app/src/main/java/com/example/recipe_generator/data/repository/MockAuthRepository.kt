@@ -16,6 +16,8 @@ class MockAuthRepository : AuthRepository {
 
     private val currentUserFlow = MutableStateFlow<User?>(null)
 
+    override fun getCurrentUserId(): String? = currentUserFlow.value?.uid
+
     override fun getCurrentUser(): Flow<User?> = currentUserFlow.asStateFlow()
 
     override suspend fun signUp(email: String, password: String): Result<User> = try {
@@ -93,4 +95,3 @@ class MockAuthRepository : AuthRepository {
         Result.failure(e)
     }
 }
-
