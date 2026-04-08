@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import android.util.Log
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -81,6 +82,19 @@ class MainActivity : AppCompatActivity() {
                 wasAlreadyLoggedIn == null -> {
                     // Sesión pre-existente: saltar AuthWelcomeScreen
                     wasAlreadyLoggedIn = true
+                }
+            }
+        }
+
+        // E-04: sincronizar Firestore → Room al detectar usuario autenticado
+        val userId = currentUser?.uid
+        LaunchedEffect(userId) {
+            if (userId != null) {
+                val container = (application as RecipeGeneratorApp).container
+                runCatching {
+                    container.firestoreSyncService.syncOnLogin(userId)
+                }.onFailure { e ->
+                    Log.w("MainActivity", "syncOnLogin falló: ${e.message}")
                 }
             }
         }
