@@ -5,11 +5,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,10 +46,11 @@ fun editorialFabBottomPadding(): Dp {
 @Composable
 fun EditorialBottomNavBar(selectedItem: Int = 0, onItemSelected: (Int) -> Unit = {}) {
     val navItems = listOf(
-        NavItem("Inicio", Icons.Filled.Home),
+        NavItem("Inicio",    Icons.Filled.Home),
         NavItem("Favoritos", Icons.Filled.FavoriteBorder, Icons.Filled.Favorite),
+        NavItem("Mi Plan",   Icons.Outlined.CalendarMonth, Icons.Filled.CalendarMonth),
         NavItem("Generador", Icons.Filled.Star),
-        NavItem("Ajustes", Icons.Filled.Settings)
+        NavItem("Ajustes",   Icons.Filled.Settings)
     )
     val navigationInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val containerHeight = BottomBarCoreHeight + navigationInset
