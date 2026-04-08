@@ -19,10 +19,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -82,10 +80,8 @@ import com.example.recipe_generator.presentation.theme.Outline
 import com.example.recipe_generator.presentation.theme.OutlineVariant
 import com.example.recipe_generator.presentation.theme.Primary
 import com.example.recipe_generator.presentation.theme.PrimaryContainer
-import com.example.recipe_generator.presentation.theme.Secondary
 import com.example.recipe_generator.presentation.theme.SecondaryContainer
 import com.example.recipe_generator.presentation.theme.SurfaceContainerLowest
-import com.example.recipe_generator.presentation.theme.Tertiary
 import com.example.recipe_generator.presentation.theme.rounded_full
 import com.example.recipe_generator.presentation.theme.rounded_lg
 import com.example.recipe_generator.presentation.theme.rounded_md
@@ -95,7 +91,6 @@ import com.example.recipe_generator.presentation.theme.spacing_4
 import com.example.recipe_generator.presentation.theme.spacing_5
 import com.example.recipe_generator.presentation.theme.spacing_6
 import com.example.recipe_generator.presentation.theme.spacing_8
-import com.example.recipe_generator.presentation.theme.Surface as SurfaceColor
 import androidx.compose.material3.Surface as MaterialSurface
 
 /**
@@ -192,61 +187,13 @@ fun AuthScreen(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFFF7F4FD),
-                        Primary.copy(alpha = 0.06f),
-                        SurfaceColor,
-                        SurfaceContainerLowest
-                    )
-                )
-            )
+            .background(Color(0xFFF6F3FC))
     ) {
         val isCompactHeight = maxHeight < 760.dp
         val horizontalPadding = if (isCompactHeight) spacing_6 else spacing_8
         val sectionSpacing = if (isCompactHeight) spacing_3 else spacing_4
 
         Box(modifier = Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .offset(x = (-22).dp, y = 18.dp)
-                    .size(if (isCompactHeight) 156.dp else 196.dp)
-                    .clip(CircleShape)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Primary.copy(alpha = 0.14f),
-                                Primary.copy(alpha = 0.02f)
-                            )
-                        )
-                    )
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .offset(x = 28.dp, y = (-34).dp)
-                    .size(if (isCompactHeight) 170.dp else 220.dp)
-                    .clip(CircleShape)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Secondary.copy(alpha = 0.12f),
-                                Secondary.copy(alpha = 0.02f)
-                            )
-                        )
-                    )
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 104.dp, end = 34.dp)
-                    .size(18.dp)
-                    .clip(CircleShape)
-                    .background(Tertiary.copy(alpha = 0.18f))
-            )
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -255,11 +202,11 @@ fun AuthScreen(
                     .padding(
                         start = horizontalPadding,
                         end = horizontalPadding,
-                        top = if (isCompactHeight) 28.dp else 40.dp,
-                        bottom = spacing_6
+                        top = if (isCompactHeight) 16.dp else 40.dp,
+                        bottom = spacing_4
                     ),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = if (isCompactHeight) Arrangement.Center else Arrangement.Top
+                verticalArrangement = Arrangement.Center
             ) {
                 // ── Logo + Marca ────────────────────────────────────────
                 LogoSection(isCompact = isCompactHeight)
@@ -272,39 +219,28 @@ fun AuthScreen(
                         .fillMaxWidth()
                         .border(
                             width = 1.dp,
-                            color = Color.White.copy(alpha = 0.72f),
+                            color = OutlineVariant.copy(alpha = 0.38f),
                             shape = RoundedCornerShape(32.dp)
                         ),
                     shape = RoundedCornerShape(32.dp),
-                    color = SurfaceContainerLowest.copy(alpha = 0.94f),
+                    color = SurfaceContainerLowest,
                     tonalElevation = 0.dp,
-                    shadowElevation = 20.dp
+                    shadowElevation = 0.dp
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = if (isCompactHeight) 22.dp else 28.dp)
-                            .padding(vertical = if (isCompactHeight) 24.dp else 30.dp),
-                        verticalArrangement = Arrangement.spacedBy(if (isCompactHeight) spacing_3 else spacing_4)
+                            .padding(horizontal = if (isCompactHeight) 18.dp else 28.dp)
+                            .padding(vertical = if (isCompactHeight) 16.dp else 28.dp),
+                        verticalArrangement = Arrangement.spacedBy(if (isCompactHeight) spacing_2 else spacing_4)
                     ) {
                         // Título del formulario
                         Text(
                             text = if (isSignUp) "Crear tu cuenta" else "Bienvenido de nuevo",
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.titleLarge,
                             color = OnSurface,
                             fontWeight = FontWeight.Bold
                         )
-                        Text(
-                            text = if (isSignUp)
-                                "Guarda tus preferencias y empieza a organizar tu semana."
-                            else
-                                "Usa tu correo y contraseña para continuar.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = OnSurfaceVariant.copy(alpha = 0.88f)
-                        )
-
-                        Spacer(modifier = Modifier.height(2.dp))
-                        HorizontalDivider(color = OutlineVariant.copy(alpha = 0.42f))
 
                         // Campo Nombre (solo en registro — B-02)
                         AnimatedVisibility(
@@ -546,7 +482,7 @@ fun AuthScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = if (isCompactHeight) spacing_2 else spacing_3),
+                                .padding(vertical = if (isCompactHeight) 2.dp else spacing_3),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(spacing_4)
                         ) {
@@ -595,40 +531,41 @@ fun AuthScreen(
                             }
                         }
 
-                    }
-                }
+                        // ── Toggle Login / Registro ─────────────────────
+                        HorizontalDivider(color = OutlineVariant.copy(alpha = 0.30f))
 
-                Spacer(modifier = Modifier.height(if (isCompactHeight) spacing_4 else spacing_6))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = if (isSignUp) "¿Ya tienes cuenta? " else "¿No tienes cuenta? ",
+                                color = OnSurfaceVariant,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            TextButton(
+                                onClick = {
+                                    isSignUp = !isSignUp
+                                    emailError = null
+                                    passwordError = null
+                                    nameError = null
+                                    viewModel.clearError()
+                                    viewModel.clearSuccess()
+                                },
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                    horizontal = spacing_2
+                                )
+                            ) {
+                                Text(
+                                    text = if (isSignUp) "Inicia sesión" else "Regístrate",
+                                    color = Primary,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
 
-                // ── Toggle Login / Registro ─────────────────────────────
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = if (isSignUp) "¿Ya tienes cuenta? " else "¿No tienes cuenta? ",
-                        color = OnSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    TextButton(
-                        onClick = {
-                            isSignUp = !isSignUp
-                            emailError = null
-                            passwordError = null
-                            nameError = null
-                            viewModel.clearError()
-                            viewModel.clearSuccess()
-                        },
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                            horizontal = spacing_2
-                        )
-                    ) {
-                        Text(
-                            text = if (isSignUp) "Inicia sesión" else "Regístrate",
-                            color = Primary,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
                     }
                 }
             }
@@ -667,7 +604,7 @@ private fun LogoSection(isCompact: Boolean) {
 
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "Recipe Generator",
@@ -675,12 +612,6 @@ private fun LogoSection(isCompact: Boolean) {
                 color = OnSurface,
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-0.5).sp
-            )
-            Text(
-                text = "Planifica recetas y organiza tu semana en un solo lugar.",
-                style = if (isCompact) MaterialTheme.typography.bodySmall else MaterialTheme.typography.bodyMedium,
-                color = OnSurfaceVariant.copy(alpha = 0.9f),
-                lineHeight = if (isCompact) 18.sp else 20.sp
             )
         }
     }
