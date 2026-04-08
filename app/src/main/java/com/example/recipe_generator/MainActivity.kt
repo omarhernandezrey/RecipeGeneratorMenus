@@ -131,6 +131,7 @@ class MainActivity : AppCompatActivity() {
                     favoritesRepository = container.favoritesRepository,
                     generateMenuUseCase = container.generateMenuUseCase,
                     userPrefsRepository = container.userPrefsRepository,
+                    userId = container.requireAuthenticatedUserId(),
                     onLogout = handleLogout
                 )
             }

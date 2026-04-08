@@ -20,7 +20,8 @@ import kotlinx.coroutines.launch
  * Capa: Presentation
  */
 class FavoritesViewModel(
-    private val favoritesRepository: FavoritesRepository
+    private val favoritesRepository: FavoritesRepository,
+    private val userId: String
 ) : ViewModel() {
     private val _favoriteRecipes = MutableStateFlow<List<Recipe>>(emptyList())
     val favoriteRecipes: StateFlow<List<Recipe>> = _favoriteRecipes.asStateFlow()
@@ -36,7 +37,7 @@ class FavoritesViewModel(
 
     init {
         viewModelScope.launch {
-            favoritesRepository.getFavoriteRecipes().collect { recipes ->
+            favoritesRepository.getFavoriteRecipes(userId).collect { recipes ->
                 _favoriteRecipes.value = recipes
             }
         }

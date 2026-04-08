@@ -24,8 +24,9 @@ class HomeFragment : ComposeScreenFragment() {
     override fun ScreenContent() {
         val selectedDay by homeViewModel.selectedDay.collectAsStateWithLifecycle()
         val recipes by homeViewModel.recipes.collectAsStateWithLifecycle()
+        val userId = appContainer.requireAuthenticatedUserId()
         val favoriteRecipeIds by appContainer.favoritesRepository
-            .getFavoriteIds()
+            .getFavoriteIds(userId)
             .collectAsStateWithLifecycle(initialValue = emptySet())
         val coroutineScope = rememberCoroutineScope()
 
@@ -38,7 +39,7 @@ class HomeFragment : ComposeScreenFragment() {
             favoriteRecipeIds = favoriteRecipeIds,
             onToggleFavorite = { recipeId ->
                 coroutineScope.launch {
-                    appContainer.favoritesRepository.toggleFavorite(recipeId)
+                    appContainer.favoritesRepository.toggleFavorite(userId, recipeId)
                 }
             },
             // F3-05: lanza RecipeDetailActivity con Intent.putExtra(recipeId) — LF5

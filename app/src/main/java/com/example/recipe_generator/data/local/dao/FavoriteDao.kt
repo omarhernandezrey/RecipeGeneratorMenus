@@ -11,22 +11,26 @@ import kotlinx.coroutines.flow.Flow
  * DAO — FavoriteDao.
  *
  * Operaciones sobre la tabla "favorites".
- * Expone un Flow para observar cambios en tiempo real — F3-29.
+ * Clave primaria compuesta (userId, recipeId) — aísla favoritos
+ * por usuario autenticado (E-03).
  *
  * Capa: Data
  */
 @Dao
 interface FavoriteDao {
 
-    @Query("SELECT recipeId FROM favorites")
-    fun getAllFavoriteIds(): Flow<List<String>>
+    @Query("SELECT recipeId FROM favorites WHERE userId = :userId")
+    fun getAllFavoriteIds(userId: String): Flow<List<String>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertFavorite(favorite: FavoriteEntity)
 
-    @Query("DELETE FROM favorites WHERE recipeId = :recipeId")
-    suspend fun deleteFavorite(recipeId: String)
+    @Query("DELETE FROM favorites WHERE userId = :userId AND recipeId = :recipeId")
+    suspend fun deleteFavorite(userId: String, recipeId: String)
 
-    @Query("SELECT COUNT(*) FROM favorites WHERE recipeId = :recipeId")
-    suspend fun isFavorite(recipeId: String): Int
+    @Query("SELECT COUNT(*) FROM favorites WHERE userId = :userId AND recipeId = :recipeId")
+    suspend fun isFavorite(userId: String, recipeId: String): Int
+
+    @Query("DELETE FROM favorites WHERE userId = :userId")
+    suspend fun deleteAllByUser(userId: String)
 }

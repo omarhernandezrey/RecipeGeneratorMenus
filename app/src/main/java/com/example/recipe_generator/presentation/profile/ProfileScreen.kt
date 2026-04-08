@@ -109,8 +109,8 @@ fun ProfileScreen(
     val weeklyPlanFlow = remember(userId, appContainer.weeklyPlanRepository) {
         if (userId != null) appContainer.weeklyPlanRepository.getWeeklyPlan(userId) else flowOf(emptyList())
     }
-    val favoritesFlow = remember(appContainer.favoritesRepository) {
-        appContainer.favoritesRepository.getFavoriteIds()
+    val favoritesFlow = remember(userId, appContainer.favoritesRepository) {
+        if (userId != null) appContainer.favoritesRepository.getFavoriteIds(userId) else flowOf(emptySet())
     }
 
     val profile by profileFlow.collectAsStateWithLifecycle(initialValue = null)
