@@ -10,11 +10,13 @@ import com.example.recipe_generator.data.local.entity.FavoriteEntity
 import com.example.recipe_generator.data.local.entity.IngredientEntity
 import com.example.recipe_generator.data.local.entity.RecipeEntity
 import com.example.recipe_generator.data.local.entity.StepEntity
+import com.example.recipe_generator.data.local.entity.UserRecipeEntity
+import com.example.recipe_generator.data.local.entity.WeeklyPlanEntity
 
 /**
  * Base de datos Room de la aplicación — AppDatabase.
  *
- * Versión 2: agrega tablas recipes, ingredients y steps (F2-16/17/18).
+ * Versión 4: agrega tablas user_recipes (C-01) y weekly_plan (C-02).
  * fallbackToDestructiveMigration() para entorno de desarrollo.
  * Singleton — una sola instancia por proceso.
  *
@@ -25,9 +27,11 @@ import com.example.recipe_generator.data.local.entity.StepEntity
         FavoriteEntity::class,
         RecipeEntity::class,
         IngredientEntity::class,
-        StepEntity::class
+        StepEntity::class,
+        UserRecipeEntity::class,
+        WeeklyPlanEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -46,7 +50,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "recipe_generator_db"
                 )
-                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration(dropAllTables = true)
                 .build().also { INSTANCE = it }
             }
         }
