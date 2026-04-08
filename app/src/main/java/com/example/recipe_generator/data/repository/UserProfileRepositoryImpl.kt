@@ -9,11 +9,16 @@ import kotlinx.coroutines.flow.map
 import org.json.JSONArray
 
 /**
- * Implementación Room del perfil del usuario.
+ * Implementación de UserProfileRepository usando Room como caché local.
  *
- * Usa user_profile como caché local offline-first. Las actualizaciones
- * parciales preservan el resto de campos existentes cuando el perfil
- * ya fue persistido previamente.
+ * Estrategia offline-first:
+ *  - Al hacer login: Firestore descarga el perfil -> saveProfile() lo cachea en Room.
+ *  - Al editar nombre/foto: updateName()/updatePhoto() actualizan Room localmente;
+ *    FirestoreSyncService (C-12) sincroniza los cambios con Firestore.
+ *  - Al cerrar sesión: deleteProfile() limpia el caché local.
+ *
+ * preferredDiets se serializa/deserializa con org.json.JSONArray,
+ * disponible en Android sin dependencias extra.
  *
  * C-10
  * Capa: Data
@@ -22,45 +27,25 @@ class UserProfileRepositoryImpl(
     private val userProfileDao: UserProfileDao
 ) : UserProfileRepository {
 
+    // -- Consulta ------------------------------------------------------
+
     override fun getProfile(uid: String): Flow<UserProfile?> =
-        userProfileDao.getProfile(uid).map { entity ->
-            entity?.toDomain()
-        }
+        userProfileDao.getProfile(uid).map { entity -> entity?.toDomain() }
+
+    // -- Escritura -----------------------------------------------------
 
     override suspend fun saveProfile(profile: UserProfile) {
         userProfileDao.insertOrUpdate(profile.toEntity())
     }
 
     override suspend fun updateName(uid: String, displayName: String) {
-        val currentProfile = userProfileDao.getProfileOnce(uid)
-
-        userProfileDao.insertOrUpdate(
-            UserProfileEntity(
-                uid = uid,
-                displayName = displayName,
-                email = currentProfile?.email.orEmpty(),
-                photoUrl = currentProfile?.photoUrl,
-                preferredDietsJson = currentProfile?.preferredDietsJson ?: "[]",
-                defaultPortions = currentProfile?.defaultPortions ?: 2,
-                createdAt = currentProfile?.createdAt ?: System.currentTimeMillis()
-            )
-        )
+        val current = userProfileDao.getProfileOnce(uid) ?: UserProfileEntity(uid = uid)
+        userProfileDao.insertOrUpdate(current.copy(displayName = displayName))
     }
 
     override suspend fun updatePhoto(uid: String, photoUrl: String?) {
-        val currentProfile = userProfileDao.getProfileOnce(uid)
-
-        userProfileDao.insertOrUpdate(
-            UserProfileEntity(
-                uid = uid,
-                displayName = currentProfile?.displayName.orEmpty(),
-                email = currentProfile?.email.orEmpty(),
-                photoUrl = photoUrl,
-                preferredDietsJson = currentProfile?.preferredDietsJson ?: "[]",
-                defaultPortions = currentProfile?.defaultPortions ?: 2,
-                createdAt = currentProfile?.createdAt ?: System.currentTimeMillis()
-            )
-        )
+        val current = userProfileDao.getProfileOnce(uid) ?: UserProfileEntity(uid = uid)
+        userProfileDao.insertOrUpdate(current.copy(photoUrl = photoUrl))
     }
 
     override suspend fun deleteProfile(uid: String) {
@@ -68,29 +53,38 @@ class UserProfileRepositoryImpl(
     }
 }
 
+// -- Mapper Entity -> Domain ----------------------------------------------
+
 private fun UserProfileEntity.toDomain(): UserProfile = UserProfile(
     uid = uid,
     displayName = displayName,
     email = email,
     photoUrl = photoUrl,
-    preferredDiets = parseJsonArrayToSet(preferredDietsJson),
+    preferredDiets = parseJsonArray(preferredDietsJson),
     defaultPortions = defaultPortions,
     createdAt = createdAt
 )
+
+// -- Mapper Domain -> Entity ----------------------------------------------
 
 private fun UserProfile.toEntity(): UserProfileEntity = UserProfileEntity(
     uid = uid,
     displayName = displayName,
     email = email,
     photoUrl = photoUrl,
-    preferredDietsJson = JSONArray(preferredDiets.toList()).toString(),
+    preferredDietsJson = toJsonArray(preferredDiets),
     defaultPortions = defaultPortions,
     createdAt = createdAt
 )
 
-private fun parseJsonArrayToSet(json: String): Set<String> = try {
+// -- Utilidades JSON -------------------------------------------------------
+
+private fun parseJsonArray(json: String): List<String> = try {
     val array = JSONArray(json)
-    List(array.length()) { index -> array.getString(index) }.toSet()
-} catch (_: Exception) {
-    emptySet()
+    List(array.length()) { i -> array.getString(i) }
+} catch (e: Exception) {
+    emptyList()
 }
+
+private fun toJsonArray(list: List<String>): String =
+    JSONArray(list).toString()
