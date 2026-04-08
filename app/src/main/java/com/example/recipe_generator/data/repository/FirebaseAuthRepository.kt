@@ -29,40 +29,35 @@ class FirebaseAuthRepository(
      * Emite el usuario autenticado actual. Observa cambios en tiempo real
      */
     override fun getCurrentUser(): Flow<User?> = callbackFlow {
-        try {
-            val authStateListener = FirebaseAuth.AuthStateListener { auth ->
-                try {
-                    val currentUser = auth.currentUser
-                    val user = if (currentUser != null) {
-                        User(
-                            uid = currentUser.uid,
-                            email = currentUser.email ?: "",
-                            displayName = currentUser.displayName,
-                            photoUrl = currentUser.photoUrl?.toString()
-                        )
-                    } else {
-                        null
-                    }
-                    trySend(user)
-                } catch (e: Exception) {
-                    // Si hay error al procesar el usuario, envía null
-                    trySend(null)
+        val authStateListener = FirebaseAuth.AuthStateListener { auth ->
+            val user = runCatching {
+                auth.currentUser?.let { currentUser ->
+                    User(
+                        uid = currentUser.uid,
+                        email = currentUser.email ?: "",
+                        displayName = currentUser.displayName,
+                        photoUrl = currentUser.photoUrl?.toString()
+                    )
                 }
-            }
+            }.getOrNull()
 
+            trySend(user)
+        }
+
+        val registrationResult = runCatching {
             firebaseAuth.addAuthStateListener(authStateListener)
+        }
 
-            awaitClose {
-                try {
-                    firebaseAuth.removeAuthStateListener(authStateListener)
-                } catch (e: Exception) {
-                    // Ignorar errores al remover listener
-                }
-            }
-        } catch (e: Exception) {
-            // Si hay error al crear listener, emite null
+        if (registrationResult.isFailure) {
             trySend(null)
-            awaitClose()
+            close(registrationResult.exceptionOrNull())
+            return@callbackFlow
+        }
+
+        awaitClose {
+            runCatching {
+                firebaseAuth.removeAuthStateListener(authStateListener)
+            }
         }
     }
 
