@@ -3,6 +3,7 @@ package com.example.recipe_generator.presentation.home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -16,6 +17,7 @@ import com.example.recipe_generator.presentation.favorites.FavoritesScreen
 import com.example.recipe_generator.presentation.favorites.FavoritesViewModel
 import com.example.recipe_generator.presentation.generator.MenuGeneratorScreen
 import com.example.recipe_generator.presentation.generator.MenuGeneratorViewModel
+import com.example.recipe_generator.presentation.profile.ProfileHubScreen
 import com.example.recipe_generator.presentation.settings.SettingsScreen
 import com.example.recipe_generator.presentation.settings.SettingsViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -41,6 +43,7 @@ fun AppShell(
     onLogout: () -> Unit
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
+    var isProfileOpen by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     // ── ViewModels ───────────────────────────────────────────────────
@@ -83,6 +86,14 @@ fun AppShell(
     // ── Navegación entre tabs ────────────────────────────────────────
     val onNavigate: (Int) -> Unit = { tab -> selectedTab = tab }
 
+    if (isProfileOpen) {
+        ProfileHubScreen(
+            modifier = modifier,
+            onClose = { isProfileOpen = false }
+        )
+        return
+    }
+
     when (selectedTab) {
         // ═══════════════════════════════════════════════════════════════
         // Tab 0: Inicio — RecipeListScreen (Menú Semanal)
@@ -107,7 +118,7 @@ fun AppShell(
                     }
                 },
                 onRecipeSelected = { /* TODO: navegar a detalle */ },
-                onProfileClick = { /* TODO: navegar a perfil/panels */ }
+                onProfileClick = { isProfileOpen = true }
             )
         }
 

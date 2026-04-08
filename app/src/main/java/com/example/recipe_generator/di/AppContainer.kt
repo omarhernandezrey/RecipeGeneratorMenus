@@ -12,6 +12,7 @@ import com.example.recipe_generator.data.repository.UserProfileRepositoryImpl
 import com.example.recipe_generator.data.repository.UserPrefsRepositoryImpl
 import com.example.recipe_generator.data.repository.UserRecipeRepositoryImpl
 import com.example.recipe_generator.data.repository.WeeklyPlanRepositoryImpl
+import com.example.recipe_generator.data.sync.FirestoreSyncService
 import com.example.recipe_generator.data.sync.FirestoreWeeklyPlanSync
 import com.example.recipe_generator.domain.repository.AuthRepository
 import com.example.recipe_generator.domain.repository.FavoritesRepository
@@ -110,6 +111,14 @@ class AppContainer(private val context: Context) {
 
     val userProfileRepository: UserProfileRepository by lazy {
         UserProfileRepositoryImpl(database.userProfileDao())
+    }
+
+    val firestoreSyncService: FirestoreSyncService by lazy {
+        FirestoreSyncService(
+            firestore = firebaseFirestore,
+            userRecipeDao = database.userRecipeDao(),
+            userProfileDao = database.userProfileDao()
+        )
     }
 
     val firestoreWeeklyPlanSync: FirestoreWeeklyPlanSync by lazy {

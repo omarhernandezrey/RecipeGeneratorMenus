@@ -5,6 +5,8 @@ import com.example.recipe_generator.data.local.dao.UserProfileDao
 import com.example.recipe_generator.data.local.dao.UserRecipeDao
 import com.example.recipe_generator.data.local.entity.UserProfileEntity
 import com.example.recipe_generator.data.local.entity.UserRecipeEntity
+import com.example.recipe_generator.domain.model.UserProfile
+import com.example.recipe_generator.domain.model.UserRecipe
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
@@ -69,6 +71,10 @@ class FirestoreSyncService(
         }
     }
 
+    suspend fun uploadRecipe(recipe: UserRecipe) {
+        uploadRecipe(recipe.toEntity())
+    }
+
     /**
      * Elimina una receta de Firestore.
      * Room ya debe haber eliminado el registro local antes de llamar esto.
@@ -95,6 +101,10 @@ class FirestoreSyncService(
         } catch (e: Exception) {
             Log.w(TAG, "Error al subir perfil ${profile.uid}: ${e.message}")
         }
+    }
+
+    suspend fun uploadProfile(profile: UserProfile) {
+        uploadProfile(profile.toEntity())
     }
 
     // ── LOGIN: Firestore → Room ───────────────────────────────────────
@@ -261,3 +271,32 @@ private fun com.google.firebase.firestore.DocumentSnapshot.toProfileEntity(
     Log.w("FirestoreSyncService", "Error al mapear perfil ${this.id}: ${e.message}")
     null
 }
+
+private fun UserRecipe.toEntity(): UserRecipeEntity = UserRecipeEntity(
+    id = id,
+    userId = userId,
+    title = title,
+    imageRes = imageRes,
+    timeInMinutes = timeInMinutes,
+    calories = calories,
+    difficulty = difficulty,
+    category = category,
+    description = description,
+    dayOfWeek = dayOfWeek,
+    mealType = mealType,
+    ingredientsJson = org.json.JSONArray(ingredients).toString(),
+    stepsJson = org.json.JSONArray(steps).toString(),
+    isSynced = isSynced,
+    createdAt = createdAt,
+    updatedAt = updatedAt
+)
+
+private fun UserProfile.toEntity(): UserProfileEntity = UserProfileEntity(
+    uid = uid,
+    displayName = displayName,
+    email = email,
+    photoUrl = photoUrl,
+    preferredDietsJson = org.json.JSONArray(preferredDiets).toString(),
+    defaultPortions = defaultPortions,
+    createdAt = createdAt
+)

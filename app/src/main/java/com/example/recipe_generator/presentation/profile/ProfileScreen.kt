@@ -1,6 +1,5 @@
 package com.example.recipe_generator.presentation.profile
 
-import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AlternateEmail
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.LocalDining
@@ -31,17 +31,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -53,7 +51,6 @@ import com.example.recipe_generator.RecipeGeneratorApp
 import com.example.recipe_generator.domain.model.User
 import com.example.recipe_generator.domain.model.UserProfile
 import com.example.recipe_generator.domain.model.WeeklyPlan
-import com.example.recipe_generator.domain.model.UserRecipe
 import com.example.recipe_generator.presentation.theme.OnPrimary
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
@@ -74,11 +71,7 @@ import com.example.recipe_generator.presentation.theme.spacing_3
 import com.example.recipe_generator.presentation.theme.spacing_4
 import com.example.recipe_generator.presentation.theme.spacing_6
 import com.example.recipe_generator.presentation.theme.spacing_8
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.withContext
-import java.net.HttpURLConnection
-import java.net.URL
 
 /**
  * ProfileScreen — Perfil real del usuario autenticado.
@@ -93,7 +86,10 @@ import java.net.URL
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    onEditProfileClick: () -> Unit = {}
+    onBack: (() -> Unit)? = null,
+    onEditProfileClick: () -> Unit = {},
+    onMyRecipesClick: () -> Unit = {},
+    onWeeklyPlanClick: () -> Unit = {}
 ) {
     val appContainer = (LocalContext.current.applicationContext as RecipeGeneratorApp).container
 
@@ -147,7 +143,10 @@ fun ProfileScreen(
         recipesCount = userRecipes.size,
         favoritesCount = favoriteIds.size,
         plannedDaysCount = plannedDaysCount,
-        onEditProfileClick = onEditProfileClick
+        onBack = onBack,
+        onEditProfileClick = onEditProfileClick,
+        onMyRecipesClick = onMyRecipesClick,
+        onWeeklyPlanClick = onWeeklyPlanClick
     )
 }
 
@@ -162,7 +161,10 @@ private fun ProfileScreenContent(
     recipesCount: Int,
     favoritesCount: Int,
     plannedDaysCount: Int,
-    onEditProfileClick: () -> Unit
+    onBack: (() -> Unit)?,
+    onEditProfileClick: () -> Unit,
+    onMyRecipesClick: () -> Unit,
+    onWeeklyPlanClick: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -173,6 +175,36 @@ private fun ProfileScreenContent(
         verticalArrangement = Arrangement.spacedBy(spacing_6)
     ) {
         Spacer(modifier = Modifier.height(spacing_2))
+
+        if (onBack != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = "Volver",
+                        tint = OnSurface
+                    )
+                }
+                Column(
+                    modifier = Modifier.padding(start = spacing_2)
+                ) {
+                    Text(
+                        text = "Perfil",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = OnSurface,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                    Text(
+                        text = "Accede a tu cuenta, recetas y plan semanal.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = OnSurfaceVariant
+                    )
+                }
+            }
+        }
 
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -252,6 +284,26 @@ private fun ProfileScreenContent(
             )
         }
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing_4)
+        ) {
+            QuickActionCard(
+                modifier = Modifier.weight(1f),
+                title = "Mis recetas",
+                subtitle = "Crear, editar y eliminar recetas personales",
+                icon = Icons.Outlined.RestaurantMenu,
+                onClick = onMyRecipesClick
+            )
+            QuickActionCard(
+                modifier = Modifier.weight(1f),
+                title = "Plan semanal",
+                subtitle = "Asignar comidas para cada día de la semana",
+                icon = Icons.Outlined.Schedule,
+                onClick = onWeeklyPlanClick
+            )
+        }
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(rounded_lg),
@@ -293,13 +345,60 @@ private fun ProfileScreenContent(
 }
 
 @Composable
+private fun QuickActionCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(rounded_md),
+        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = onClick
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = spacing_4, vertical = spacing_6),
+            verticalArrangement = Arrangement.spacedBy(spacing_3)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(PrimaryContainer.copy(alpha = 0.16f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Primary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = OnSurface,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = OnSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
 private fun ProfileAvatar(
     photoUrl: String?,
     displayName: String
 ) {
-    val remoteImage by produceState<ImageBitmap?>(initialValue = null, photoUrl) {
-        value = loadProfileImage(photoUrl)
-    }
+    val remoteImage = rememberProfileImage(photoUrl)
 
     Box(
         modifier = Modifier
@@ -441,22 +540,3 @@ private fun String.initials(): String =
         .joinToString("") { it.take(1) }
         .uppercase()
         .ifBlank { "U" }
-
-private suspend fun loadProfileImage(photoUrl: String?): ImageBitmap? {
-    if (photoUrl.isNullOrBlank()) return null
-
-    return withContext(Dispatchers.IO) {
-        runCatching {
-            val connection = (URL(photoUrl).openConnection() as HttpURLConnection).apply {
-                connectTimeout = 5_000
-                readTimeout = 5_000
-                instanceFollowRedirects = true
-                doInput = true
-            }
-
-            connection.inputStream.use { stream ->
-                BitmapFactory.decodeStream(stream)?.asImageBitmap()
-            }
-        }.getOrNull()
-    }
-}
