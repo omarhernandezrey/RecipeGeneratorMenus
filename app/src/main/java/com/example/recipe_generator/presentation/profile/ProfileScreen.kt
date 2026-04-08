@@ -1,5 +1,6 @@
 package com.example.recipe_generator.presentation.profile
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,26 +19,42 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.School
-import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.AlternateEmail
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.LocalDining
+import androidx.compose.material.icons.outlined.RestaurantMenu
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Stars
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.recipe_generator.R
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.recipe_generator.RecipeGeneratorApp
+import com.example.recipe_generator.domain.model.User
+import com.example.recipe_generator.domain.model.UserProfile
+import com.example.recipe_generator.domain.model.WeeklyPlan
+import com.example.recipe_generator.domain.model.UserRecipe
+import com.example.recipe_generator.presentation.theme.OnPrimary
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
@@ -57,18 +74,96 @@ import com.example.recipe_generator.presentation.theme.spacing_3
 import com.example.recipe_generator.presentation.theme.spacing_4
 import com.example.recipe_generator.presentation.theme.spacing_6
 import com.example.recipe_generator.presentation.theme.spacing_8
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
+import java.net.URL
 
 /**
- * ProfileScreen — Pantalla de Perfil del usuario.
+ * ProfileScreen — Perfil real del usuario autenticado.
  *
- * Usa Image() con drawable local (painterResource) — equivalente Compose de ImageView.
- * Cubre LF7: Image (equivalente de ImageView).
- * Cubre LF3: Column, Row, Box (layouts Compose).
+ * Muestra nombre, correo y foto reales del usuario, además de estadísticas
+ * calculadas desde los repositorios locales: recetas creadas, favoritos y
+ * días del plan semanal con al menos una comida asignada.
  *
+ * D-01
  * Capa: Presentation
  */
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    onEditProfileClick: () -> Unit = {}
+) {
+    val appContainer = (LocalContext.current.applicationContext as RecipeGeneratorApp).container
+
+    val currentUserFlow = remember(appContainer.authRepository) {
+        appContainer.authRepository.getCurrentUser()
+    }
+    val currentUser by currentUserFlow.collectAsStateWithLifecycle(initialValue = null)
+
+    val userId = currentUser?.uid
+
+    val profileFlow = remember(userId, appContainer.userProfileRepository) {
+        if (userId != null) appContainer.userProfileRepository.getProfile(userId) else flowOf(null)
+    }
+    val recipesFlow = remember(userId, appContainer.userRecipeRepository) {
+        if (userId != null) appContainer.userRecipeRepository.getMyRecipes(userId) else flowOf(emptyList())
+    }
+    val weeklyPlanFlow = remember(userId, appContainer.weeklyPlanRepository) {
+        if (userId != null) appContainer.weeklyPlanRepository.getWeeklyPlan(userId) else flowOf(emptyList())
+    }
+    val favoritesFlow = remember(appContainer.favoritesRepository) {
+        appContainer.favoritesRepository.getFavoriteIds()
+    }
+
+    val profile by profileFlow.collectAsStateWithLifecycle(initialValue = null)
+    val userRecipes by recipesFlow.collectAsStateWithLifecycle(initialValue = emptyList())
+    val weeklyPlan by weeklyPlanFlow.collectAsStateWithLifecycle(initialValue = emptyList())
+    val favoriteIds by favoritesFlow.collectAsStateWithLifecycle(initialValue = emptySet())
+
+    val displayName = remember(profile, currentUser) {
+        resolveDisplayName(profile, currentUser)
+    }
+    val email = remember(profile, currentUser) {
+        resolveEmail(profile, currentUser)
+    }
+    val photoUrl = remember(profile, currentUser) {
+        profile?.photoUrl?.takeIf { it.isNotBlank() } ?: currentUser?.photoUrl
+    }
+    val preferredDiets = remember(profile) { profile?.preferredDiets.orEmpty() }
+    val defaultPortions = remember(profile) { profile?.defaultPortions ?: 2 }
+    val plannedDaysCount = remember(weeklyPlan) {
+        weeklyPlan.map(WeeklyPlan::dayOfWeek).distinct().size
+    }
+
+    ProfileScreenContent(
+        modifier = modifier,
+        displayName = displayName,
+        email = email,
+        photoUrl = photoUrl,
+        preferredDiets = preferredDiets,
+        defaultPortions = defaultPortions,
+        recipesCount = userRecipes.size,
+        favoritesCount = favoriteIds.size,
+        plannedDaysCount = plannedDaysCount,
+        onEditProfileClick = onEditProfileClick
+    )
+}
+
+@Composable
+private fun ProfileScreenContent(
+    modifier: Modifier = Modifier,
+    displayName: String,
+    email: String,
+    photoUrl: String?,
+    preferredDiets: List<String>,
+    defaultPortions: Int,
+    recipesCount: Int,
+    favoritesCount: Int,
+    plannedDaysCount: Int,
+    onEditProfileClick: () -> Unit
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -77,9 +172,8 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
             .padding(spacing_6),
         verticalArrangement = Arrangement.spacedBy(spacing_6)
     ) {
-        Spacer(modifier = Modifier.height(spacing_4))
+        Spacer(modifier = Modifier.height(spacing_2))
 
-        // Sección de foto de perfil + nombre (LF7: Image con drawable local)
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(rounded_lg),
@@ -93,55 +187,71 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(spacing_4)
             ) {
-                // LF7: Image() — equivalente Compose de ImageView
-                // Usa painterResource con drawable local (sin Coil, sin URLs externas)
-                Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .background(PrimaryContainer)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.img_profile),
-                        contentDescription = "Foto de perfil",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-
-                Text(
-                    text = "Omar Hernández Rey",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = OnSurface,
-                    fontWeight = FontWeight.Bold
+                ProfileAvatar(
+                    photoUrl = photoUrl,
+                    displayName = displayName
                 )
 
                 Text(
-                    text = "Desarrollador Android",
+                    text = displayName,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = OnSurface,
+                    fontWeight = FontWeight.ExtraBold
+                )
+
+                Text(
+                    text = email,
                     style = MaterialTheme.typography.bodyLarge,
                     color = OnSurfaceVariant
                 )
 
-                // Chip de nivel
-                Box(
-                    modifier = Modifier
-                        .background(
-                            SecondaryContainer,
-                            shape = RoundedCornerShape(rounded_full)
-                        )
-                        .padding(horizontal = spacing_6, vertical = spacing_2)
+                Button(
+                    onClick = onEditProfileClick,
+                    shape = RoundedCornerShape(rounded_full),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Primary,
+                        contentColor = OnPrimary
+                    )
                 ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(spacing_3))
                     Text(
-                        text = "⭐ Nivel Experto",
+                        text = "Editar perfil",
                         style = MaterialTheme.typography.labelLarge,
-                        color = OnSurface,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
             }
         }
 
-        // Sección de información personal
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing_4)
+        ) {
+            StatCard(
+                modifier = Modifier.weight(1f),
+                value = recipesCount.toString(),
+                label = "Mis recetas",
+                icon = Icons.Outlined.RestaurantMenu
+            )
+            StatCard(
+                modifier = Modifier.weight(1f),
+                value = favoritesCount.toString(),
+                label = "Favoritos",
+                icon = Icons.Outlined.Stars
+            )
+            StatCard(
+                modifier = Modifier.weight(1f),
+                value = plannedDaysCount.toString(),
+                label = "Días con plan",
+                icon = Icons.Outlined.Schedule
+            )
+        }
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(rounded_lg),
@@ -149,11 +259,13 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
-                modifier = Modifier.padding(spacing_6),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(spacing_6),
                 verticalArrangement = Arrangement.spacedBy(spacing_4)
             ) {
                 Text(
-                    text = "INFORMACIÓN PERSONAL",
+                    text = "CUENTA",
                     style = MaterialTheme.typography.labelSmall,
                     color = Primary,
                     fontWeight = FontWeight.Bold,
@@ -161,51 +273,56 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                 )
 
                 ProfileInfoRow(
-                    icon = Icons.Outlined.Person,
-                    label = "Nombre",
-                    value = "Omar Hernández Rey"
+                    icon = Icons.Outlined.AlternateEmail,
+                    label = "Correo",
+                    value = email
                 )
                 ProfileInfoRow(
-                    icon = Icons.Outlined.School,
-                    label = "Institución",
-                    value = "Politécnico Grancolombiano"
+                    icon = Icons.Outlined.Tune,
+                    label = "Porciones por defecto",
+                    value = "$defaultPortions porciones"
                 )
                 ProfileInfoRow(
-                    icon = Icons.Outlined.Email,
-                    label = "Grupo",
-                    value = "B03 — Herramientas Móvil I"
-                )
-                ProfileInfoRow(
-                    icon = Icons.Outlined.Star,
-                    label = "Recetas favoritas",
-                    value = "21 recetas en el menú"
+                    icon = Icons.Outlined.LocalDining,
+                    label = "Dietas preferidas",
+                    value = preferredDiets.joinToString(", ").ifBlank { "Sin preferencias configuradas" }
                 )
             }
         }
+    }
+}
 
-        // Estadísticas
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing_4)
-        ) {
-            StatCard(
-                modifier = Modifier.weight(1f),
-                value = "21",
-                label = "Recetas"
+@Composable
+private fun ProfileAvatar(
+    photoUrl: String?,
+    displayName: String
+) {
+    val remoteImage by produceState<ImageBitmap?>(initialValue = null, photoUrl) {
+        value = loadProfileImage(photoUrl)
+    }
+
+    Box(
+        modifier = Modifier
+            .size(128.dp)
+            .clip(CircleShape)
+            .background(PrimaryContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        if (remoteImage != null) {
+            Image(
+                bitmap = remoteImage!!,
+                contentDescription = "Foto de perfil",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
-            StatCard(
-                modifier = Modifier.weight(1f),
-                value = "7",
-                label = "Días"
-            )
-            StatCard(
-                modifier = Modifier.weight(1f),
-                value = "3",
-                label = "Comidas/día"
+        } else {
+            Text(
+                text = displayName.initials(),
+                style = MaterialTheme.typography.displaySmall,
+                color = OnPrimary,
+                fontWeight = FontWeight.ExtraBold
             )
         }
-
-        Spacer(modifier = Modifier.height(spacing_12))
     }
 }
 
@@ -222,24 +339,34 @@ private fun ProfileInfoRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(spacing_4)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Secondary,
-            modifier = Modifier.size(20.dp)
-        )
-        Column {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(SecondaryContainer.copy(alpha = 0.5f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Secondary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 color = OnSurfaceVariant,
-                fontSize = 11.sp
+                letterSpacing = 0.4.sp
             )
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium,
                 color = OnSurface,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.SemiBold
             )
         }
     }
@@ -249,7 +376,8 @@ private fun ProfileInfoRow(
 private fun StatCard(
     modifier: Modifier = Modifier,
     value: String,
-    label: String
+    label: String,
+    icon: ImageVector
 ) {
     Card(
         modifier = modifier,
@@ -260,10 +388,24 @@ private fun StatCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = spacing_6, horizontal = spacing_4),
+                .padding(horizontal = spacing_4, vertical = spacing_6),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(spacing_2)
         ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(PrimaryContainer.copy(alpha = 0.15f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Primary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
             Text(
                 text = value,
                 style = MaterialTheme.typography.headlineLarge,
@@ -274,9 +416,47 @@ private fun StatCard(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 color = OnSurfaceVariant,
-                fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold
             )
         }
+    }
+}
+
+private fun resolveDisplayName(profile: UserProfile?, currentUser: User?): String =
+    profile?.displayName?.takeIf { it.isNotBlank() }
+        ?: currentUser?.displayName?.takeIf { it.isNotBlank() }
+        ?: currentUser?.email?.substringBefore("@")
+        ?: "Usuario"
+
+private fun resolveEmail(profile: UserProfile?, currentUser: User?): String =
+    profile?.email?.takeIf { it.isNotBlank() }
+        ?: currentUser?.email
+        ?: "Sin correo registrado"
+
+private fun String.initials(): String =
+    trim()
+        .split(Regex("\\s+"))
+        .filter { it.isNotBlank() }
+        .take(2)
+        .joinToString("") { it.take(1) }
+        .uppercase()
+        .ifBlank { "U" }
+
+private suspend fun loadProfileImage(photoUrl: String?): ImageBitmap? {
+    if (photoUrl.isNullOrBlank()) return null
+
+    return withContext(Dispatchers.IO) {
+        runCatching {
+            val connection = (URL(photoUrl).openConnection() as HttpURLConnection).apply {
+                connectTimeout = 5_000
+                readTimeout = 5_000
+                instanceFollowRedirects = true
+                doInput = true
+            }
+
+            connection.inputStream.use { stream ->
+                BitmapFactory.decodeStream(stream)?.asImageBitmap()
+            }
+        }.getOrNull()
     }
 }
