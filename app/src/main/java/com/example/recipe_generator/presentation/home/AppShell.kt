@@ -20,6 +20,13 @@ import com.example.recipe_generator.presentation.generator.MenuGeneratorViewMode
 import com.example.recipe_generator.presentation.profile.ProfileHubScreen
 import com.example.recipe_generator.presentation.settings.SettingsScreen
 import com.example.recipe_generator.presentation.settings.SettingsViewModel
+import com.example.recipe_generator.presentation.weeklyplan.MyWeeklyPlanScreen
+import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
+import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -151,9 +158,29 @@ fun AppShell(
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // Tab 2: Generador — MenuGeneratorScreen
+        // Tab 2: Mi Plan — MyWeeklyPlanScreen (E-01)
         // ═══════════════════════════════════════════════════════════════
         2 -> {
+            Box(modifier = Modifier.fillMaxSize()) {
+                MyWeeklyPlanScreen(
+                    modifier = Modifier.padding(bottom = editorialBottomBarContentPadding()),
+                    onBack = { selectedTab = 0 }
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .align(Alignment.BottomCenter),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    EditorialBottomNavBar(selectedItem = 2, onItemSelected = onNavigate)
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Tab 3: Generador — MenuGeneratorScreen
+        // ═══════════════════════════════════════════════════════════════
+        3 -> {
             val selectedDiets by generatorViewModel.selectedDiets.collectAsStateWithLifecycle()
             val selectedDifficulty by generatorViewModel.maxDifficulty.collectAsStateWithLifecycle()
             val portions by generatorViewModel.portions.collectAsStateWithLifecycle()
@@ -162,7 +189,7 @@ fun AppShell(
             val isGenerating by generatorViewModel.isGenerating.collectAsStateWithLifecycle()
 
             MenuGeneratorScreen(
-                selectedNavItem = 2,
+                selectedNavItem = 3,
                 selectedDiets = selectedDiets,
                 onToggleDiet = generatorViewModel::toggleDiet,
                 selectedDifficulty = selectedDifficulty,
@@ -179,9 +206,9 @@ fun AppShell(
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // Tab 3: Ajustes — SettingsScreen
+        // Tab 4: Ajustes — SettingsScreen
         // ═══════════════════════════════════════════════════════════════
-        3 -> {
+        4 -> {
             val prefs by settingsViewModel.preferences.collectAsStateWithLifecycle()
 
             SettingsScreen(
@@ -193,7 +220,7 @@ fun AppShell(
                 onThemeSelect = settingsViewModel::saveTheme,
                 selectedLanguage = prefs.language,
                 onLanguageSelect = settingsViewModel::saveLanguage,
-                selectedNavItem = 3,
+                selectedNavItem = 4,
                 onNavItemSelected = onNavigate,
                 onLogout = onLogout
             )
