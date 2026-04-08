@@ -17,7 +17,11 @@ import kotlinx.coroutines.launch
 
 class HomeFragment : ComposeScreenFragment() {
     private val homeViewModel: HomeViewModel by viewModels {
-        HomeViewModelFactory(appContainer.getMenuForDayUseCase)
+        HomeViewModelFactory(
+            appContainer.getMenuForDayUseCase,
+            appContainer.weeklyPlanRepository,
+            appContainer.requireAuthenticatedUserId()
+        )
     }
 
     @Composable
@@ -57,10 +61,12 @@ class HomeFragment : ComposeScreenFragment() {
 }
 
 private class HomeViewModelFactory(
-    private val getMenuForDayUseCase: GetMenuForDayUseCase
+    private val getMenuForDayUseCase: GetMenuForDayUseCase,
+    private val weeklyPlanRepository: com.example.recipe_generator.domain.repository.WeeklyPlanRepository,
+    private val userId: String
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return HomeViewModel(getMenuForDayUseCase) as T
+        return HomeViewModel(getMenuForDayUseCase, weeklyPlanRepository, userId) as T
     }
 }
