@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.recipe_generator.data.connectivity.NetworkConnectivityObserver
 import com.example.recipe_generator.presentation.auth.AuthScreen
 import com.example.recipe_generator.presentation.auth.AuthViewModel
 import com.example.recipe_generator.presentation.home.AppShell
@@ -98,6 +99,26 @@ class MainActivity : AppCompatActivity() {
                     container.firestoreSyncService.syncOnLogin(userId)
                 }.onFailure { e ->
                     Log.w("MainActivity", "syncOnLogin falló: ${e.message}")
+                }
+            }
+        }
+
+        // E-06: sincronizar pendientes (isSynced=false) al recuperar conexión
+        val connectivityObserver = remember { NetworkConnectivityObserver(applicationContext) }
+        LaunchedEffect(userId) {
+            if (userId == null) return@LaunchedEffect
+            val container = (application as RecipeGeneratorApp).container
+            var wasOffline = false
+            connectivityObserver.observe().collect { isConnected ->
+                if (!isConnected) {
+                    wasOffline = true
+                } else if (wasOffline) {
+                    wasOffline = false
+                    runCatching {
+                        container.firestoreSyncService.syncPendingRecipes(userId)
+                    }.onFailure { e ->
+                        Log.w("MainActivity", "syncPendingRecipes falló: ${e.message}")
+                    }
                 }
             }
         }
