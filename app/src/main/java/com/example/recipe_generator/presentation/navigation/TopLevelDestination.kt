@@ -8,8 +8,8 @@ enum class TopLevelDestination(
 ) {
     Home(R.id.homeFragment, 0),
     Favorites(R.id.favoritesFragment, 1),
-    Generator(R.id.generatorFragment, 2),
-    Settings(R.id.settingsFragment, 3);
+    Generator(R.id.generatorFragment, 4),
+    Settings(R.id.settingsFragment, 5);
 
     companion object {
         fun fromNavItemIndex(index: Int): TopLevelDestination {

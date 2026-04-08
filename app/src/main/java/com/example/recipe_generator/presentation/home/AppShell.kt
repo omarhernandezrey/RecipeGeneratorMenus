@@ -20,6 +20,7 @@ import com.example.recipe_generator.presentation.generator.MenuGeneratorViewMode
 import com.example.recipe_generator.presentation.profile.ProfileHubScreen
 import com.example.recipe_generator.presentation.settings.SettingsScreen
 import com.example.recipe_generator.presentation.settings.SettingsViewModel
+import com.example.recipe_generator.presentation.myrecipes.MyRecipesScreen
 import com.example.recipe_generator.presentation.weeklyplan.MyWeeklyPlanScreen
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
@@ -36,7 +37,7 @@ import kotlinx.coroutines.launch
  * AppShell - Estructura completa de la app con NavigationBar
  *
  * Contiene:
- * - 4 tabs principales: Inicio, Favoritos, Generador, Ajustes
+ * - 6 tabs principales: Inicio, Favoritos, Mi Plan, Mis Recetas, Generador, Ajustes
  * - Navegación entre tabs via EditorialBottomNavBar (integrado en cada pantalla)
  * - FASE 3: Implementación completa del PLAN MAESTRO
  */
@@ -179,9 +180,29 @@ fun AppShell(
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // Tab 3: Generador — MenuGeneratorScreen
+        // Tab 3: Mis Recetas — MyRecipesScreen (E-01)
         // ═══════════════════════════════════════════════════════════════
         3 -> {
+            Box(modifier = Modifier.fillMaxSize()) {
+                MyRecipesScreen(
+                    modifier = Modifier.padding(bottom = editorialBottomBarContentPadding()),
+                    onBack = { selectedTab = 0 }
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .align(Alignment.BottomCenter),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    EditorialBottomNavBar(selectedItem = 3, onItemSelected = onNavigate)
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Tab 4: Generador — MenuGeneratorScreen
+        // ═══════════════════════════════════════════════════════════════
+        4 -> {
             val selectedDiets by generatorViewModel.selectedDiets.collectAsStateWithLifecycle()
             val selectedDifficulty by generatorViewModel.maxDifficulty.collectAsStateWithLifecycle()
             val portions by generatorViewModel.portions.collectAsStateWithLifecycle()
@@ -190,7 +211,7 @@ fun AppShell(
             val isGenerating by generatorViewModel.isGenerating.collectAsStateWithLifecycle()
 
             MenuGeneratorScreen(
-                selectedNavItem = 3,
+                selectedNavItem = 4,
                 selectedDiets = selectedDiets,
                 onToggleDiet = generatorViewModel::toggleDiet,
                 selectedDifficulty = selectedDifficulty,
@@ -207,9 +228,9 @@ fun AppShell(
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // Tab 4: Ajustes — SettingsScreen
+        // Tab 5: Ajustes — SettingsScreen
         // ═══════════════════════════════════════════════════════════════
-        4 -> {
+        5 -> {
             val prefs by settingsViewModel.preferences.collectAsStateWithLifecycle()
 
             SettingsScreen(
@@ -221,7 +242,7 @@ fun AppShell(
                 onThemeSelect = settingsViewModel::saveTheme,
                 selectedLanguage = prefs.language,
                 onLanguageSelect = settingsViewModel::saveLanguage,
-                selectedNavItem = 4,
+                selectedNavItem = 5,
                 onNavItemSelected = onNavigate,
                 onLogout = onLogout
             )
