@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.recipe_generator.domain.repository.FavoritesRepository
 import com.example.recipe_generator.domain.repository.UserPrefsRepository
+import com.example.recipe_generator.domain.repository.WeeklyPlanRepository
 import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
 import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
 import com.example.recipe_generator.presentation.favorites.FavoritesScreen
@@ -47,6 +48,7 @@ fun AppShell(
     favoritesRepository: FavoritesRepository,
     generateMenuUseCase: GenerateMenuUseCase,
     userPrefsRepository: UserPrefsRepository,
+    weeklyPlanRepository: WeeklyPlanRepository,
     userId: String,
     modifier: Modifier = Modifier,
     onLogout: () -> Unit
@@ -60,7 +62,7 @@ fun AppShell(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return HomeViewModel(getMenuForDayUseCase) as T
+                return HomeViewModel(getMenuForDayUseCase, weeklyPlanRepository, userId) as T
             }
         }
     )
