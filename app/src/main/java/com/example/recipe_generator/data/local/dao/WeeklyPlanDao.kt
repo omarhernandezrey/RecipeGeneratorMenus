@@ -69,6 +69,10 @@ interface WeeklyPlanDao {
     )
     suspend fun deleteMeal(userId: String, day: String, mealType: String)
 
+    /** Elimina todas las celdas del plan que referencian una receta específica del usuario. */
+    @Query("DELETE FROM weekly_plan WHERE userId = :userId AND recipeId = :recipeId")
+    suspend fun deleteMealsByRecipeId(userId: String, recipeId: String)
+
     /** Elimina todas las entradas del plan semanal de un usuario (usado al cerrar sesión). */
     @Query("DELETE FROM weekly_plan WHERE userId = :userId")
     suspend fun deleteAllByUser(userId: String)
