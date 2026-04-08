@@ -20,9 +20,18 @@ import com.example.recipe_generator.data.local.entity.WeeklyPlanEntity
 /**
  * Base de datos Room de la aplicación — AppDatabase.
  *
- * Versión 5: agrega tabla user_profile (C-03).
- * fallbackToDestructiveMigration() para entorno de desarrollo.
+ * Historial de versiones:
+ *  v1 — FavoriteEntity
+ *  v2 — RecipeEntity, IngredientEntity, StepEntity
+ *  v3 — ajustes internos (desarrollo)
+ *  v4 — UserRecipeEntity (C-01), WeeklyPlanEntity (C-02)
+ *  v5 — UserProfileEntity (C-03) — C-07: 3 entities + 3 DAOs completos
+ *
+ * fallbackToDestructiveMigration(dropAllTables = true) para entorno de desarrollo.
  * Singleton — una sola instancia por proceso.
+ *
+ * Entidades del usuario: UserRecipeEntity · WeeklyPlanEntity · UserProfileEntity
+ * DAOs del usuario    : UserRecipeDao    · WeeklyPlanDao    · UserProfileDao
  *
  * Capa: Data
  */
