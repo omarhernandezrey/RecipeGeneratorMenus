@@ -41,7 +41,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -117,11 +116,11 @@ fun EditProfileScreen(
     val saveVersion by viewModel.saveVersion.collectAsStateWithLifecycle()
     var handledSaveVersion by remember { mutableStateOf(saveVersion) }
 
-    var displayName by rememberSaveable { mutableStateOf("") }
-    var selectedPhotoRef by rememberSaveable { mutableStateOf<String?>(null) }
-    var selectedDiets by rememberSaveable { mutableStateOf(listOf<String>()) }
-    var defaultPortions by rememberSaveable { mutableStateOf(2f) }
-    var hydratedUserId by rememberSaveable { mutableStateOf<String?>(null) }
+    var displayName by remember { mutableStateOf("") }
+    var selectedPhotoRef by remember { mutableStateOf<String?>(null) }
+    var selectedDiets by remember { mutableStateOf(listOf<String>()) }
+    var defaultPortions by remember { mutableStateOf(2f) }
+    var hydratedUserId by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(profile, currentUser) {
         val userId = currentUser?.uid ?: return@LaunchedEffect
