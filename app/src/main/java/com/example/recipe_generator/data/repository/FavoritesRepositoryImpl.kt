@@ -25,24 +25,24 @@ class FavoritesRepositoryImpl(
     private val legacyFavoritesRepository = LegacyFavoritesRepository(context.applicationContext)
     private val allRecipes = recipeRepository.getAllRecipes()
 
-    override fun getFavoriteRecipes(): Flow<List<Recipe>> =
+    override fun getFavoriteRecipes(userId: String): Flow<List<Recipe>> =
         combine(allRecipes, legacyFavoritesRepository.favoriteRecipeIds) { recipes, favoriteIds ->
             recipes
                 .filter { it.id in favoriteIds }
                 .map { it.copy(isFavorite = true) }
         }
 
-    override fun getFavoriteIds(): Flow<Set<String>> = legacyFavoritesRepository.favoriteRecipeIds
+    override fun getFavoriteIds(userId: String): Flow<Set<String>> = legacyFavoritesRepository.favoriteRecipeIds
 
-    override suspend fun toggleFavorite(recipeId: String) {
+    override suspend fun toggleFavorite(userId: String, recipeId: String) {
         legacyFavoritesRepository.toggleFavorite(recipeId)
     }
 
-    override suspend fun removeFavorite(recipeId: String) {
+    override suspend fun removeFavorite(userId: String, recipeId: String) {
         legacyFavoritesRepository.removeFavorite(recipeId)
     }
 
-    override suspend fun isFavorite(recipeId: String): Boolean {
-        return getFavoriteIds().first().contains(recipeId)
+    override suspend fun isFavorite(userId: String, recipeId: String): Boolean {
+        return getFavoriteIds(userId).first().contains(recipeId)
     }
 }

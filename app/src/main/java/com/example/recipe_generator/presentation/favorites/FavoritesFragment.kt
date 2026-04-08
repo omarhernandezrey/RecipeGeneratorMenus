@@ -15,7 +15,10 @@ import kotlinx.coroutines.launch
 
 class FavoritesFragment : ComposeScreenFragment() {
     private val favoritesViewModel: FavoritesViewModel by viewModels {
-        FavoritesViewModelFactory(appContainer.favoritesRepository)
+        FavoritesViewModelFactory(
+            appContainer.favoritesRepository,
+            appContainer.requireAuthenticatedUserId()
+        )
     }
 
     @Composable
@@ -46,7 +49,9 @@ class FavoritesFragment : ComposeScreenFragment() {
             },
             onRemoveFavorite = { recipeId ->
                 coroutineScope.launch {
-                    appContainer.favoritesRepository.removeFavorite(recipeId)
+                    appContainer.favoritesRepository.removeFavorite(
+                        appContainer.requireAuthenticatedUserId(), recipeId
+                    )
                 }
             }
         )
@@ -54,10 +59,11 @@ class FavoritesFragment : ComposeScreenFragment() {
 }
 
 private class FavoritesViewModelFactory(
-    private val favoritesRepository: FavoritesRepository
+    private val favoritesRepository: FavoritesRepository,
+    private val userId: String
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return FavoritesViewModel(favoritesRepository) as T
+        return FavoritesViewModel(favoritesRepository, userId) as T
     }
 }

@@ -16,21 +16,21 @@ import kotlinx.coroutines.flow.Flow
  */
 interface FavoritesRepository {
 
-    /** Stream reactivo de recetas marcadas como favoritas. */
-    fun getFavoriteRecipes(): Flow<List<Recipe>>
+    /** Stream reactivo de recetas marcadas como favoritas del usuario. */
+    fun getFavoriteRecipes(userId: String): Flow<List<Recipe>>
 
-    /** Stream reactivo de IDs de recetas favoritas. */
-    fun getFavoriteIds(): Flow<Set<String>>
+    /** Stream reactivo de IDs de recetas favoritas del usuario. */
+    fun getFavoriteIds(userId: String): Flow<Set<String>>
 
     /**
-     * Alterna el estado favorito de una receta.
+     * Alterna el estado favorito de una receta para el usuario dado.
      * Si es favorita la quita; si no lo es, la agrega.
      */
-    suspend fun toggleFavorite(recipeId: String)
+    suspend fun toggleFavorite(userId: String, recipeId: String)
 
-    /** Elimina una receta específica de favoritos. */
-    suspend fun removeFavorite(recipeId: String)
+    /** Elimina una receta específica de favoritos del usuario. */
+    suspend fun removeFavorite(userId: String, recipeId: String)
 
-    /** Verifica si una receta es favorita (consulta única, no stream). */
-    suspend fun isFavorite(recipeId: String): Boolean
+    /** Verifica si una receta es favorita del usuario (consulta única, no stream). */
+    suspend fun isFavorite(userId: String, recipeId: String): Boolean
 }

@@ -24,10 +24,10 @@ class RoomFavoritesRepositoryImpl(
     private val recipeRepository: RecipeRepository
 ) : FavoritesRepository {
 
-    override fun getFavoriteRecipes(): Flow<List<Recipe>> =
+    override fun getFavoriteRecipes(userId: String): Flow<List<Recipe>> =
         combine(
             recipeRepository.getAllRecipes(),
-            favoriteDao.getAllFavoriteIds()
+            favoriteDao.getAllFavoriteIds(userId)
         ) { recipes, favoriteIds ->
             val idSet = favoriteIds.toSet()
             recipes
@@ -35,21 +35,21 @@ class RoomFavoritesRepositoryImpl(
                 .map { it.copy(isFavorite = true) }
         }
 
-    override fun getFavoriteIds(): Flow<Set<String>> =
-        favoriteDao.getAllFavoriteIds().map { it.toSet() }
+    override fun getFavoriteIds(userId: String): Flow<Set<String>> =
+        favoriteDao.getAllFavoriteIds(userId).map { it.toSet() }
 
-    override suspend fun toggleFavorite(recipeId: String) {
-        if (favoriteDao.isFavorite(recipeId) > 0) {
-            favoriteDao.deleteFavorite(recipeId)
+    override suspend fun toggleFavorite(userId: String, recipeId: String) {
+        if (favoriteDao.isFavorite(userId, recipeId) > 0) {
+            favoriteDao.deleteFavorite(userId, recipeId)
         } else {
-            favoriteDao.insertFavorite(FavoriteEntity(recipeId))
+            favoriteDao.insertFavorite(FavoriteEntity(userId, recipeId))
         }
     }
 
-    override suspend fun removeFavorite(recipeId: String) {
-        favoriteDao.deleteFavorite(recipeId)
+    override suspend fun removeFavorite(userId: String, recipeId: String) {
+        favoriteDao.deleteFavorite(userId, recipeId)
     }
 
-    override suspend fun isFavorite(recipeId: String): Boolean =
-        getFavoriteIds().first().contains(recipeId)
+    override suspend fun isFavorite(userId: String, recipeId: String): Boolean =
+        getFavoriteIds(userId).first().contains(recipeId)
 }

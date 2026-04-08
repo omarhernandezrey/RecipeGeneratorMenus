@@ -21,7 +21,8 @@ import kotlinx.coroutines.launch
  */
 class RecipeDetailViewModel(
     private val getRecipeDetailUseCase: GetRecipeDetailUseCase,
-    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val userId: String
 ) : ViewModel() {
 
     private val _recipe = MutableStateFlow<Recipe?>(null)
@@ -43,7 +44,7 @@ class RecipeDetailViewModel(
     fun toggleFavorite() {
         val currentRecipe = _recipe.value ?: return
         viewModelScope.launch {
-            toggleFavoriteUseCase(currentRecipe.id)
+            toggleFavoriteUseCase(userId, currentRecipe.id)
         }
     }
 }

@@ -26,6 +26,7 @@ import com.example.recipe_generator.data.local.entity.WeeklyPlanEntity
  *  v3 — ajustes internos (desarrollo)
  *  v4 — UserRecipeEntity (C-01), WeeklyPlanEntity (C-02)
  *  v5 — UserProfileEntity (C-03) — C-07: 3 entities + 3 DAOs completos
+ *  v6 — FavoriteEntity: clave compuesta (userId, recipeId) — E-03
  *
  * fallbackToDestructiveMigration(dropAllTables = true) para entorno de desarrollo.
  * Singleton — una sola instancia por proceso.
@@ -45,7 +46,7 @@ import com.example.recipe_generator.data.local.entity.WeeklyPlanEntity
         WeeklyPlanEntity::class,
         UserProfileEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -87,7 +87,7 @@ class ProfileViewModel(
                     } else {
                         combine(
                             userRecipeRepository.getMyRecipes(user.uid),
-                            favoritesRepository.getFavoriteIds(),
+                            favoritesRepository.getFavoriteIds(user.uid),
                             weeklyPlanRepository.getWeeklyPlan(user.uid)
                         ) { recipes, favoriteIds, weeklyPlan ->
                             ProfileStats(

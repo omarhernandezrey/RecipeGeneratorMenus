@@ -59,7 +59,8 @@ class RecipeDetailActivity : AppCompatActivity() {
             DetailActivityViewModelFactory(
                 container.getRecipeDetailUseCase,
                 container.toggleFavoriteUseCase,
-                container.favoritesRepository
+                container.favoritesRepository,
+                container.requireAuthenticatedUserId()
             )
         )[DetailActivityViewModel::class.java]
 
@@ -100,7 +101,8 @@ class RecipeDetailActivity : AppCompatActivity() {
 class DetailActivityViewModel(
     private val getRecipeDetailUseCase: GetRecipeDetailUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
-    private val favoritesRepository: FavoritesRepository
+    private val favoritesRepository: FavoritesRepository,
+    private val userId: String
 ) : ViewModel() {
 
     private val _recipe = MutableStateFlow<Recipe?>(null)
@@ -119,7 +121,7 @@ class DetailActivityViewModel(
             }
         }
         viewModelScope.launch {
-            favoritesRepository.getFavoriteIds().collect { ids ->
+            favoritesRepository.getFavoriteIds(userId).collect { ids ->
                 _isFavorite.value = recipeId in ids
             }
         }
@@ -128,7 +130,7 @@ class DetailActivityViewModel(
     fun toggleFavorite() {
         if (currentRecipeId.isEmpty()) return
         viewModelScope.launch {
-            toggleFavoriteUseCase(currentRecipeId)
+            toggleFavoriteUseCase(userId, currentRecipeId)
         }
     }
 }
@@ -136,14 +138,16 @@ class DetailActivityViewModel(
 private class DetailActivityViewModelFactory(
     private val getRecipeDetailUseCase: GetRecipeDetailUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
-    private val favoritesRepository: FavoritesRepository
+    private val favoritesRepository: FavoritesRepository,
+    private val userId: String
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
         return DetailActivityViewModel(
             getRecipeDetailUseCase,
             toggleFavoriteUseCase,
-            favoritesRepository
+            favoritesRepository,
+            userId
         ) as T
     }
 }

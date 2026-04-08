@@ -46,6 +46,7 @@ fun AppShell(
     favoritesRepository: FavoritesRepository,
     generateMenuUseCase: GenerateMenuUseCase,
     userPrefsRepository: UserPrefsRepository,
+    userId: String,
     modifier: Modifier = Modifier,
     onLogout: () -> Unit
 ) {
@@ -67,7 +68,7 @@ fun AppShell(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return FavoritesViewModel(favoritesRepository) as T
+                return FavoritesViewModel(favoritesRepository, userId) as T
             }
         }
     )
@@ -109,7 +110,7 @@ fun AppShell(
             val selectedDay by homeViewModel.selectedDay.collectAsStateWithLifecycle()
             val recipes by homeViewModel.recipes.collectAsStateWithLifecycle()
             val favoriteIds by favoritesRepository
-                .getFavoriteIds()
+                .getFavoriteIds(userId)
                 .collectAsStateWithLifecycle(initialValue = emptySet())
 
             RecipeListScreen(
@@ -121,7 +122,7 @@ fun AppShell(
                 favoriteRecipeIds = favoriteIds,
                 onToggleFavorite = { recipeId ->
                     coroutineScope.launch {
-                        favoritesRepository.toggleFavorite(recipeId)
+                        favoritesRepository.toggleFavorite(userId, recipeId)
                     }
                 },
                 onRecipeSelected = { /* TODO: navegar a detalle */ },
@@ -151,7 +152,7 @@ fun AppShell(
                 onRecipeSelected = { /* TODO: navegar a detalle */ },
                 onRemoveFavorite = { recipeId ->
                     coroutineScope.launch {
-                        favoritesRepository.toggleFavorite(recipeId)
+                        favoritesRepository.toggleFavorite(userId, recipeId)
                     }
                 }
             )

@@ -15,9 +15,10 @@ class ToggleFavoriteUseCase(
 ) {
     /**
      * Ejecuta el caso de uso.
+     * @param userId UID del usuario autenticado.
      * @param recipeId ID de la receta a alternar.
      */
-    suspend operator fun invoke(recipeId: String) {
-        favoritesRepository.toggleFavorite(recipeId)
+    suspend operator fun invoke(userId: String, recipeId: String) {
+        favoritesRepository.toggleFavorite(userId, recipeId)
     }
 }

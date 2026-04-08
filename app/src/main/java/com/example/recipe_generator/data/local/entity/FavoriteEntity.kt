@@ -11,8 +11,12 @@ import androidx.room.PrimaryKey
  *
  * Capa: Data
  */
-@Entity(tableName = "favorites")
+@Entity(
+    tableName = "favorites",
+    primaryKeys = ["userId", "recipeId"]
+)
 data class FavoriteEntity(
-    @PrimaryKey
+    /** Firebase UID del propietario — aísla favoritos entre usuarios (E-03) */
+    val userId: String,
     val recipeId: String
 )
