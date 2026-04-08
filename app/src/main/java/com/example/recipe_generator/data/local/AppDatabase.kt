@@ -10,13 +10,14 @@ import com.example.recipe_generator.data.local.entity.FavoriteEntity
 import com.example.recipe_generator.data.local.entity.IngredientEntity
 import com.example.recipe_generator.data.local.entity.RecipeEntity
 import com.example.recipe_generator.data.local.entity.StepEntity
+import com.example.recipe_generator.data.local.entity.UserProfileEntity
 import com.example.recipe_generator.data.local.entity.UserRecipeEntity
 import com.example.recipe_generator.data.local.entity.WeeklyPlanEntity
 
 /**
  * Base de datos Room de la aplicación — AppDatabase.
  *
- * Versión 4: agrega tablas user_recipes (C-01) y weekly_plan (C-02).
+ * Versión 5: agrega tabla user_profile (C-03).
  * fallbackToDestructiveMigration() para entorno de desarrollo.
  * Singleton — una sola instancia por proceso.
  *
@@ -29,9 +30,10 @@ import com.example.recipe_generator.data.local.entity.WeeklyPlanEntity
         IngredientEntity::class,
         StepEntity::class,
         UserRecipeEntity::class,
-        WeeklyPlanEntity::class
+        WeeklyPlanEntity::class,
+        UserProfileEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
