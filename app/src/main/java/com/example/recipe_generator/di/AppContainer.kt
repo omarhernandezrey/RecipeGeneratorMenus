@@ -139,6 +139,17 @@ class AppContainer(private val context: Context) {
         authRepository.getCurrentUserId()
             ?: throw IllegalStateException("No hay usuario autenticado")
 
+    /**
+     * E-05: Limpia todos los datos locales del usuario de Room antes de cerrar sesión.
+     * Los datos permanecen en Firestore — solo se borra la caché local.
+     * Permite que otro usuario inicie sesión sin ver datos ajenos.
+     */
+    suspend fun clearLocalUserData(userId: String) {
+        database.favoriteDao().deleteAllByUser(userId)
+        database.weeklyPlanDao().deleteAllByUser(userId)
+        firestoreSyncService.clearLocalData(userId) // userRecipes + userProfile
+    }
+
     // ── Casos de Uso ─────────────────────────────────────────────────
 
     val getMenuForDayUseCase: GetMenuForDayUseCase
