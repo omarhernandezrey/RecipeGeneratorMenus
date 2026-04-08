@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.recipe_generator.data.local.dao.FavoriteDao
 import com.example.recipe_generator.data.local.dao.RecipeDao
+import com.example.recipe_generator.data.local.dao.UserRecipeDao
 import com.example.recipe_generator.data.local.entity.FavoriteEntity
 import com.example.recipe_generator.data.local.entity.IngredientEntity
 import com.example.recipe_generator.data.local.entity.RecipeEntity
@@ -40,6 +41,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun favoriteDao(): FavoriteDao
     abstract fun recipeDao(): RecipeDao
+    abstract fun userRecipeDao(): UserRecipeDao
 
     companion object {
         @Volatile
