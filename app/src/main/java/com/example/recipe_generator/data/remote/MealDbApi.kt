@@ -109,11 +109,123 @@ object MealDbApi {
         return MealDbFullRecipe(
             id           = meal.optString("idMeal", ""),
             name         = meal.optString("strMeal", ""),
-            category     = meal.optString("strCategory", ""),
-            area         = meal.optString("strArea", ""),
+            category     = translateCategory(meal.optString("strCategory", "")),
+            area         = translateArea(meal.optString("strArea", "")),
             thumbUrl     = meal.optString("strMealThumb", ""),
             instructions = meal.optString("strInstructions", ""),
             ingredients  = ingredients
         )
+    }
+
+    /** Traduce el nombre de la categoría de TheMealDB al español */
+    private fun translateCategory(en: String): String = when (en.lowercase()) {
+        "beef"          -> "Carne de Res"
+        "chicken"       -> "Pollo"
+        "pork"          -> "Cerdo"
+        "lamb"          -> "Cordero"
+        "seafood"       -> "Mariscos"
+        "pasta"         -> "Pasta"
+        "vegetarian"    -> "Vegetariano"
+        "vegan"         -> "Vegano"
+        "dessert"       -> "Postre"
+        "breakfast"     -> "Desayuno"
+        "side"          -> "Acompañamiento"
+        "starter"       -> "Entrada"
+        "goat"          -> "Cabrito"
+        "miscellaneous" -> "Varios"
+        else            -> en
+    }
+
+    /** Traduce el país/región de TheMealDB al español */
+    private fun translateArea(en: String): String = when (en.lowercase()) {
+        "american"      -> "Americana"
+        "british"       -> "Británica"
+        "canadian"      -> "Canadiense"
+        "chinese"       -> "China"
+        "croatian"      -> "Croata"
+        "dutch"         -> "Holandesa"
+        "egyptian"      -> "Egipcia"
+        "french"        -> "Francesa"
+        "greek"         -> "Griega"
+        "indian"        -> "India"
+        "irish"         -> "Irlandesa"
+        "italian"       -> "Italiana"
+        "jamaican"      -> "Jamaicana"
+        "japanese"      -> "Japonesa"
+        "kenyan"        -> "Keniana"
+        "malaysian"     -> "Malaya"
+        "mexican"       -> "Mexicana"
+        "moroccan"      -> "Marroquí"
+        "polish"        -> "Polaca"
+        "portuguese"    -> "Portuguesa"
+        "russian"       -> "Rusa"
+        "spanish"       -> "Española"
+        "thai"          -> "Tailandesa"
+        "tunisian"      -> "Tunecina"
+        "turkish"       -> "Turca"
+        "ukrainian"     -> "Ucraniana"
+        "vietnamese"    -> "Vietnamita"
+        "unknown"       -> "Desconocida"
+        else            -> en
+    }
+}
+
+/** Traduce términos de comida de español a inglés para consultar TheMealDB */
+object FoodTranslator {
+
+    private val dictionary = mapOf(
+        // Carnes
+        "pollo" to "chicken", "pechuga" to "chicken", "muslo" to "chicken",
+        "carne" to "beef", "res" to "beef", "bistec" to "steak", "filete" to "steak",
+        "lomo" to "beef", "costillas" to "ribs", "cordero" to "lamb",
+        "cerdo" to "pork", "chancho" to "pork", "tocino" to "bacon",
+        "salchicha" to "sausage", "chorizo" to "sausage",
+        // Pescados y mariscos
+        "pescado" to "fish", "salmon" to "salmon", "atun" to "tuna",
+        "trucha" to "trout", "bacalao" to "cod", "tilapia" to "tilapia",
+        "mariscos" to "seafood", "camaron" to "prawn", "camarones" to "prawn",
+        "langosta" to "lobster", "cangrejo" to "crab", "mejillones" to "mussels",
+        "calamar" to "squid", "pulpo" to "octopus",
+        // Pasta y arroz
+        "pasta" to "pasta", "espagueti" to "spaghetti", "fideos" to "noodles",
+        "lasana" to "lasagne", "ravioles" to "ravioli",
+        "arroz" to "rice", "risotto" to "risotto",
+        // Otros platos
+        "pizza" to "pizza", "hamburguesa" to "burger", "sandwich" to "sandwich",
+        "sopa" to "soup", "ensalada" to "salad", "tacos" to "tacos",
+        "curry" to "curry", "sushi" to "sushi", "paella" to "paella",
+        "tortilla" to "omelette", "huevos revueltos" to "scrambled eggs",
+        "huevo" to "egg", "huevos" to "eggs",
+        // Vegetales y frutas
+        "tomate" to "tomato", "papa" to "potato", "patata" to "potato",
+        "zanahoria" to "carrot", "cebolla" to "onion", "ajo" to "garlic",
+        "brocoli" to "broccoli", "espinaca" to "spinach", "lechuga" to "lettuce",
+        "pimiento" to "pepper", "maiz" to "corn", "aguacate" to "avocado",
+        "limon" to "lemon", "naranja" to "orange", "mango" to "mango",
+        "platano" to "banana", "pina" to "pineapple", "fresa" to "strawberry",
+        "manzana" to "apple", "pera" to "pear", "uva" to "grape",
+        // Postres y lácteos
+        "pastel" to "cake", "torta" to "cake", "galleta" to "cookie",
+        "pan" to "bread", "queso" to "cheese", "leche" to "milk",
+        "mantequilla" to "butter", "helado" to "ice cream",
+        "chocolate" to "chocolate", "flan" to "flan",
+        // Tiempo de comida
+        "desayuno" to "breakfast", "almuerzo" to "lunch", "cena" to "dinner",
+        "postre" to "dessert", "entrada" to "starter", "aperitivo" to "starter"
+    )
+
+    /**
+     * Intenta traducir la consulta al inglés para TheMealDB.
+     * Si no encuentra traducción, retorna la consulta original.
+     */
+    fun toEnglish(query: String): String {
+        val lower = query.lowercase().trim()
+        // Busca la frase completa primero
+        dictionary[lower]?.let { return it }
+        // Luego busca la primera palabra que coincida
+        for (word in lower.split(" ", ",")) {
+            dictionary[word.trim()]?.let { return it }
+        }
+        return query.trim()
     }
 }
