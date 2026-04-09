@@ -145,7 +145,13 @@ fun EditProfileScreen(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         if (uri != null) {
-            selectedPhotoRef = uri.toString()
+            val uid = viewModel.currentUser.value?.uid ?: return@rememberLauncherForActivityResult
+            coroutineScope.launch {
+                // Copiar a filesDir para que persista entre reinicios de la app.
+                // Los content:// URIs pierden acceso al morir el proceso.
+                val path = copyContentUriToInternalStorage(context, uid, uri)
+                if (path != null) selectedPhotoRef = path
+            }
         }
     }
 
@@ -153,8 +159,9 @@ fun EditProfileScreen(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bitmap ->
         if (bitmap != null) {
+            val uid = viewModel.currentUser.value?.uid ?: return@rememberLauncherForActivityResult
             coroutineScope.launch {
-                selectedPhotoRef = saveBitmapToCache(context, bitmap)
+                selectedPhotoRef = saveBitmapToInternalStorage(context, uid, bitmap)
             }
         }
     }

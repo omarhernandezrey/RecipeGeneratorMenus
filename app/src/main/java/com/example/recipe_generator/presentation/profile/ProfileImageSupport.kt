@@ -15,7 +15,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.UUID
 
 @Composable
 internal fun rememberProfileImage(photoRef: String?): ImageBitmap? {
@@ -65,11 +64,35 @@ internal suspend fun loadProfileImage(
     }
 }
 
-internal suspend fun saveBitmapToCache(context: Context, bitmap: Bitmap): String =
+/**
+ * Guarda un Bitmap en el almacenamiento interno permanente (filesDir).
+ * Usa el UID como nombre de archivo para evitar acumulación de archivos huérfanos.
+ * filesDir NO se borra al cerrar la app; sólo al desinstalar o limpiar datos.
+ */
+internal suspend fun saveBitmapToInternalStorage(context: Context, uid: String, bitmap: Bitmap): String =
     withContext(Dispatchers.IO) {
-        val outputFile = File(context.cacheDir, "profile_${UUID.randomUUID()}.jpg")
+        val outputFile = File(context.filesDir, "profile_photo_$uid.jpg")
         FileOutputStream(outputFile).use { output ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 92, output)
         }
         Uri.fromFile(outputFile).toString()
+    }
+
+/**
+ * Copia un content:// URI al almacenamiento interno permanente (filesDir).
+ * Los content:// URIs del selector de imágenes pierden su acceso al reiniciar
+ * el proceso de la app; copiar el contenido evita ese problema.
+ * Devuelve null si la copia falla.
+ */
+internal suspend fun copyContentUriToInternalStorage(context: Context, uid: String, contentUri: Uri): String? =
+    withContext(Dispatchers.IO) {
+        runCatching {
+            val outputFile = File(context.filesDir, "profile_photo_$uid.jpg")
+            context.contentResolver.openInputStream(contentUri)?.use { input ->
+                FileOutputStream(outputFile).use { output ->
+                    input.copyTo(output)
+                }
+            }
+            Uri.fromFile(outputFile).toString()
+        }.getOrNull()
     }
