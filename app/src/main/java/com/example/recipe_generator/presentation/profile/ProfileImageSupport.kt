@@ -79,6 +79,34 @@ internal suspend fun saveBitmapToInternalStorage(context: Context, fileName: Str
     }
 
 /**
+ * Descarga una imagen desde una URL https:// y la guarda en filesDir.
+ * Usada al seleccionar una imagen de TheMealDB.
+ * Devuelve el file:// URI local, o null si falla.
+ */
+internal suspend fun downloadImageToInternalStorage(
+    context: Context,
+    fileName: String,
+    imageUrl: String
+): String? = withContext(Dispatchers.IO) {
+    runCatching {
+        val connection = (URL(imageUrl).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 10_000
+            readTimeout = 10_000
+            instanceFollowRedirects = true
+            doInput = true
+        }
+        val bitmap = connection.inputStream.use { BitmapFactory.decodeStream(it) }
+        connection.disconnect()
+        checkNotNull(bitmap) { "Bitmap nulo" }
+        val outputFile = File(context.filesDir, "$fileName.jpg")
+        FileOutputStream(outputFile).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+        }
+        Uri.fromFile(outputFile).toString()
+    }.getOrNull()
+}
+
+/**
  * Copia un content:// URI a filesDir con el nombre dado (sin extensión).
  * Los content:// URIs del selector de imágenes pierden su acceso al reiniciar
  * el proceso de la app; copiar el contenido evita ese problema.

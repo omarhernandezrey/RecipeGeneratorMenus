@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -50,12 +51,25 @@ fun CreateRecipeScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var handledSaveVersion by remember { mutableStateOf(uiState.saveVersion) }
+    var showImageSearch by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(uiState.saveVersion) {
         if (uiState.saveVersion > handledSaveVersion) {
             handledSaveVersion = uiState.saveVersion
             onSaved()
         }
+    }
+
+    if (showImageSearch) {
+        MealImageSearchDialog(
+            initialQuery = uiState.title.ifBlank { "food" },
+            recipeId = uiState.recipeId,
+            onImageSelected = { path ->
+                viewModel.updateImageRes(path)
+                showImageSearch = false
+            },
+            onDismiss = { showImageSearch = false }
+        )
     }
 
     val pickImageLauncher = rememberLauncherForActivityResult(
@@ -106,6 +120,7 @@ fun CreateRecipeScreen(
             )
         },
         onTakePhoto = { cameraLauncher.launch(null) },
+        onSearchImage = { showImageSearch = true },
         onBack = onBack,
         onSave = viewModel::saveRecipe
     )

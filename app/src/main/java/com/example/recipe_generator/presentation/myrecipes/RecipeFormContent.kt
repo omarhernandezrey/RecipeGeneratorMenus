@@ -24,6 +24,7 @@ import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -86,6 +87,7 @@ internal fun RecipeFormContent(
     onRemoveStep: (Int) -> Unit,
     onPickImageFromGallery: () -> Unit,
     onTakePhoto: () -> Unit,
+    onSearchImage: () -> Unit,
     onBack: () -> Unit,
     onSave: () -> Unit
 ) {
@@ -126,7 +128,8 @@ internal fun RecipeFormContent(
         RecipeImagePicker(
             imageRes = uiState.imageRes,
             onPickFromGallery = onPickImageFromGallery,
-            onTakePhoto = onTakePhoto
+            onTakePhoto = onTakePhoto,
+            onSearchImage = onSearchImage
         )
 
         EditorialCard {
@@ -289,7 +292,8 @@ private fun EditableStringSection(
 private fun RecipeImagePicker(
     imageRes: String,
     onPickFromGallery: () -> Unit,
-    onTakePhoto: () -> Unit
+    onTakePhoto: () -> Unit,
+    onSearchImage: () -> Unit
 ) {
     val image = rememberProfileImage(imageRes.takeIf { it.isNotBlank() })
 
@@ -339,6 +343,21 @@ private fun RecipeImagePicker(
 
         Spacer(modifier = Modifier.height(spacing_4))
 
+        // Fila 1: Buscar en internet (botón completo — opción principal)
+        OutlinedButton(
+            onClick = onSearchImage,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(rounded_full),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary)
+        ) {
+            Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(spacing_2))
+            Text("Buscar imagen en internet")
+        }
+
+        Spacer(modifier = Modifier.height(spacing_2))
+
+        // Fila 2: Galería y Cámara (opciones secundarias)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(spacing_3)
