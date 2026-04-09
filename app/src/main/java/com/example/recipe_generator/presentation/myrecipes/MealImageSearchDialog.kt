@@ -47,8 +47,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
-import com.example.recipe_generator.data.remote.MealDbApi
 import com.example.recipe_generator.data.remote.MealImage
+import com.example.recipe_generator.data.remote.PixabayApi
 import com.example.recipe_generator.presentation.profile.downloadImageToInternalStorage
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
@@ -91,7 +91,7 @@ fun MealImageSearchDialog(
         coroutineScope.launch {
             isSearching = true
             hasSearched = true
-            results = MealDbApi.searchMeals(query)
+            results = PixabayApi.searchImages(query)
             isSearching = false
         }
     }
@@ -116,7 +116,7 @@ fun MealImageSearchDialog(
                     color = OnSurface
                 )
                 Text(
-                    text = "Busca en inglés para mejores resultados.\nEj: pasta, chicken, salad",
+                    text = "Ej: bandeja paisa, ajiaco, sancocho, arepa",
                     style = MaterialTheme.typography.bodySmall,
                     color = OnSurfaceVariant
                 )
@@ -126,7 +126,7 @@ fun MealImageSearchDialog(
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = { Text("chicken, pasta, salad...") },
+                    placeholder = { Text("bandeja paisa, ajiaco, arepa...") },
                     trailingIcon = {
                         IconButton(onClick = { search() }, enabled = !isSearching && !isSaving) {
                             Icon(Icons.Outlined.Search, contentDescription = "Buscar", tint = Primary)
@@ -179,7 +179,7 @@ fun MealImageSearchDialog(
                                 )
                                 Spacer(modifier = Modifier.height(spacing_2))
                                 Text(
-                                    text = "Intenta en inglés: \"chicken\", \"pasta\", \"beef\"",
+                                    text = "Prueba: \"ajiaco\", \"sancocho\", \"arepa con huevo\"",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = OnSurfaceVariant,
                                     textAlign = TextAlign.Center
