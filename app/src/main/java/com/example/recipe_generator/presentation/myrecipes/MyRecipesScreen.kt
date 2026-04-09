@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.RestaurantMenu
+import androidx.compose.material.icons.outlined.TravelExplore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -65,6 +66,7 @@ import kotlinx.coroutines.launch
 private sealed interface MyRecipesRoute {
     data object List : MyRecipesRoute
     data object Create : MyRecipesRoute
+    data object Search : MyRecipesRoute
     data class Edit(val recipe: UserRecipe) : MyRecipesRoute
 }
 
@@ -73,6 +75,8 @@ fun MyRecipesScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit = {}
 ) {
+    val appContainer = (LocalContext.current.applicationContext as RecipeGeneratorApp).container
+    val userId = remember(appContainer) { appContainer.requireAuthenticatedUserId() }
     var route by remember { mutableStateOf<MyRecipesRoute>(MyRecipesRoute.List) }
 
     when (val currentRoute = route) {
@@ -87,10 +91,19 @@ fun MyRecipesScreen(
             onSaved = { route = MyRecipesRoute.List }
         )
 
+        MyRecipesRoute.Search -> RecipeSearchScreen(
+            userId = userId,
+            userRecipeRepository = appContainer.userRecipeRepository,
+            firestoreSyncService = appContainer.firestoreSyncService,
+            onBack = { route = MyRecipesRoute.List },
+            onImported = { route = MyRecipesRoute.List }
+        )
+
         MyRecipesRoute.List -> MyRecipesListContent(
             modifier = modifier,
             onBack = onBack,
             onCreateRecipe = { route = MyRecipesRoute.Create },
+            onSearchRecipes = { route = MyRecipesRoute.Search },
             onEditRecipe = { recipe -> route = MyRecipesRoute.Edit(recipe) }
         )
     }
@@ -101,6 +114,7 @@ private fun MyRecipesListContent(
     modifier: Modifier,
     onBack: () -> Unit,
     onCreateRecipe: () -> Unit,
+    onSearchRecipes: () -> Unit,
     onEditRecipe: (UserRecipe) -> Unit
 ) {
     val appContainer = (LocalContext.current.applicationContext as RecipeGeneratorApp).container
@@ -134,7 +148,9 @@ private fun MyRecipesListContent(
                     )
                 }
                 Column(
-                    modifier = Modifier.padding(start = spacing_2)
+                    modifier = Modifier
+                        .padding(start = spacing_2)
+                        .weight(1f)
                 ) {
                     Text(
                         text = "Mis recetas",
@@ -148,6 +164,13 @@ private fun MyRecipesListContent(
                         color = OnSurfaceVariant
                     )
                 }
+                IconButton(onClick = onSearchRecipes) {
+                    Icon(
+                        imageVector = Icons.Outlined.TravelExplore,
+                        contentDescription = "Buscar recetas en internet",
+                        tint = Primary
+                    )
+                }
             }
 
             if (recipes.isEmpty()) {
@@ -155,7 +178,8 @@ private fun MyRecipesListContent(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = spacing_6),
-                    onCreateRecipe = onCreateRecipe
+                    onCreateRecipe = onCreateRecipe,
+                    onSearchRecipes = onSearchRecipes
                 )
             } else {
                 LazyColumn(
@@ -339,7 +363,8 @@ private fun ActionPill(
 @Composable
 private fun EmptyRecipesState(
     modifier: Modifier,
-    onCreateRecipe: () -> Unit
+    onCreateRecipe: () -> Unit,
+    onSearchRecipes: () -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -361,13 +386,24 @@ private fun EmptyRecipesState(
         )
         Spacer(modifier = Modifier.height(spacing_2))
         Text(
-            text = "Crea la primera receta para que aparezca aquí y puedas usarla en tu plan semanal.",
+            text = "Crea tu propia receta o busca e importa una receta internacional.",
             style = MaterialTheme.typography.bodyLarge,
             color = OnSurfaceVariant
         )
         Spacer(modifier = Modifier.height(spacing_6))
-        TextButton(onClick = onCreateRecipe) {
-            Text("Crear receta")
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing_3)) {
+            TextButton(onClick = onCreateRecipe) {
+                Text("Crear receta")
+            }
+            TextButton(onClick = onSearchRecipes) {
+                Icon(
+                    imageVector = Icons.Outlined.TravelExplore,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(spacing_2))
+                Text("Buscar receta")
+            }
         }
     }
 }
