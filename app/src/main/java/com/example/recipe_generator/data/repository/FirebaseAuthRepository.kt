@@ -9,9 +9,15 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.userProfileChangeRequest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -25,41 +31,38 @@ class FirebaseAuthRepository(
 
     override fun getCurrentUserId(): String? = firebaseAuth.currentUser?.uid
 
-    /**
-     * Emite el usuario autenticado actual. Observa cambios en tiempo real
-     */
-    override fun getCurrentUser(): Flow<User?> = callbackFlow {
+    // Scope de repositorio: vive mientras la app está activa.
+    // Un único callbackFlow → un único AuthStateListener → cero condiciones de carrera.
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    private val _currentUserFlow: StateFlow<User?> = callbackFlow {
         val authStateListener = FirebaseAuth.AuthStateListener { auth ->
-            val user = runCatching {
-                auth.currentUser?.let { currentUser ->
+            trySend(
+                auth.currentUser?.let { u ->
                     User(
-                        uid = currentUser.uid,
-                        email = currentUser.email ?: "",
-                        displayName = currentUser.displayName,
-                        photoUrl = currentUser.photoUrl?.toString()
+                        uid = u.uid,
+                        email = u.email ?: "",
+                        displayName = u.displayName,
+                        photoUrl = u.photoUrl?.toString()
                     )
                 }
-            }.getOrNull()
-
-            trySend(user)
+            )
         }
-
-        val registrationResult = runCatching {
-            firebaseAuth.addAuthStateListener(authStateListener)
+        firebaseAuth.addAuthStateListener(authStateListener)
+        awaitClose { firebaseAuth.removeAuthStateListener(authStateListener) }
+    }.stateIn(
+        scope = repositoryScope,
+        started = SharingStarted.Eagerly,
+        initialValue = firebaseAuth.currentUser?.let { u ->
+            User(uid = u.uid, email = u.email ?: "", displayName = u.displayName, photoUrl = u.photoUrl?.toString())
         }
+    )
 
-        if (registrationResult.isFailure) {
-            trySend(null)
-            close(registrationResult.exceptionOrNull())
-            return@callbackFlow
-        }
-
-        awaitClose {
-            runCatching {
-                firebaseAuth.removeAuthStateListener(authStateListener)
-            }
-        }
-    }
+    /**
+     * Emite el usuario autenticado actual. Observa cambios en tiempo real.
+     * Backed por un único StateFlow — múltiples colectores no crean listeners extra en Firebase.
+     */
+    override fun getCurrentUser(): Flow<User?> = _currentUserFlow
 
     /**
      * Registra nuevo usuario en Firebase
