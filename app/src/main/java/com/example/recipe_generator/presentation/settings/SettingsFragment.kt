@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.recipe_generator.presentation.navigation.ComposeScreenFragment
 import com.example.recipe_generator.presentation.navigation.TopLevelDestination
+import kotlinx.coroutines.launch
 
 class SettingsFragment : ComposeScreenFragment() {
     private val settingsViewModel: SettingsViewModel by viewModels {
@@ -18,6 +19,7 @@ class SettingsFragment : ComposeScreenFragment() {
     override fun ScreenContent() {
         val preferences by settingsViewModel.preferences.collectAsStateWithLifecycle()
 
+        val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
         SettingsScreen(
             selectedDiets = preferences.selectedDiets,
             onToggleDiet = settingsViewModel::toggleDiet,
@@ -28,7 +30,18 @@ class SettingsFragment : ComposeScreenFragment() {
             selectedLanguage = preferences.language,
             onLanguageSelect = settingsViewModel::saveLanguage,
             selectedNavItem = TopLevelDestination.Settings.navItemIndex,
-            onNavItemSelected = ::navigateToTopLevel
+            onNavItemSelected = ::navigateToTopLevel,
+            onLogout = {
+                val uid = appContainer.authRepository.getCurrentUserId()
+                if (uid != null) {
+                    coroutineScope.launch {
+                        runCatching { appContainer.clearLocalUserData(uid) }
+                    }
+                }
+                coroutineScope.launch {
+                    appContainer.authRepository.logout()
+                }
+            }
         )
     }
 }

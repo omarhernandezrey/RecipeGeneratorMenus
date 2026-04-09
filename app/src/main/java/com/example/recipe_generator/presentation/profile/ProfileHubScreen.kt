@@ -19,7 +19,8 @@ private enum class ProfileHubRoute {
 @Composable
 fun ProfileHubScreen(
     modifier: Modifier = Modifier,
-    onClose: () -> Unit = {}
+    onClose: () -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     var route by remember { mutableStateOf(ProfileHubRoute.Overview) }
 
@@ -29,7 +30,8 @@ fun ProfileHubScreen(
             onBack = onClose,
             onEditProfileClick = { route = ProfileHubRoute.EditProfile },
             onMyRecipesClick = { route = ProfileHubRoute.MyRecipes },
-            onWeeklyPlanClick = { route = ProfileHubRoute.WeeklyPlan }
+            onWeeklyPlanClick = { route = ProfileHubRoute.WeeklyPlan },
+            onLogout = onLogout
         )
 
         ProfileHubRoute.EditProfile -> EditProfileScreen(

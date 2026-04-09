@@ -100,7 +100,8 @@ fun AppShell(
     if (isProfileOpen) {
         ProfileHubScreen(
             modifier = modifier,
-            onClose = { isProfileOpen = false }
+            onClose = { isProfileOpen = false },
+            onLogout = onLogout
         )
         return
     }
