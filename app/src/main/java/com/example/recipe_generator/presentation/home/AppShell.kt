@@ -12,6 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.recipe_generator.domain.repository.FavoritesRepository
 import com.example.recipe_generator.domain.repository.UserPrefsRepository
 import com.example.recipe_generator.domain.repository.WeeklyPlanRepository
+import kotlinx.coroutines.flow.StateFlow
 import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
 import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
 import com.example.recipe_generator.presentation.favorites.FavoritesScreen
@@ -49,6 +50,7 @@ fun AppShell(
     generateMenuUseCase: GenerateMenuUseCase,
     userPrefsRepository: UserPrefsRepository,
     weeklyPlanRepository: WeeklyPlanRepository,
+    isSyncing: StateFlow<Boolean>,
     userId: String,
     modifier: Modifier = Modifier,
     onLogout: () -> Unit
@@ -56,6 +58,7 @@ fun AppShell(
     var selectedTab by remember { mutableIntStateOf(0) }
     var isProfileOpen by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    val isSyncingValue by isSyncing.collectAsStateWithLifecycle()
 
     // ── ViewModels ───────────────────────────────────────────────────
     val homeViewModel: HomeViewModel = viewModel(
@@ -130,7 +133,8 @@ fun AppShell(
                     }
                 },
                 onRecipeSelected = { /* TODO: navegar a detalle */ },
-                onProfileClick = { isProfileOpen = true }
+                onProfileClick = { isProfileOpen = true },
+                isSyncing = isSyncingValue
             )
         }
 

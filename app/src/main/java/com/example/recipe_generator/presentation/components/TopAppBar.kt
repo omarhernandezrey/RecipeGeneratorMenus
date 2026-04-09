@@ -15,8 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -144,7 +148,8 @@ fun DefaultNotificationsButton(
 @Composable
 fun HomeEditorialTopAppBar(
     title: String,
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    isSyncing: Boolean = false
 ) {
     EditorialTopAppBar(
         title = title,
@@ -166,6 +171,20 @@ fun HomeEditorialTopAppBar(
             }
         },
         trailingContent = {
+            // E-08: indicador de sincronización
+            AnimatedVisibility(
+                visible = isSyncing,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .padding(end = spacing_3),
+                    strokeWidth = 2.dp,
+                    color = Primary
+                )
+            }
             DefaultNotificationsButton()
         }
     )

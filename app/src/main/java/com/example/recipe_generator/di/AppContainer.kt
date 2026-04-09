@@ -27,6 +27,9 @@ import com.example.recipe_generator.domain.usecase.GetRecipeDetailUseCase
 import com.example.recipe_generator.domain.usecase.ToggleFavoriteUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Contenedor de dependencias manual — sin Hilt ni Dagger.
@@ -135,6 +138,12 @@ class AppContainer(private val context: Context) {
      * Lanza excepción si la capa de presentación intenta usar estos repos
      * sin tener una sesión autenticada activa.
      */
+    /** E-08: estado de sincronización visible en la UI. */
+    private val _isSyncing = MutableStateFlow(false)
+    val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
+
+    fun setSyncing(value: Boolean) { _isSyncing.value = value }
+
     fun requireAuthenticatedUserId(): String =
         authRepository.getCurrentUserId()
             ?: throw IllegalStateException("No hay usuario autenticado")
