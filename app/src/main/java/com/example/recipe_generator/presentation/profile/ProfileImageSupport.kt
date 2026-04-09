@@ -65,13 +65,13 @@ internal suspend fun loadProfileImage(
 }
 
 /**
- * Guarda un Bitmap en el almacenamiento interno permanente (filesDir).
- * Usa el UID como nombre de archivo para evitar acumulación de archivos huérfanos.
+ * Guarda un Bitmap en filesDir con el nombre dado (sin extensión).
+ * Ej.: fileName = "profile_photo_uid123"  →  filesDir/profile_photo_uid123.jpg
  * filesDir NO se borra al cerrar la app; sólo al desinstalar o limpiar datos.
  */
-internal suspend fun saveBitmapToInternalStorage(context: Context, uid: String, bitmap: Bitmap): String =
+internal suspend fun saveBitmapToInternalStorage(context: Context, fileName: String, bitmap: Bitmap): String =
     withContext(Dispatchers.IO) {
-        val outputFile = File(context.filesDir, "profile_photo_$uid.jpg")
+        val outputFile = File(context.filesDir, "$fileName.jpg")
         FileOutputStream(outputFile).use { output ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 92, output)
         }
@@ -79,15 +79,15 @@ internal suspend fun saveBitmapToInternalStorage(context: Context, uid: String, 
     }
 
 /**
- * Copia un content:// URI al almacenamiento interno permanente (filesDir).
+ * Copia un content:// URI a filesDir con el nombre dado (sin extensión).
  * Los content:// URIs del selector de imágenes pierden su acceso al reiniciar
  * el proceso de la app; copiar el contenido evita ese problema.
  * Devuelve null si la copia falla.
  */
-internal suspend fun copyContentUriToInternalStorage(context: Context, uid: String, contentUri: Uri): String? =
+internal suspend fun copyContentUriToInternalStorage(context: Context, fileName: String, contentUri: Uri): String? =
     withContext(Dispatchers.IO) {
         runCatching {
-            val outputFile = File(context.filesDir, "profile_photo_$uid.jpg")
+            val outputFile = File(context.filesDir, "$fileName.jpg")
             context.contentResolver.openInputStream(contentUri)?.use { input ->
                 FileOutputStream(outputFile).use { output ->
                     input.copyTo(output)

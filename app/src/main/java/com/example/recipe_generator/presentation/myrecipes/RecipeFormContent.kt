@@ -1,5 +1,6 @@
 package com.example.recipe_generator.presentation.myrecipes
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,7 +20,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.Collections
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -27,6 +33,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -37,16 +44,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.recipe_generator.presentation.components.AppTextField
 import com.example.recipe_generator.presentation.components.EditorialCard
 import com.example.recipe_generator.presentation.components.PrimaryButton
+import com.example.recipe_generator.presentation.profile.rememberProfileImage
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
+import com.example.recipe_generator.presentation.theme.PrimaryContainer
 import com.example.recipe_generator.presentation.theme.Surface
 import com.example.recipe_generator.presentation.theme.rounded_full
+import com.example.recipe_generator.presentation.theme.rounded_lg
 import com.example.recipe_generator.presentation.theme.spacing_10
 import com.example.recipe_generator.presentation.theme.spacing_2
 import com.example.recipe_generator.presentation.theme.spacing_3
@@ -72,6 +84,8 @@ internal fun RecipeFormContent(
     onStepChange: (Int, String) -> Unit,
     onAddStep: () -> Unit,
     onRemoveStep: (Int) -> Unit,
+    onPickImageFromGallery: () -> Unit,
+    onTakePhoto: () -> Unit,
     onBack: () -> Unit,
     onSave: () -> Unit
 ) {
@@ -108,6 +122,12 @@ internal fun RecipeFormContent(
                 )
             }
         }
+
+        RecipeImagePicker(
+            imageRes = uiState.imageRes,
+            onPickFromGallery = onPickImageFromGallery,
+            onTakePhoto = onTakePhoto
+        )
 
         EditorialCard {
             Text("Información básica", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -260,6 +280,88 @@ private fun EditableStringSection(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecipeImagePicker(
+    imageRes: String,
+    onPickFromGallery: () -> Unit,
+    onTakePhoto: () -> Unit
+) {
+    val image = rememberProfileImage(imageRes.takeIf { it.isNotBlank() })
+
+    EditorialCard {
+        Text(
+            text = "Foto de la receta",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(spacing_4))
+
+        // Preview o placeholder
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .clip(RoundedCornerShape(rounded_lg))
+                .background(PrimaryContainer.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            if (image != null) {
+                Image(
+                    bitmap = image,
+                    contentDescription = "Imagen de la receta",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(spacing_2)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Image,
+                        contentDescription = null,
+                        tint = Primary.copy(alpha = 0.4f),
+                        modifier = Modifier.size(40.dp)
+                    )
+                    Text(
+                        text = "Sin imagen",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = OnSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(spacing_4))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing_3)
+        ) {
+            OutlinedButton(
+                onClick = onPickFromGallery,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(rounded_full),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary)
+            ) {
+                Icon(Icons.Outlined.Collections, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(spacing_2))
+                Text("Galería")
+            }
+            OutlinedButton(
+                onClick = onTakePhoto,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(rounded_full),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary)
+            ) {
+                Icon(Icons.Outlined.CameraAlt, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(spacing_2))
+                Text("Cámara")
             }
         }
     }

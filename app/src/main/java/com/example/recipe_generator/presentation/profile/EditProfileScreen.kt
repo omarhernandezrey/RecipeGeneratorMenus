@@ -147,9 +147,7 @@ fun EditProfileScreen(
         if (uri != null) {
             val uid = viewModel.currentUser.value?.uid ?: return@rememberLauncherForActivityResult
             coroutineScope.launch {
-                // Copiar a filesDir para que persista entre reinicios de la app.
-                // Los content:// URIs pierden acceso al morir el proceso.
-                val path = copyContentUriToInternalStorage(context, uid, uri)
+                val path = copyContentUriToInternalStorage(context, "profile_photo_$uid", uri)
                 if (path != null) selectedPhotoRef = path
             }
         }
@@ -161,7 +159,7 @@ fun EditProfileScreen(
         if (bitmap != null) {
             val uid = viewModel.currentUser.value?.uid ?: return@rememberLauncherForActivityResult
             coroutineScope.launch {
-                selectedPhotoRef = saveBitmapToInternalStorage(context, uid, bitmap)
+                selectedPhotoRef = saveBitmapToInternalStorage(context, "profile_photo_$uid", bitmap)
             }
         }
     }

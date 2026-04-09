@@ -1,5 +1,6 @@
 package com.example.recipe_generator.presentation.myrecipes
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,7 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +38,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,11 +47,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.recipe_generator.RecipeGeneratorApp
 import com.example.recipe_generator.domain.model.UserRecipe
 import com.example.recipe_generator.presentation.components.EditorialCard
+import com.example.recipe_generator.presentation.profile.rememberProfileImage
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
+import com.example.recipe_generator.presentation.theme.PrimaryContainer
 import com.example.recipe_generator.presentation.theme.Surface
 import com.example.recipe_generator.presentation.theme.rounded_full
+import com.example.recipe_generator.presentation.theme.rounded_lg
 import com.example.recipe_generator.presentation.theme.spacing_10
 import com.example.recipe_generator.presentation.theme.spacing_2
 import com.example.recipe_generator.presentation.theme.spacing_3
@@ -222,9 +228,25 @@ private fun RecipeSummaryCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val image = rememberProfileImage(recipe.imageRes.takeIf { it.isNotBlank() })
+
     EditorialCard(
         modifier = Modifier.padding(horizontal = spacing_6)
     ) {
+        // Thumbnail si hay imagen
+        if (image != null) {
+            Image(
+                bitmap = image,
+                contentDescription = "Imagen de ${recipe.title}",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(rounded_lg)),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.height(spacing_4))
+        }
+
         Column(
             verticalArrangement = Arrangement.spacedBy(spacing_3)
         ) {

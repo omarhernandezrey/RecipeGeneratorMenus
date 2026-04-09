@@ -12,7 +12,8 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 data class RecipeFormUiState(
-    val recipeId: String? = null,
+    /** UUID siempre disponible — se usa como nombre de archivo de la imagen */
+    val recipeId: String = UUID.randomUUID().toString(),
     val title: String = "",
     val description: String = "",
     val timeInMinutes: String = "",
@@ -23,6 +24,8 @@ data class RecipeFormUiState(
     val mealType: String = mealTypeOptions.first(),
     val ingredients: List<String> = listOf(""),
     val steps: List<String> = listOf(""),
+    /** file:// URI local o cadena vacía si no tiene imagen */
+    val imageRes: String = "",
     val isSaving: Boolean = false,
     val error: String? = null,
     val saveVersion: Int = 0,
@@ -38,6 +41,7 @@ class CreateRecipeViewModel(
     private val _uiState = MutableStateFlow(RecipeFormUiState())
     val uiState: StateFlow<RecipeFormUiState> = _uiState.asStateFlow()
 
+    fun updateImageRes(value: String) = updateState { copy(imageRes = value) }
     fun updateTitle(value: String) = updateState { copy(title = value) }
     fun updateDescription(value: String) = updateState { copy(description = value) }
     fun updateTimeInMinutes(value: String) = updateState { copy(timeInMinutes = value.filter(Char::isDigit)) }
@@ -83,6 +87,7 @@ class CreateRecipeViewModel(
             mealType = recipe.mealType.ifBlank { mealTypeOptions.first() },
             ingredients = recipe.ingredients.ifEmpty { listOf("") },
             steps = recipe.steps.ifEmpty { listOf("") },
+            imageRes = recipe.imageRes,
             createdAt = recipe.createdAt
         )
     }
@@ -149,9 +154,10 @@ internal fun sliderValueToDifficulty(value: Float): String =
     difficultyLabels[value.toInt().coerceIn(0, difficultyLabels.lastIndex)]
 
 private fun RecipeFormUiState.toRecipe(userId: String): UserRecipe = UserRecipe(
-    id = recipeId ?: UUID.randomUUID().toString(),
+    id = recipeId,
     userId = userId,
     title = title.trim(),
+    imageRes = imageRes,
     timeInMinutes = timeInMinutes.toIntOrNull() ?: 0,
     calories = calories.toIntOrNull() ?: 0,
     difficulty = sliderValueToDifficulty(difficultyLevel),

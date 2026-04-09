@@ -1,10 +1,14 @@
 package com.example.recipe_generator.presentation.myrecipes
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -13,6 +17,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.recipe_generator.RecipeGeneratorApp
+import com.example.recipe_generator.presentation.profile.copyContentUriToInternalStorage
+import com.example.recipe_generator.presentation.profile.saveBitmapToInternalStorage
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 @Composable
@@ -24,6 +31,8 @@ fun CreateRecipeScreen(
     val appContainer = (LocalContext.current.applicationContext as RecipeGeneratorApp).container
     val userId = remember(appContainer) { appContainer.requireAuthenticatedUserId() }
     val viewModelKey = remember { "create-recipe-${UUID.randomUUID()}" }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     val viewModel: CreateRecipeViewModel = viewModel(
         key = viewModelKey,
@@ -49,6 +58,30 @@ fun CreateRecipeScreen(
         }
     }
 
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            val fileName = "recipe_image_${uiState.recipeId}"
+            coroutineScope.launch {
+                val path = copyContentUriToInternalStorage(context, fileName, uri)
+                if (path != null) viewModel.updateImageRes(path)
+            }
+        }
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            val fileName = "recipe_image_${uiState.recipeId}"
+            coroutineScope.launch {
+                val path = saveBitmapToInternalStorage(context, fileName, bitmap)
+                viewModel.updateImageRes(path)
+            }
+        }
+    }
+
     RecipeFormContent(
         title = "Nueva receta",
         buttonLabel = "Guardar receta",
@@ -67,6 +100,12 @@ fun CreateRecipeScreen(
         onStepChange = viewModel::updateStep,
         onAddStep = viewModel::addStep,
         onRemoveStep = viewModel::removeStep,
+        onPickImageFromGallery = {
+            pickImageLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        },
+        onTakePhoto = { cameraLauncher.launch(null) },
         onBack = onBack,
         onSave = viewModel::saveRecipe
     )
