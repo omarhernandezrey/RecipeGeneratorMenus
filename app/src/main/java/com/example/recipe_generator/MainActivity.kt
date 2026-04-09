@@ -95,11 +95,13 @@ class MainActivity : AppCompatActivity() {
         LaunchedEffect(userId) {
             if (userId != null) {
                 val container = (application as RecipeGeneratorApp).container
+                container.setSyncing(true)
                 runCatching {
                     container.firestoreSyncService.syncOnLogin(userId)
                 }.onFailure { e ->
                     Log.w("MainActivity", "syncOnLogin falló: ${e.message}")
                 }
+                container.setSyncing(false)
             }
         }
 
@@ -114,11 +116,13 @@ class MainActivity : AppCompatActivity() {
                     wasOffline = true
                 } else if (wasOffline) {
                     wasOffline = false
+                    container.setSyncing(true)
                     runCatching {
                         container.firestoreSyncService.syncPendingRecipes(userId)
                     }.onFailure { e ->
                         Log.w("MainActivity", "syncPendingRecipes falló: ${e.message}")
                     }
+                    container.setSyncing(false)
                 }
             }
         }
@@ -182,6 +186,7 @@ class MainActivity : AppCompatActivity() {
                     generateMenuUseCase = container.generateMenuUseCase,
                     userPrefsRepository = container.userPrefsRepository,
                     weeklyPlanRepository = container.weeklyPlanRepository,
+                    isSyncing = container.isSyncing,
                     userId = container.requireAuthenticatedUserId(),
                     onLogout = handleLogout
                 )

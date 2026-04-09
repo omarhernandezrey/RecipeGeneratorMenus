@@ -47,7 +47,8 @@ fun RecipeListScreen(
     favoriteRecipeIds: Set<String> = emptySet(),
     onToggleFavorite: (String) -> Unit = {},
     onRecipeSelected: (Recipe) -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    isSyncing: Boolean = false
 ) {
     Box(
         modifier = Modifier
@@ -151,7 +152,8 @@ fun RecipeListScreen(
         ) {
             HomeEditorialTopAppBar(
                 title = "Menú Semanal",
-                onProfileClick = onProfileClick
+                onProfileClick = onProfileClick,
+                isSyncing = isSyncing
             )
         }
     }
