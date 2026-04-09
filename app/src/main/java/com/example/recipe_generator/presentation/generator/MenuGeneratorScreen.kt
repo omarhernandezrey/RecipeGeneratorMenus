@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,7 +46,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
@@ -103,7 +101,7 @@ private val recipeTypeLabels = listOf(
 
 @Composable
 fun MenuGeneratorScreen(
-    selectedNavItem: Int = 2,
+    selectedNavItem: Int = 4,
     selectedDiets: Set<String> = emptySet(),
     onToggleDiet: (String) -> Unit = {},
     selectedDifficulty: String = "Difícil",
@@ -112,13 +110,14 @@ fun MenuGeneratorScreen(
     onPortionsChange: (Int) -> Unit = {},
     selectedRecipeTypes: Set<String> = emptySet(),
     onToggleRecipeType: (String) -> Unit = {},
-    generatedRecipes: List<Recipe> = emptyList(),
-    isGenerating: Boolean = false,
+    uiState: GeneratorUiState = GeneratorUiState(),
     onGenerateClick: () -> Unit = {},
+    onGoToPlan: () -> Unit = {},
     onNavigate: (Int) -> Unit = {}
 ) {
     val surfaceBg = com.example.recipe_generator.presentation.theme.Surface
     val difficultyLevel = difficultyLabelToSliderValue(selectedDifficulty)
+    val isGenerating = uiState.isGenerating
 
     Box(
         modifier = Modifier
@@ -293,19 +292,57 @@ fun MenuGeneratorScreen(
                 }
             }
 
-            // Status Message
-            if (isGenerating || generatedRecipes.isNotEmpty()) {
-                Text(
-                    text = if (isGenerating) {
-                        "Generando menú..."
-                    } else {
-                        "✓ Menú generado: ${generatedRecipes.size} receta${if (generatedRecipes.size != 1) "s" else ""}"
-                    },
-                    modifier = Modifier.padding(vertical = spacing_4),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (isGenerating) OnSurfaceVariant else Secondary,
-                    fontWeight = FontWeight.Medium
-                )
+            // Estado del generador
+            when {
+                uiState.isGenerating -> {
+                    Text(
+                        text = "Generando plan semanal...",
+                        modifier = Modifier.padding(vertical = spacing_4),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = OnSurfaceVariant,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                uiState.planSaved -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(rounded_lg))
+                            .background(Secondary.copy(alpha = 0.12f))
+                            .padding(spacing_6)
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(spacing_4)) {
+                            Text(
+                                text = "✓ Plan generado y guardado",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Secondary
+                            )
+                            Text(
+                                text = "${uiState.recipesFound} receta(s) asignadas. Ve a Mi Plan para verlo.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = OnSurfaceVariant
+                            )
+                            Button(
+                                onClick = { onGoToPlan() },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(rounded_full),
+                                colors = ButtonDefaults.buttonColors(containerColor = Secondary)
+                            ) {
+                                Text("Ver Mi Plan Semanal", color = Color.White, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+                uiState.error != null -> {
+                    Text(
+                        text = uiState.error,
+                        modifier = Modifier.padding(vertical = spacing_4),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = androidx.compose.ui.graphics.Color(0xFFBA1A1A),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(spacing_6))

@@ -38,6 +38,9 @@ data class WeeklyPlanEntity(
     /** Título cacheado para mostrar en la UI sin hacer join */
     val recipeTitle: String = "",
 
+    /** imageRes cacheado — file:// path local o URL https */
+    val imageRes: String = "",
+
     /** Nota libre del usuario para esta comida */
     val notes: String = "",
 

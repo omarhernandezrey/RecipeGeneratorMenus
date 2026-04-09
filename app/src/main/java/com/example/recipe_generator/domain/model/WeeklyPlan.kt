@@ -25,6 +25,9 @@ data class WeeklyPlan(
     /** Titulo cacheado de la receta para mostrar en la UI */
     val recipeTitle: String = "",
 
+    /** imageRes cacheado — file:// path local o URL https para mostrar en la celda */
+    val imageRes: String = "",
+
     /** Nota libre opcional del usuario */
     val notes: String = "",
 

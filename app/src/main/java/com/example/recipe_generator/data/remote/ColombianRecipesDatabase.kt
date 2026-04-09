@@ -438,6 +438,304 @@ Sirve todo junto en una bandeja grande con ensalada de tomate y cebolla, limón 
         )
     )
 
+        // ── Desayunos adicionales ─────────────────────────────────────────
+
+        MealDbFullRecipe(
+            id = "col_016",
+            name = "Huevos Pericos",
+            category = "Desayuno",
+            area = "Colombia",
+            thumbUrl = "",
+            instructions = """
+Pica finamente el tomate y la cebolla larga en cuadritos pequeños.
+En una sartén a fuego medio calienta aceite o mantequilla.
+Sofríe la cebolla hasta que esté transparente (3 minutos), luego agrega el tomate.
+Cocina el hogao 5 minutos revolviendo hasta que el tomate suelte su jugo.
+Bate los huevos con sal y pimienta. Vierte sobre el hogao.
+Revuelve constantemente a fuego bajo hasta que los huevos estén cocidos pero jugosos.
+Sirve inmediatamente sobre arepa o con pan.
+            """.trimIndent(),
+            ingredients = listOf(
+                "4 huevos",
+                "2 tomates maduros",
+                "3 tallos cebolla larga",
+                "Sal y pimienta al gusto",
+                "1 cucharada aceite o mantequilla",
+                "Arepas para acompañar"
+            )
+        ),
+
+        MealDbFullRecipe(
+            id = "col_017",
+            name = "Calentado Paisa",
+            category = "Desayuno",
+            area = "Colombia",
+            thumbUrl = "",
+            instructions = """
+En una sartén grande calienta aceite a fuego medio.
+Agrega el arroz blanco del día anterior y los frijoles con un poco de caldo.
+Revuelve bien y cocina 5 minutos hasta que todo esté caliente y el arroz suelto.
+Sazona con sal, comino y una cucharada de hogao.
+Fríe los huevos aparte en mantequilla al gusto (fritos o revueltos).
+Sirve el calentado con el huevo encima, chicharrón, plátano maduro frito y arepa.
+            """.trimIndent(),
+            ingredients = listOf(
+                "2 tazas arroz blanco cocido (del día anterior)",
+                "1 taza frijoles cocidos",
+                "2 huevos",
+                "50 g chicharrón",
+                "1 plátano maduro",
+                "Hogao al gusto",
+                "Sal y comino al gusto"
+            )
+        ),
+
+        MealDbFullRecipe(
+            id = "col_018",
+            name = "Pandebono con Chocolate Caliente",
+            category = "Desayuno",
+            area = "Colombia",
+            thumbUrl = "",
+            instructions = """
+Mezcla en un bol el almidón de yuca, la harina de maíz, el azúcar y la sal.
+Agrega el queso costeño rallado y mezcla bien con las manos.
+Añade el huevo y amasa hasta obtener una masa suave y sin grumos.
+Si la masa está muy seca agrega 1 cucharada de leche. Debe quedar maleable.
+Forma bolitas del tamaño de una pelota de golf y colócalas en bandeja engrasada.
+Hornea a 200°C durante 15-18 minutos hasta que estén dorados.
+Para el chocolate: hierve la leche, disuelve el chocolate de mesa troceado y sirve caliente.
+            """.trimIndent(),
+            ingredients = listOf(
+                "2 tazas almidón de yuca",
+                "1/2 taza harina de maíz",
+                "300 g queso costeño rallado",
+                "1 huevo",
+                "1 cucharada azúcar",
+                "Pizca de sal",
+                "2 tazas leche",
+                "100 g chocolate de mesa"
+            )
+        ),
+
+        MealDbFullRecipe(
+            id = "col_019",
+            name = "Avena Colombiana Fría",
+            category = "Desayuno",
+            area = "Colombia",
+            thumbUrl = "",
+            instructions = """
+En una licuadora coloca la avena en hojuelas, el agua fría y la leche.
+Agrega el azúcar, la canela en polvo y la ralladura de limón.
+Licúa durante 2 minutos hasta que esté completamente suave y cremosa.
+Prueba el dulce y ajusta el azúcar a tu gusto.
+Cuela si prefieres una textura más fina.
+Sirve en vaso alto con hielo picado.
+Decora con canela en polvo y una rodaja de limón.
+            """.trimIndent(),
+            ingredients = listOf(
+                "1 taza avena en hojuelas",
+                "2 tazas agua fría",
+                "1 taza leche",
+                "4 cucharadas azúcar",
+                "1/2 cucharadita canela en polvo",
+                "Ralladura de 1 limón",
+                "Hielo al gusto"
+            )
+        ),
+
+        MealDbFullRecipe(
+            id = "col_020",
+            name = "Caldo de Costilla Bogotano",
+            category = "Desayuno",
+            area = "Colombia",
+            thumbUrl = "",
+            instructions = """
+Pon a hervir las costillas de res en agua fría con sal, ajo y cebolla.
+Cuando hierva, retira la espuma que se forma en la superficie.
+Baja el fuego y cocina a fuego lento 40 minutos hasta que la carne esté tierna.
+Agrega las papas peladas y troceadas. Cocina 20 minutos más.
+Añade cilantro y cebolla larga picados. Ajusta la sal.
+Cocina 5 minutos adicionales.
+Sirve muy caliente en tazón grande con arepa al lado.
+            """.trimIndent(),
+            ingredients = listOf(
+                "400 g costilla de res con hueso",
+                "4 papas medianas",
+                "Cebolla larga al gusto",
+                "3 dientes de ajo",
+                "Cilantro fresco al gusto",
+                "Sal y comino al gusto",
+                "2 litros agua"
+            )
+        ),
+
+        // ── Cenas ─────────────────────────────────────────────────────────
+
+        MealDbFullRecipe(
+            id = "col_021",
+            name = "Crema de Auyama",
+            category = "Cena",
+            area = "Colombia",
+            thumbUrl = "",
+            instructions = """
+Pela y trocea la auyama (zapallo) en cubos medianos.
+En una olla sofríe la cebolla, el ajo y el pimentón en mantequilla durante 8 minutos.
+Agrega la auyama troceada y el caldo de pollo. Lleva a hervor.
+Cocina a fuego medio 20 minutos hasta que la auyama esté completamente blanda.
+Retira del fuego y licúa todo hasta obtener una crema suave y homogénea.
+Vuelve a la olla, agrega la crema de leche y ajusta la sal y pimienta.
+Sirve caliente con pan tostado o arepa de maíz.
+            """.trimIndent(),
+            ingredients = listOf(
+                "600 g auyama (zapallo)",
+                "1 cebolla cabezona",
+                "3 dientes de ajo",
+                "1/2 pimentón amarillo",
+                "500 ml caldo de pollo",
+                "3 cucharadas crema de leche",
+                "2 cucharadas mantequilla",
+                "Sal y pimienta al gusto"
+            )
+        ),
+
+        MealDbFullRecipe(
+            id = "col_022",
+            name = "Sopa de Lentejas Colombiana",
+            category = "Cena",
+            area = "Colombia",
+            thumbUrl = "",
+            instructions = """
+Lava las lentejas y ponlas a remojar 30 minutos. Escurre.
+En una olla sofríe la cebolla, el tomate, el ajo y el comino en aceite.
+Agrega las lentejas escurridas y el agua o caldo. Lleva a hervor.
+Baja el fuego y cocina a fuego lento 25 minutos.
+Incorpora las papas peladas y troceadas. Cocina 15 minutos más.
+Añade la zanahoria en rodajas y el plátano maduro troceado. Cocina 10 minutos.
+Ajusta la sal y sirve caliente con cilantro y arroz blanco.
+            """.trimIndent(),
+            ingredients = listOf(
+                "300 g lentejas",
+                "3 papas medianas",
+                "1 zanahoria",
+                "1 plátano maduro",
+                "2 tomates",
+                "1 cebolla cabezona",
+                "3 dientes de ajo",
+                "Cilantro al gusto",
+                "Sal, comino y aceite al gusto",
+                "1.5 litros agua o caldo"
+            )
+        ),
+
+        MealDbFullRecipe(
+            id = "col_023",
+            name = "Arroz Atollado de Pollo",
+            category = "Cena",
+            area = "Colombia",
+            thumbUrl = "",
+            instructions = """
+Sazona el pollo con sal, pimienta y comino. Dóralo en aceite caliente por todos lados.
+Retira el pollo y en la misma olla sofríe tomate, cebolla, ajo y pimentón (hogao) durante 10 minutos.
+Agrega el arroz y sofríe 3 minutos con el hogao.
+Incorpora las papas troceadas, la zanahoria y el pollo dorado.
+Vierte el caldo caliente (proporción 1:3 arroz-caldo para que quede meloso).
+Cocina tapado a fuego bajo 25 minutos sin destapar.
+Destapa, mezcla suavemente y sirve cremoso y meloso. Espolvorea cilantro.
+            """.trimIndent(),
+            ingredients = listOf(
+                "400 g pollo en presas",
+                "1.5 tazas arroz",
+                "4.5 tazas caldo de pollo",
+                "2 papas medianas",
+                "1 zanahoria",
+                "2 tomates",
+                "1 cebolla cabezona",
+                "1 pimentón rojo",
+                "Cilantro al gusto",
+                "Sal, comino y aceite al gusto"
+            )
+        ),
+
+        MealDbFullRecipe(
+            id = "col_024",
+            name = "Mazamorra Antioqueña",
+            category = "Cena",
+            area = "Colombia",
+            thumbUrl = "",
+            instructions = """
+Lava bien el maíz peto y ponlo a cocinar en abundante agua con sal desde la noche anterior o en olla a presión durante 1 hora.
+El maíz debe quedar muy blando y habrá reventado (mostrado el interior blanco).
+Cuela el maíz conservando el caldo lechoso que queda.
+Sirve el maíz cocido en tazones hondos.
+Cubre con leche fría o con suero costeño.
+Agrega panela rallada o azúcar al gusto y revuelve.
+Sirve acompañado de bocadillo de guayaba (bocadillo veleño).
+            """.trimIndent(),
+            ingredients = listOf(
+                "500 g maíz peto (desgranado seco)",
+                "Agua suficiente",
+                "Sal al gusto",
+                "Leche fría o suero costeño",
+                "Panela rallada o azúcar al gusto",
+                "Bocadillo de guayaba para acompañar"
+            )
+        ),
+
+        MealDbFullRecipe(
+            id = "col_025",
+            name = "Gallina en Salsa de Tomate",
+            category = "Cena",
+            area = "Colombia",
+            thumbUrl = "",
+            instructions = """
+Sazona las presas de gallina con sal, pimienta, comino y ajo molido. Deja marinar 1 hora.
+Sella las presas en aceite caliente hasta dorar bien por todos lados. Reserva.
+En la misma olla sofríe tomate, cebolla, pimentón y ajo durante 15 minutos hasta obtener una salsa espesa.
+Regresa las presas de gallina a la olla. Cubre con caldo de pollo.
+Cocina a fuego lento tapado durante 40 minutos hasta que la gallina esté muy tierna.
+Destapa y cocina 10 minutos más para que la salsa reduzca y espese.
+Sirve con arroz blanco, papa cocida y ensalada.
+            """.trimIndent(),
+            ingredients = listOf(
+                "1 kg gallina en presas",
+                "4 tomates maduros",
+                "1 cebolla cabezona",
+                "1 pimentón rojo",
+                "4 dientes de ajo",
+                "1 taza caldo de pollo",
+                "Sal, comino y pimienta al gusto",
+                "Aceite para sellar"
+            )
+        ),
+
+        MealDbFullRecipe(
+            id = "col_026",
+            name = "Sopa de Pasta con Costilla",
+            category = "Cena",
+            area = "Colombia",
+            thumbUrl = "",
+            instructions = """
+Pon a cocinar las costillas en agua con sal, cebolla y ajo a fuego medio durante 30 minutos.
+Retira las costillas, deja enfriar, deshuesa y corta la carne en trozos. Cuela el caldo.
+Vuelve a hervir el caldo y agrega las papas en cubos medianos. Cocina 15 minutos.
+Incorpora la zanahoria en rodajas y la pasta corta. Cocina 10 minutos.
+Regresa la carne de costilla al caldo.
+Agrega el cilantro y la cebolla larga picados. Ajusta la sal.
+Sirve caliente con pan o arepa.
+            """.trimIndent(),
+            ingredients = listOf(
+                "300 g costilla de res",
+                "1 taza pasta corta (coditos o caracoles)",
+                "3 papas medianas",
+                "1 zanahoria",
+                "Cebolla larga y cilantro al gusto",
+                "2 dientes de ajo",
+                "Sal y comino al gusto",
+                "1.5 litros agua"
+            )
+        )
+    )
+
     /** Filtra por nombre/categoría — búsqueda local instantánea */
     fun search(query: String): List<MealDbFullRecipe> {
         if (query.isBlank()) return recipes

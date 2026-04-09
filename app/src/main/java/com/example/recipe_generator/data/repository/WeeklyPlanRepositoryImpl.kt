@@ -9,15 +9,6 @@ import com.example.recipe_generator.domain.repository.WeeklyPlanRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-/**
- * Implementacion Room del plan semanal del usuario.
- *
- * setMeal hace upsert sobre la celda (userId + dia + tipo de comida)
- * y cachea el titulo de la receta para evitar consultas extra en UI.
- *
- * C-09
- * Capa: Data
- */
 class WeeklyPlanRepositoryImpl(
     private val weeklyPlanDao: WeeklyPlanDao,
     private val userRecipeDao: UserRecipeDao,
@@ -25,28 +16,26 @@ class WeeklyPlanRepositoryImpl(
 ) : WeeklyPlanRepository {
 
     override fun getWeeklyPlan(userId: String): Flow<List<WeeklyPlan>> =
-        weeklyPlanDao.getPlanForUser(userId).map { entries ->
-            entries.map { it.toDomain() }
-        }
+        weeklyPlanDao.getPlanForUser(userId).map { entries -> entries.map { it.toDomain() } }
 
     override fun getDay(userId: String, day: String): Flow<List<WeeklyPlan>> =
-        weeklyPlanDao.getPlanForDay(userId, day).map { entries ->
-            entries.map { it.toDomain() }
-        }
+        weeklyPlanDao.getPlanForDay(userId, day).map { entries -> entries.map { it.toDomain() } }
 
     override suspend fun setMeal(userId: String, day: String, mealType: String, recipeId: String) {
         val currentEntry = weeklyPlanDao.getMeal(userId, day, mealType)
         val recipeTitle = resolveRecipeTitle(userId, recipeId)
+        val imageRes   = resolveRecipeImage(userId, recipeId)
 
         weeklyPlanDao.upsert(
             WeeklyPlanEntity(
-                userId = userId,
-                dayOfWeek = day,
-                mealType = mealType,
-                recipeId = recipeId,
+                userId      = userId,
+                dayOfWeek   = day,
+                mealType    = mealType,
+                recipeId    = recipeId,
                 recipeTitle = recipeTitle,
-                notes = currentEntry?.notes.orEmpty(),
-                updatedAt = System.currentTimeMillis()
+                imageRes    = imageRes,
+                notes       = currentEntry?.notes.orEmpty(),
+                updatedAt   = System.currentTimeMillis()
             )
         )
     }
@@ -56,24 +45,22 @@ class WeeklyPlanRepositoryImpl(
     }
 
     private suspend fun resolveRecipeTitle(userId: String, recipeId: String): String {
-        val userRecipeTitle = userRecipeDao.getById(recipeId)
-            ?.takeIf { it.userId == userId }
-            ?.title
-
-        if (!userRecipeTitle.isNullOrBlank()) {
-            return userRecipeTitle
-        }
-
+        val userTitle = userRecipeDao.getById(recipeId)?.takeIf { it.userId == userId }?.title
+        if (!userTitle.isNullOrBlank()) return userTitle
         return recipeDao.getRecipeById(recipeId)?.title.orEmpty()
     }
+
+    private suspend fun resolveRecipeImage(userId: String, recipeId: String): String =
+        userRecipeDao.getById(recipeId)?.takeIf { it.userId == userId }?.imageRes.orEmpty()
 }
 
 private fun WeeklyPlanEntity.toDomain(): WeeklyPlan = WeeklyPlan(
-    userId = userId,
-    dayOfWeek = dayOfWeek,
-    mealType = mealType,
-    recipeId = recipeId,
+    userId      = userId,
+    dayOfWeek   = dayOfWeek,
+    mealType    = mealType,
+    recipeId    = recipeId,
     recipeTitle = recipeTitle,
-    notes = notes,
-    updatedAt = updatedAt
+    imageRes    = imageRes,
+    notes       = notes,
+    updatedAt   = updatedAt
 )

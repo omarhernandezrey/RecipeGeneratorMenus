@@ -79,11 +79,19 @@ fun AppShell(
         }
     )
 
+    val appContainer = (LocalContext.current.applicationContext
+        as com.example.recipe_generator.RecipeGeneratorApp).container
+
     val generatorViewModel: MenuGeneratorViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return MenuGeneratorViewModel(generateMenuUseCase) as T
+                return MenuGeneratorViewModel(
+                    generateMenuUseCase  = generateMenuUseCase,
+                    weeklyPlanRepository = weeklyPlanRepository,
+                    userRecipeRepository = appContainer.userRecipeRepository,
+                    userId               = userId
+                ) as T
             }
         }
     )
@@ -210,27 +218,26 @@ fun AppShell(
         // Tab 4: Generador — MenuGeneratorScreen
         // ═══════════════════════════════════════════════════════════════
         4 -> {
-            val selectedDiets by generatorViewModel.selectedDiets.collectAsStateWithLifecycle()
+            val selectedDiets      by generatorViewModel.selectedDiets.collectAsStateWithLifecycle()
             val selectedDifficulty by generatorViewModel.maxDifficulty.collectAsStateWithLifecycle()
-            val portions by generatorViewModel.portions.collectAsStateWithLifecycle()
-            val selectedTypes by generatorViewModel.selectedTypes.collectAsStateWithLifecycle()
-            val generatedRecipes by generatorViewModel.generatedMenu.collectAsStateWithLifecycle()
-            val isGenerating by generatorViewModel.isGenerating.collectAsStateWithLifecycle()
+            val portions           by generatorViewModel.portions.collectAsStateWithLifecycle()
+            val selectedTypes      by generatorViewModel.selectedTypes.collectAsStateWithLifecycle()
+            val generatorUiState   by generatorViewModel.uiState.collectAsStateWithLifecycle()
 
             MenuGeneratorScreen(
-                selectedNavItem = 4,
-                selectedDiets = selectedDiets,
-                onToggleDiet = generatorViewModel::toggleDiet,
+                selectedNavItem    = 4,
+                selectedDiets      = selectedDiets,
+                onToggleDiet       = generatorViewModel::toggleDiet,
                 selectedDifficulty = selectedDifficulty,
                 onDifficultySelected = generatorViewModel::setDifficulty,
-                portions = portions,
-                onPortionsChange = generatorViewModel::setPortions,
+                portions           = portions,
+                onPortionsChange   = generatorViewModel::setPortions,
                 selectedRecipeTypes = selectedTypes,
                 onToggleRecipeType = generatorViewModel::toggleType,
-                generatedRecipes = generatedRecipes,
-                isGenerating = isGenerating,
-                onGenerateClick = generatorViewModel::generateMenu,
-                onNavigate = onNavigate
+                uiState            = generatorUiState,
+                onGenerateClick    = generatorViewModel::generateAndSavePlan,
+                onGoToPlan         = { selectedTab = 2 },
+                onNavigate         = onNavigate
             )
         }
 

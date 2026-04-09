@@ -2,78 +2,111 @@ package com.example.recipe_generator.presentation.generator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.recipe_generator.domain.model.Recipe
+import com.example.recipe_generator.domain.repository.UserRecipeRepository
+import com.example.recipe_generator.domain.repository.WeeklyPlanRepository
 import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-/**
- * ViewModel del generador de menú.
- *
- * Mantiene los parámetros de preferencias del usuario y expone
- * el resultado del menú generado por GenerateMenuUseCase.
- *
- * Se completa en F3-34.
- * Capa: Presentation
- */
+data class GeneratorUiState(
+    val isGenerating: Boolean = false,
+    val planSaved: Boolean = false,
+    val recipesFound: Int = 0,
+    val error: String? = null
+)
+
 class MenuGeneratorViewModel(
-    private val generateMenuUseCase: GenerateMenuUseCase
+    private val generateMenuUseCase: GenerateMenuUseCase,
+    private val weeklyPlanRepository: WeeklyPlanRepository,
+    private val userRecipeRepository: UserRecipeRepository,
+    private val userId: String
 ) : ViewModel() {
 
-    // ── Parámetros del generador ──────────────────────────────────────
-
-    private val _maxDifficulty = MutableStateFlow("Difícil")
+    private val _maxDifficulty  = MutableStateFlow("Difícil")
     val maxDifficulty: StateFlow<String> = _maxDifficulty.asStateFlow()
 
-    private val _selectedDiets = MutableStateFlow(setOf<String>())
+    private val _selectedDiets  = MutableStateFlow(setOf<String>())
     val selectedDiets: StateFlow<Set<String>> = _selectedDiets.asStateFlow()
 
-    private val _selectedTypes = MutableStateFlow(setOf<String>())
+    private val _selectedTypes  = MutableStateFlow(setOf<String>())
     val selectedTypes: StateFlow<Set<String>> = _selectedTypes.asStateFlow()
 
-    private val _portions = MutableStateFlow(4)
+    private val _portions       = MutableStateFlow(4)
     val portions: StateFlow<Int> = _portions.asStateFlow()
 
-    // ── Resultado ─────────────────────────────────────────────────────
+    private val _uiState        = MutableStateFlow(GeneratorUiState())
+    val uiState: StateFlow<GeneratorUiState> = _uiState.asStateFlow()
 
-    private val _generatedMenu = MutableStateFlow<List<Recipe>>(emptyList())
-    val generatedMenu: StateFlow<List<Recipe>> = _generatedMenu.asStateFlow()
+    fun setDifficulty(v: String)   { _maxDifficulty.value = v }
+    fun toggleDiet(d: String)      { _selectedDiets.value = _selectedDiets.value.let { if (d in it) it - d else it + d } }
+    fun toggleType(t: String)      { _selectedTypes.value = _selectedTypes.value.let { if (t in it) it - t else it + t } }
+    fun setPortions(n: Int)        { _portions.value = n }
+    fun clearPlanSaved()           { _uiState.value = _uiState.value.copy(planSaved = false) }
 
-    private val _isGenerating = MutableStateFlow(false)
-    val isGenerating: StateFlow<Boolean> = _isGenerating.asStateFlow()
-    private var generateJob: Job? = null
+    /**
+     * Genera un plan semanal completo (7 días × 3 comidas) y lo guarda en Room/Firestore.
+     * Usa recetas del catálogo + recetas personales del usuario.
+     */
+    fun generateAndSavePlan() {
+        viewModelScope.launch {
+            _uiState.value = GeneratorUiState(isGenerating = true)
 
-    // ── Acciones ──────────────────────────────────────────────────────
+            runCatching {
+                // 1. Obtener recetas del catálogo con filtros de preferencias
+                val catalog = generateMenuUseCase(
+                    maxDifficulty = _maxDifficulty.value,
+                    selectedTypes = _selectedTypes.value,
+                    selectedDiets = _selectedDiets.value
+                ).first()
 
-    fun setDifficulty(difficulty: String) { _maxDifficulty.value = difficulty }
+                // 2. Obtener recetas del usuario
+                val userRecipes = userRecipeRepository.getMyRecipes(userId).first()
 
-    fun toggleDiet(diet: String) {
-        _selectedDiets.value = if (diet in _selectedDiets.value)
-            _selectedDiets.value - diet else _selectedDiets.value + diet
-    }
+                // 3. Separar por tipo de comida — combina catálogo + recetas personales
+                val breakfasts = buildPool(
+                    catalog.filter { matchesMeal(it.category, "Desayuno") }.map { it.id },
+                    userRecipes.filter { matchesMeal(it.category, "Desayuno") || matchesMeal(it.mealType, "Desayuno") }.map { it.id }
+                )
+                val lunches = buildPool(
+                    catalog.filter { matchesMeal(it.category, "Almuerzo") }.map { it.id },
+                    userRecipes.filter { matchesMeal(it.category, "Almuerzo") || matchesMeal(it.mealType, "Almuerzo") }.map { it.id }
+                )
+                val dinners = buildPool(
+                    catalog.filter { matchesMeal(it.category, "Cena") }.map { it.id },
+                    userRecipes.filter { matchesMeal(it.category, "Cena") || matchesMeal(it.mealType, "Cena") }.map { it.id }
+                )
 
-    fun toggleType(type: String) {
-        _selectedTypes.value = if (type in _selectedTypes.value)
-            _selectedTypes.value - type else _selectedTypes.value + type
-    }
+                val totalFound = breakfasts.size + lunches.size + dinners.size
+                if (totalFound == 0) error("No hay recetas disponibles con los filtros seleccionados.")
 
-    fun setPortions(count: Int) { _portions.value = count }
+                // 4. Asignar una receta por slot (circular si hay menos de 7)
+                val days = listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
+                for ((i, day) in days.withIndex()) {
+                    if (breakfasts.isNotEmpty()) {
+                        weeklyPlanRepository.setMeal(userId, day, "Desayuno", breakfasts[i % breakfasts.size])
+                    }
+                    if (lunches.isNotEmpty()) {
+                        weeklyPlanRepository.setMeal(userId, day, "Almuerzo", lunches[i % lunches.size])
+                    }
+                    if (dinners.isNotEmpty()) {
+                        weeklyPlanRepository.setMeal(userId, day, "Cena", dinners[i % dinners.size])
+                    }
+                }
 
-    fun generateMenu() {
-        generateJob?.cancel()
-        generateJob = viewModelScope.launch {
-            _isGenerating.value = true
-            generateMenuUseCase(
-                maxDifficulty = _maxDifficulty.value,
-                selectedTypes = _selectedTypes.value,
-                selectedDiets = _selectedDiets.value
-            ).collect { recipes ->
-                _generatedMenu.value = recipes
-                _isGenerating.value = false
+                _uiState.value = GeneratorUiState(planSaved = true, recipesFound = totalFound)
+
+            }.onFailure { e ->
+                _uiState.value = GeneratorUiState(error = e.message ?: "Error al generar el plan")
             }
         }
     }
+
+    private fun matchesMeal(field: String, mealType: String) =
+        field.equals(mealType, ignoreCase = true)
+
+    private fun buildPool(catalogIds: List<String>, userIds: List<String>): List<String> =
+        (userIds + catalogIds).distinct().shuffled()
 }
