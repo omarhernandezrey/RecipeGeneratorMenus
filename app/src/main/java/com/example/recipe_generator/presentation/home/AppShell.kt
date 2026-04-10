@@ -195,7 +195,15 @@ fun AppShell(
             Box(modifier = Modifier.fillMaxSize()) {
                 MyWeeklyPlanScreen(
                     modifier = Modifier.padding(bottom = editorialBottomBarContentPadding()),
-                    onBack = { selectedTab = 0 }
+                    onBack = { selectedTab = 0 },
+                    onRecipeClick = { recipeId ->
+                        selectedRecipe = Recipe(
+                            id = recipeId, title = "", imageRes = "",
+                            timeInMinutes = 0, calories = 0, difficulty = "",
+                            category = "", categorySubtitle = "", description = "",
+                            dayOfWeek = ""
+                        )
+                    }
                 )
                 Box(
                     modifier = Modifier
