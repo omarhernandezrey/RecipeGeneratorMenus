@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -137,10 +138,15 @@ fun MyWeeklyPlanScreen(
     val statusBarTop  = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val bottomNavPad  = editorialBottomBarContentPadding()
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(Surface)
+    ) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
     ) {
         // ── Header ─────────────────────────────────────────────────────
         Column(
@@ -260,7 +266,6 @@ fun MyWeeklyPlanScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
                 .horizontalScroll(rememberScrollState())
         ) {
             WeeklyPlanTable(
@@ -271,7 +276,8 @@ fun MyWeeklyPlanScreen(
                 bottomPadding = bottomNavPad
             )
         }
-    }
+    } // Column vertical scroll
+    } // Box fillMaxSize
 
     // ── Diálogo selección de receta ─────────────────────────────────────
     if (selectedSlot != null) {
