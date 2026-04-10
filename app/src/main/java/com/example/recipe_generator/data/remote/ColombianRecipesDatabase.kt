@@ -435,8 +435,7 @@ Sirve todo junto en una bandeja grande con ensalada de tomate y cebolla, limón 
                 "Limón y ají al gusto",
                 "Sal, pimienta y ajo al gusto"
             )
-        )
-    )
+        ),
 
         // ── Desayunos adicionales ─────────────────────────────────────────
 

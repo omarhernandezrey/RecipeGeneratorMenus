@@ -79,7 +79,7 @@ class HomeViewModel(
 private fun WeeklyPlan.toRecipe(): Recipe = Recipe(
     id = recipeId,
     title = recipeTitle.ifBlank { "Receta del plan" },
-    imageRes = "",
+    imageRes = imageRes,
     timeInMinutes = 0,
     calories = 0,
     difficulty = "",

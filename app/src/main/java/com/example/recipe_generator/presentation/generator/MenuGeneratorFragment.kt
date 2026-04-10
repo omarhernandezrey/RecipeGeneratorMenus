@@ -11,41 +11,52 @@ import com.example.recipe_generator.presentation.navigation.TopLevelDestination
 
 class MenuGeneratorFragment : ComposeScreenFragment() {
     private val menuGeneratorViewModel: MenuGeneratorViewModel by viewModels {
-        MenuGeneratorViewModelFactory(appContainer.generateMenuUseCase)
+        MenuGeneratorViewModelFactory(
+            generateMenuUseCase  = appContainer.generateMenuUseCase,
+            weeklyPlanRepository = appContainer.weeklyPlanRepository,
+            userRecipeRepository = appContainer.userRecipeRepository,
+            userId               = appContainer.requireAuthenticatedUserId()
+        )
     }
 
     @Composable
     override fun ScreenContent() {
-        val maxDifficulty by menuGeneratorViewModel.maxDifficulty.collectAsStateWithLifecycle()
-        val selectedDiets by menuGeneratorViewModel.selectedDiets.collectAsStateWithLifecycle()
-        val selectedTypes by menuGeneratorViewModel.selectedTypes.collectAsStateWithLifecycle()
-        val portions by menuGeneratorViewModel.portions.collectAsStateWithLifecycle()
-        val generatedMenu by menuGeneratorViewModel.generatedMenu.collectAsStateWithLifecycle()
-        val isGenerating by menuGeneratorViewModel.isGenerating.collectAsStateWithLifecycle()
+        val maxDifficulty  by menuGeneratorViewModel.maxDifficulty.collectAsStateWithLifecycle()
+        val selectedDiets  by menuGeneratorViewModel.selectedDiets.collectAsStateWithLifecycle()
+        val selectedTypes  by menuGeneratorViewModel.selectedTypes.collectAsStateWithLifecycle()
+        val portions       by menuGeneratorViewModel.portions.collectAsStateWithLifecycle()
+        val uiState        by menuGeneratorViewModel.uiState.collectAsStateWithLifecycle()
 
         MenuGeneratorScreen(
-            selectedNavItem = TopLevelDestination.Generator.navItemIndex,
-            selectedDiets = selectedDiets,
-            onToggleDiet = menuGeneratorViewModel::toggleDiet,
+            selectedNavItem    = TopLevelDestination.Generator.navItemIndex,
+            selectedDiets      = selectedDiets,
+            onToggleDiet       = menuGeneratorViewModel::toggleDiet,
             selectedDifficulty = maxDifficulty,
             onDifficultySelected = menuGeneratorViewModel::setDifficulty,
-            portions = portions,
-            onPortionsChange = menuGeneratorViewModel::setPortions,
+            portions           = portions,
+            onPortionsChange   = menuGeneratorViewModel::setPortions,
             selectedRecipeTypes = selectedTypes,
             onToggleRecipeType = menuGeneratorViewModel::toggleType,
-            generatedRecipes = generatedMenu,
-            isGenerating = isGenerating,
-            onGenerateClick = menuGeneratorViewModel::generateMenu,
-            onNavigate = ::navigateToTopLevel
+            uiState            = uiState,
+            onGenerateClick    = menuGeneratorViewModel::generateAndSavePlan,
+            onNavigate         = ::navigateToTopLevel
         )
     }
 }
 
 private class MenuGeneratorViewModelFactory(
-    private val generateMenuUseCase: com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
+    private val generateMenuUseCase: com.example.recipe_generator.domain.usecase.GenerateMenuUseCase,
+    private val weeklyPlanRepository: com.example.recipe_generator.domain.repository.WeeklyPlanRepository,
+    private val userRecipeRepository: com.example.recipe_generator.domain.repository.UserRecipeRepository,
+    private val userId: String
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return MenuGeneratorViewModel(generateMenuUseCase) as T
+        return MenuGeneratorViewModel(
+            generateMenuUseCase  = generateMenuUseCase,
+            weeklyPlanRepository = weeklyPlanRepository,
+            userRecipeRepository = userRecipeRepository,
+            userId               = userId
+        ) as T
     }
 }

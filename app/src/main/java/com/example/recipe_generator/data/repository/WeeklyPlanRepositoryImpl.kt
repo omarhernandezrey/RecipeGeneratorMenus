@@ -50,8 +50,13 @@ class WeeklyPlanRepositoryImpl(
         return recipeDao.getRecipeById(recipeId)?.title.orEmpty()
     }
 
-    private suspend fun resolveRecipeImage(userId: String, recipeId: String): String =
-        userRecipeDao.getById(recipeId)?.takeIf { it.userId == userId }?.imageRes.orEmpty()
+    private suspend fun resolveRecipeImage(userId: String, recipeId: String): String {
+        userRecipeDao.getById(recipeId)
+            ?.takeIf { it.userId == userId }
+            ?.imageRes?.takeIf { it.isNotBlank() }
+            ?.let { return it }
+        return recipeDao.getRecipeById(recipeId)?.imageRes.orEmpty()
+    }
 }
 
 private fun WeeklyPlanEntity.toDomain(): WeeklyPlan = WeeklyPlan(

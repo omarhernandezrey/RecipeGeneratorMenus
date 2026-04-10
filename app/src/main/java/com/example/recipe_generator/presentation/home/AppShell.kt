@@ -28,6 +28,7 @@ import com.example.recipe_generator.presentation.components.EditorialBottomNavBa
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel

@@ -22,6 +22,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import coil.compose.AsyncImage
+import com.example.recipe_generator.data.remote.PixabayApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -219,11 +221,10 @@ fun RecipeCard(
                     .clip(RoundedCornerShape(topStart = rounded_md, topEnd = rounded_md))
                     .clickable(onClick = onClick)
             ) {
-                androidx.compose.foundation.Image(
-                    painter = painterResource(id = R.drawable.img_placeholder),
-                    contentDescription = recipe.title,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                RecipeImage(
+                    imageRes    = recipe.imageRes,
+                    recipeTitle = recipe.title,
+                    modifier    = Modifier.fillMaxSize()
                 )
 
                 IconButton(
@@ -271,5 +272,39 @@ fun RecipeCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun RecipeImage(
+    imageRes: String,
+    recipeTitle: String,
+    modifier: Modifier = Modifier
+) {
+    var url by remember(recipeTitle) { mutableStateOf(imageRes) }
+
+    LaunchedEffect(recipeTitle) {
+        if (url.isBlank()) {
+            val results = PixabayApi.searchImages("$recipeTitle comida")
+            url = results.firstOrNull()?.thumbUrl.orEmpty()
+        }
+    }
+
+    if (url.startsWith("http")) {
+        AsyncImage(
+            model           = url,
+            contentDescription = recipeTitle,
+            modifier        = modifier,
+            contentScale    = ContentScale.Crop,
+            placeholder     = painterResource(R.drawable.img_placeholder),
+            error           = painterResource(R.drawable.img_placeholder)
+        )
+    } else {
+        androidx.compose.foundation.Image(
+            painter         = painterResource(R.drawable.img_placeholder),
+            contentDescription = recipeTitle,
+            modifier        = modifier,
+            contentScale    = ContentScale.Crop
+        )
     }
 }
