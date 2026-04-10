@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.recipe_generator.RecipeGeneratorApp
+import com.example.recipe_generator.data.notification.NotificationHelper
 import com.example.recipe_generator.presentation.profile.copyContentUriToInternalStorage
 import com.example.recipe_generator.presentation.profile.saveBitmapToInternalStorage
 import kotlinx.coroutines.launch
@@ -56,6 +57,7 @@ fun CreateRecipeScreen(
     LaunchedEffect(uiState.saveVersion) {
         if (uiState.saveVersion > handledSaveVersion) {
             handledSaveVersion = uiState.saveVersion
+            NotificationHelper.showRecipeCreatedNotification(context, uiState.title.ifBlank { "Receta nueva" })
             onSaved()
         }
     }

@@ -15,6 +15,9 @@ data class GeneratorUiState(
     val isGenerating: Boolean = false,
     val planSaved: Boolean = false,
     val recipesFound: Int = 0,
+    val hasBreakfasts: Boolean = false,
+    val hasLunches: Boolean = false,
+    val hasDinners: Boolean = false,
     val error: String? = null
 )
 
@@ -96,7 +99,13 @@ class MenuGeneratorViewModel(
                     }
                 }
 
-                _uiState.value = GeneratorUiState(planSaved = true, recipesFound = totalFound)
+                _uiState.value = GeneratorUiState(
+                    planSaved     = true,
+                    recipesFound  = totalFound,
+                    hasBreakfasts = breakfasts.isNotEmpty(),
+                    hasLunches    = lunches.isNotEmpty(),
+                    hasDinners    = dinners.isNotEmpty()
+                )
 
             }.onFailure { e ->
                 _uiState.value = GeneratorUiState(error = e.message ?: "Error al generar el plan")

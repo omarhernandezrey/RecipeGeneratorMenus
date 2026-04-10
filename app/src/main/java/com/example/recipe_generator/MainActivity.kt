@@ -2,9 +2,13 @@
 
 package com.example.recipe_generator
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -71,6 +75,16 @@ class MainActivity : AppCompatActivity() {
 
     @Composable
     private fun AppContentInner() {
+        // Solicitar permiso POST_NOTIFICATIONS en Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val notifPermissionLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { /* resultado ignorado — si deniega, las notifs simplemente no aparecen */ }
+            LaunchedEffect(Unit) {
+                notifPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
         val authViewModel: AuthViewModel = viewModel(
             factory = AuthViewModelFactory(
                 authRepository = (application as RecipeGeneratorApp).container.authRepository

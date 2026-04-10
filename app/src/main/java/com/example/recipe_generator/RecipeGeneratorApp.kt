@@ -32,6 +32,7 @@ class RecipeGeneratorApp : Application() {
         super.onCreate()
         container = AppContainer(this)
         seedDatabaseIfEmpty()
+        com.example.recipe_generator.data.notification.NotificationHelper.createChannel(this)
     }
 
     /** Siembra Room con las 21 recetas legacy si la tabla está vacía. */

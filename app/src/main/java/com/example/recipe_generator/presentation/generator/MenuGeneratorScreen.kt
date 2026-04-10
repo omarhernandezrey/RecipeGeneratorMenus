@@ -31,17 +31,23 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.recipe_generator.data.notification.NotificationHelper
 import com.example.recipe_generator.presentation.theme.OnSecondaryContainer
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
@@ -108,51 +114,89 @@ fun GeneratorTabContent(
     onGoToPlan: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = spacing_6),
-        verticalArrangement = Arrangement.spacedBy(spacing_8)
-    ) {
-        Spacer(modifier = Modifier.height(spacing_4))
+    val context = LocalContext.current
 
-        HeroBanner()
+    // Modal state — se abre cuando el plan se guarda
+    var showModal by remember { mutableStateOf(false) }
 
-        Column {
-            SectionLabel("Preferencias Dietéticas")
-            Column(verticalArrangement = Arrangement.spacedBy(spacing_3)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing_3)) {
-                    dietOptions.take(3).forEach { opt ->
-                        DietPill(opt, opt.label in selectedDiets, { onToggleDiet(opt.label) }, Modifier.weight(1f))
+    // Trigger: mostrar modal + notificación cuando planSaved cambia a true
+    LaunchedEffect(uiState.planSaved) {
+        if (uiState.planSaved) {
+            showModal = true
+            NotificationHelper.showPlanGeneratedNotification(
+                context       = context,
+                hasBreakfasts = uiState.hasBreakfasts,
+                hasLunches    = uiState.hasLunches,
+                hasDinners    = uiState.hasDinners
+            )
+        }
+    }
+
+    Box(modifier = modifier) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = spacing_6),
+            verticalArrangement = Arrangement.spacedBy(spacing_8)
+        ) {
+            Spacer(modifier = Modifier.height(spacing_4))
+
+            HeroBanner()
+
+            Column {
+                SectionLabel("Preferencias Dietéticas")
+                Column(verticalArrangement = Arrangement.spacedBy(spacing_3)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing_3)) {
+                        dietOptions.take(3).forEach { opt ->
+                            DietPill(opt, opt.label in selectedDiets, { onToggleDiet(opt.label) }, Modifier.weight(1f))
+                        }
                     }
-                }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing_3)) {
-                    dietOptions.drop(3).forEach { opt ->
-                        DietPill(opt, opt.label in selectedDiets, { onToggleDiet(opt.label) }, Modifier.weight(1f))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing_3)) {
+                        dietOptions.drop(3).forEach { opt ->
+                            DietPill(opt, opt.label in selectedDiets, { onToggleDiet(opt.label) }, Modifier.weight(1f))
+                        }
                     }
                 }
             }
-        }
 
-        Column {
-            SectionLabel("Tipo de Comida")
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing_3)) {
-                mealTypeOptions.forEach { opt ->
-                    MealTypeCard(opt, opt.label in selectedRecipeTypes, { onToggleRecipeType(opt.label) }, Modifier.weight(1f))
+            Column {
+                SectionLabel("Tipo de Comida")
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing_3)) {
+                    mealTypeOptions.forEach { opt ->
+                        MealTypeCard(opt, opt.label in selectedRecipeTypes, { onToggleRecipeType(opt.label) }, Modifier.weight(1f))
+                    }
                 }
             }
+
+            Column {
+                SectionLabel("Dificultad Máxima")
+                DifficultySelector(selectedDifficulty, onDifficultySelected)
+            }
+
+            PortionsStepper(portions, onPortionsChange)
+
+            // Solo muestra el botón de generar — el resultado va al modal
+            GenerateCtaSection(
+                uiState         = uiState.copy(planSaved = false, error = uiState.error),
+                onGenerateClick = onGenerateClick,
+                onGoToPlan      = onGoToPlan
+            )
+
+            Spacer(modifier = Modifier.height(spacing_6))
         }
 
-        Column {
-            SectionLabel("Dificultad Máxima")
-            DifficultySelector(selectedDifficulty, onDifficultySelected)
+        // ── Modal de éxito ───────────────────────────────────────
+        if (showModal) {
+            GeneratedPlanModal(
+                uiState    = uiState,
+                onGoToPlan = {
+                    showModal = false
+                    onGoToPlan()
+                },
+                onDismiss  = { showModal = false }
+            )
         }
-
-        PortionsStepper(portions, onPortionsChange)
-
-        GenerateCtaSection(uiState, onGenerateClick, onGoToPlan)
-
-        Spacer(modifier = Modifier.height(spacing_6))
     }
 }
 
