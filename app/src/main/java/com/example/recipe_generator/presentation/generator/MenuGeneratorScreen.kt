@@ -3,6 +3,7 @@ package com.example.recipe_generator.presentation.generator
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,20 +16,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Text
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -45,33 +46,24 @@ import com.example.recipe_generator.presentation.components.EditorialBottomNavBa
 import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
 import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
-import com.example.recipe_generator.presentation.theme.OnPrimary
-import com.example.recipe_generator.presentation.theme.OnPrimaryFixed
 import com.example.recipe_generator.presentation.theme.OnSecondaryContainer
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
-import com.example.recipe_generator.presentation.theme.Outline
 import com.example.recipe_generator.presentation.theme.Primary
-import com.example.recipe_generator.presentation.theme.PrimaryContainer
-import com.example.recipe_generator.presentation.theme.PrimaryFixed
-import com.example.recipe_generator.presentation.theme.Secondary
 import com.example.recipe_generator.presentation.theme.SecondaryContainer
-import com.example.recipe_generator.presentation.theme.SurfaceContainer
+import com.example.recipe_generator.presentation.theme.Surface
 import com.example.recipe_generator.presentation.theme.SurfaceContainerHigh
-import com.example.recipe_generator.presentation.theme.SurfaceContainerHighest
 import com.example.recipe_generator.presentation.theme.SurfaceContainerLow
-import com.example.recipe_generator.presentation.theme.SurfaceContainerLowest
 import com.example.recipe_generator.presentation.theme.rounded_full
 import com.example.recipe_generator.presentation.theme.rounded_lg
 import com.example.recipe_generator.presentation.theme.rounded_md
-import com.example.recipe_generator.presentation.theme.spacing_10
-import com.example.recipe_generator.presentation.theme.spacing_12
 import com.example.recipe_generator.presentation.theme.spacing_2
 import com.example.recipe_generator.presentation.theme.spacing_3
 import com.example.recipe_generator.presentation.theme.spacing_4
 import com.example.recipe_generator.presentation.theme.spacing_6
+import com.example.recipe_generator.presentation.theme.spacing_8
 
-// ── Data ────────────────────────────────────────────────────────────
+// ── Data ─────────────────────────────────────────────────────────────
 
 private data class DietOption(val emoji: String, val label: String)
 
@@ -84,13 +76,23 @@ private val dietOptions = listOf(
     DietOption("🍖", "Paleo")
 )
 
-private val recipeTypeLabels = listOf(
-    "Desayuno",
-    "Almuerzo",
-    "Cena"
+private data class MealTypeOption(val emoji: String, val label: String, val accent: Color)
+
+private val mealTypeOptions = listOf(
+    MealTypeOption("🌅", "Desayuno", Color(0xFFD84315)),
+    MealTypeOption("☀️", "Almuerzo", Color(0xFF2E7D32)),
+    MealTypeOption("🌙", "Cena",     Color(0xFF4527A0))
 )
 
-// ── Main Screen ─────────────────────────────────────────────────────
+private data class DifficultyOption(val emoji: String, val label: String, val color: Color)
+
+private val difficultyOptions = listOf(
+    DifficultyOption("⚡", "Fácil",   Color(0xFF2E7D32)),
+    DifficultyOption("🔥", "Medio",   Color(0xFFE65100)),
+    DifficultyOption("💀", "Difícil", Color(0xFFC62828))
+)
+
+// ── Main Screen ──────────────────────────────────────────────────────
 
 @Composable
 fun MenuGeneratorScreen(
@@ -108,79 +110,229 @@ fun MenuGeneratorScreen(
     onGoToPlan: () -> Unit = {},
     onNavigate: (Int) -> Unit = {}
 ) {
-    val surfaceBg = com.example.recipe_generator.presentation.theme.Surface
-    val difficultyLevel = difficultyLabelToSliderValue(selectedDifficulty)
-    val isGenerating = uiState.isGenerating
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(surfaceBg)
+            .background(Surface)
     ) {
-        val topContentPadding = editorialTopBarContentPadding()
-        val bottomContentPadding = editorialBottomBarContentPadding()
+        val topPad    = editorialTopBarContentPadding()
+        val bottomPad = editorialBottomBarContentPadding()
 
-        // Scrollable Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    top = topContentPadding,
-                    bottom = bottomContentPadding + spacing_6
-                )
+                .padding(top = topPad, bottom = bottomPad + spacing_6)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = spacing_6)
+                .padding(horizontal = spacing_6),
+            verticalArrangement = Arrangement.spacedBy(spacing_8)
         ) {
-            Spacer(modifier = Modifier.height(spacing_10))
+            Spacer(modifier = Modifier.height(spacing_6))
 
-            // ═══════════════════════════════════════════════════════════
-            // SECTION 1: HERO + TITLE
-            // ═══════════════════════════════════════════════════════════
-            Text(
-                text = "Generador de Menú",
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.ExtraBold,
-                color = OnSurface,
-                fontSize = 32.sp
-            )
-            Text(
-                text = "Personaliza tu experiencia culinaria semanal con precisión editorial.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = OnSurfaceVariant.copy(alpha = 0.7f),
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(top = spacing_2)
-            )
+            // ── 1. HERO ─────────────────────────────────────────────
+            HeroBanner()
 
-            Spacer(modifier = Modifier.height(spacing_10))
-
-            // ═══════════════════════════════════════════════════════════
-            // SECTION 2: PREFERENCIAS DIETÉTICAS (BENTO GRID)
-            // ═══════════════════════════════════════════════════════════
-            Text(
-                text = "Preferencias Dietéticas",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = OnSurface,
-                modifier = Modifier.padding(bottom = spacing_3, start = spacing_2)
-            )
-
-            // Diet options in grid (3 rows × 2 cols)
-            Column(verticalArrangement = Arrangement.spacedBy(spacing_3)) {
-                for (row in 0..2) {
+            // ── 2. PREFERENCIAS DIETÉTICAS ──────────────────────────
+            Column {
+                SectionLabel("Preferencias Dietéticas")
+                Column(verticalArrangement = Arrangement.spacedBy(spacing_3)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(spacing_3)
                     ) {
-                        for (col in 0..1) {
-                            val i = row * 2 + col
-                            if (i < dietOptions.size) {
-                                val opt = dietOptions[i]
-                                val selected = opt.label in selectedDiets
-                                DietOptionChip(
-                                    option = opt,
-                                    selected = selected,
-                                    onClick = { onToggleDiet(opt.label) },
-                                    modifier = Modifier.weight(1f)
+                        dietOptions.take(3).forEach { opt ->
+                            DietPill(
+                                option = opt,
+                                selected = opt.label in selectedDiets,
+                                onClick = { onToggleDiet(opt.label) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(spacing_3)
+                    ) {
+                        dietOptions.drop(3).forEach { opt ->
+                            DietPill(
+                                option = opt,
+                                selected = opt.label in selectedDiets,
+                                onClick = { onToggleDiet(opt.label) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // ── 3. TIPO DE COMIDA ────────────────────────────────────
+            Column {
+                SectionLabel("Tipo de Comida")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(spacing_3)
+                ) {
+                    mealTypeOptions.forEach { opt ->
+                        MealTypeCard(
+                            option = opt,
+                            isSelected = opt.label in selectedRecipeTypes,
+                            onClick = { onToggleRecipeType(opt.label) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+
+            // ── 4. DIFICULTAD ────────────────────────────────────────
+            Column {
+                SectionLabel("Dificultad Máxima")
+                DifficultySelector(
+                    selected = selectedDifficulty,
+                    onSelect = onDifficultySelected
+                )
+            }
+
+            // ── 5. PORCIONES ─────────────────────────────────────────
+            PortionsStepper(count = portions, onChange = onPortionsChange)
+
+            // ── 6. CTA + ESTADOS ─────────────────────────────────────
+            Column(verticalArrangement = Arrangement.spacedBy(spacing_4)) {
+                Button(
+                    onClick = { if (!uiState.isGenerating) onGenerateClick() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp)
+                        .shadow(
+                            elevation = 12.dp,
+                            shape = RoundedCornerShape(rounded_full),
+                            ambientColor = Primary.copy(alpha = 0.3f)
+                        ),
+                    shape = RoundedCornerShape(rounded_full),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    contentPadding = PaddingValues(0.dp),
+                    enabled = !uiState.isGenerating
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                brush = if (uiState.isGenerating)
+                                    Brush.horizontalGradient(listOf(SurfaceContainerLow, SurfaceContainerHigh))
+                                else
+                                    Brush.horizontalGradient(listOf(Primary, Color(0xFF7B3FC4))),
+                                shape = RoundedCornerShape(rounded_full)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (uiState.isGenerating) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(spacing_3)
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = Primary,
+                                    strokeWidth = 2.dp
+                                )
+                                Text(
+                                    text = "Generando...",
+                                    color = OnSurfaceVariant,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = "✨  GENERAR MENÚ SEMANAL",
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 0.5.sp
+                            )
+                        }
+                    }
+                }
+
+                when {
+                    uiState.planSaved -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(rounded_lg))
+                                .background(Color(0xFF1B5E20).copy(alpha = 0.08f))
+                                .border(
+                                    1.dp,
+                                    Color(0xFF2E7D32).copy(alpha = 0.35f),
+                                    RoundedCornerShape(rounded_lg)
+                                )
+                                .padding(spacing_6)
+                        ) {
+                            Column(verticalArrangement = Arrangement.spacedBy(spacing_4)) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(spacing_3)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .background(Color(0xFF2E7D32), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            "✓",
+                                            color = Color.White,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            fontSize = 16.sp
+                                        )
+                                    }
+                                    Column {
+                                        Text(
+                                            text = "¡Plan generado!",
+                                            fontWeight = FontWeight.ExtraBold,
+                                            fontSize = 15.sp,
+                                            color = Color(0xFF1B5E20)
+                                        )
+                                        Text(
+                                            text = "${uiState.recipesFound} recetas asignadas para la semana",
+                                            fontSize = 12.sp,
+                                            color = OnSurfaceVariant
+                                        )
+                                    }
+                                }
+                                Button(
+                                    onClick = onGoToPlan,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(rounded_full),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+                                ) {
+                                    Text("Ver Mi Plan →", color = Color.White, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+
+                    uiState.error != null -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(rounded_lg))
+                                .background(Color(0xFFBA1A1A).copy(alpha = 0.07f))
+                                .border(
+                                    1.dp,
+                                    Color(0xFFBA1A1A).copy(alpha = 0.3f),
+                                    RoundedCornerShape(rounded_lg)
+                                )
+                                .padding(spacing_6)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(spacing_3)
+                            ) {
+                                Text("⚠️", fontSize = 18.sp)
+                                Text(
+                                    text = uiState.error,
+                                    fontSize = 13.sp,
+                                    color = Color(0xFFBA1A1A),
+                                    fontWeight = FontWeight.Medium
                                 )
                             }
                         }
@@ -188,199 +340,102 @@ fun MenuGeneratorScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(spacing_10))
-
-            // ═══════════════════════════════════════════════════════════
-            // SECTION 3: DIFICULTAD Y PORCIONES (ASYMMETRIC LAYOUT)
-            // ═══════════════════════════════════════════════════════════
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing_6)
-            ) {
-                // LEFT: Difficulty Slider (less wide)
-                Box(modifier = Modifier.weight(0.6f)) {
-                    DifficultyCard(
-                        level = difficultyLevel,
-                        onLevelChange = { onDifficultySelected(sliderValueToDifficultyLabel(it)) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                // RIGHT: Portions Stepper (more wide)
-                Box(modifier = Modifier.weight(0.4f)) {
-                    PortionsCard(
-                        count = portions,
-                        onChange = onPortionsChange,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(spacing_10))
-
-            // ═══════════════════════════════════════════════════════════
-            // SECTION 4: TIPOS DE RECETAS (MULTISELECT)
-            // ═══════════════════════════════════════════════════════════
-            Text(
-                text = "Tipos de Recetas Preferidas",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = OnSurface,
-                modifier = Modifier.padding(bottom = spacing_2, start = spacing_2)
-            )
-            RecipeTypeChips(
-                selected = selectedRecipeTypes,
-                onToggle = onToggleRecipeType
-            )
-
-            Spacer(modifier = Modifier.height(spacing_10))
-
-            // ═══════════════════════════════════════════════════════════
-            // SECTION 5: GENERATION CONTROL
-            // ═══════════════════════════════════════════════════════════
-            // Progress Bar (inactive)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(SurfaceContainer.copy(alpha = 0.4f))
-            )
-
-            Spacer(modifier = Modifier.height(spacing_6))
-
-            // Generate Button (Gradient + Shadow)
-            Button(
-                onClick = onGenerateClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-                    .shadow(
-                        elevation = 16.dp,
-                        shape = RoundedCornerShape(rounded_full),
-                        ambientColor = Primary.copy(alpha = 0.25f)
-                    ),
-                shape = RoundedCornerShape(rounded_full),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(Primary, PrimaryContainer)
-                            ),
-                            shape = RoundedCornerShape(rounded_full)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "GENERAR MENÚ SEMANAL",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 0.8.sp
-                    )
-                }
-            }
-
-            // Estado del generador
-            when {
-                uiState.isGenerating -> {
-                    Text(
-                        text = "Generando plan semanal...",
-                        modifier = Modifier.padding(vertical = spacing_4),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSurfaceVariant,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-                uiState.planSaved -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(rounded_lg))
-                            .background(Secondary.copy(alpha = 0.12f))
-                            .padding(spacing_6)
-                    ) {
-                        Column(verticalArrangement = Arrangement.spacedBy(spacing_4)) {
-                            Text(
-                                text = "✓ Plan generado y guardado",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Secondary
-                            )
-                            Text(
-                                text = "${uiState.recipesFound} receta(s) asignadas. Ve a Mi Plan para verlo.",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = OnSurfaceVariant
-                            )
-                            Button(
-                                onClick = { onGoToPlan() },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(rounded_full),
-                                colors = ButtonDefaults.buttonColors(containerColor = Secondary)
-                            ) {
-                                Text("Ver Mi Plan Semanal", color = Color.White, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                }
-                uiState.error != null -> {
-                    Text(
-                        text = uiState.error,
-                        modifier = Modifier.padding(vertical = spacing_4),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = androidx.compose.ui.graphics.Color(0xFFBA1A1A),
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-
             Spacer(modifier = Modifier.height(spacing_6))
         }
 
-        // Bottom Nav Bar
+        // Bottom nav
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {
-            EditorialBottomNavBar(
-                selectedItem = selectedNavItem,
-                onItemSelected = onNavigate
-            )
+            EditorialBottomNavBar(selectedItem = selectedNavItem, onItemSelected = onNavigate)
         }
 
-        // Top App Bar - Fixed at top
+        // Top bar
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
-                .background(surfaceBg)
+                .background(Surface)
         ) {
-            HomeEditorialTopAppBar(title = "Generador de Menú")
+            HomeEditorialTopAppBar(title = "Generador")
         }
     }
 }
 
-private fun difficultyLabelToSliderValue(difficulty: String): Float {
-    return when (difficulty) {
-        "Fácil" -> 1f
-        "Medio" -> 2f
-        else -> 3f
-    }
-}
-
-private fun sliderValueToDifficultyLabel(value: Float): String {
-    return when (value.toInt()) {
-        1 -> "Fácil"
-        2 -> "Medio"
-        else -> "Difícil"
-    }
-}
-
-// ── Diet Option Chip ────────────────────────────────────────────────
+// ── Hero Banner ──────────────────────────────────────────────────────
 
 @Composable
-private fun DietOptionChip(
+private fun HeroBanner() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(130.dp)
+            .clip(RoundedCornerShape(rounded_lg))
+            .background(
+                Brush.linearGradient(
+                    listOf(Color(0xFF12082A), Color(0xFF2D1B69), Color(0xFF4C27A8))
+                )
+            )
+            .padding(horizontal = spacing_6, vertical = spacing_4)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "MENÚ SEMANAL",
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White.copy(alpha = 0.5f),
+                    letterSpacing = 2.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Tu plan de\ncomidas perfecto",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White,
+                    lineHeight = 28.sp
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "7 días · 21 comidas",
+                    fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.55f)
+                )
+            }
+            Text(text = "🍽️", fontSize = 64.sp)
+        }
+    }
+}
+
+// ── Section Label ────────────────────────────────────────────────────
+
+@Composable
+private fun SectionLabel(text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(bottom = spacing_4)
+    ) {
+        Box(
+            modifier = Modifier
+                .width(3.dp)
+                .height(16.dp)
+                .background(Primary, RoundedCornerShape(2.dp))
+        )
+        Spacer(modifier = Modifier.width(spacing_3))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = OnSurface
+        )
+    }
+}
+
+// ── Diet Pill ────────────────────────────────────────────────────────
+
+@Composable
+private fun DietPill(
     option: DietOption,
     selected: Boolean,
     onClick: () -> Unit,
@@ -388,260 +443,203 @@ private fun DietOptionChip(
 ) {
     val bgColor by animateColorAsState(
         targetValue = if (selected) SecondaryContainer else SurfaceContainerLow,
-        animationSpec = tween(300),
-        label = "chipBg"
+        animationSpec = tween(250),
+        label = "pillBg"
     )
     val textColor by animateColorAsState(
-        targetValue = if (selected) OnSecondaryContainer else OnSurface,
-        animationSpec = tween(300),
-        label = "chipText"
+        targetValue = if (selected) OnSecondaryContainer else OnSurfaceVariant,
+        animationSpec = tween(250),
+        label = "pillText"
     )
+
     Box(
         modifier = modifier
-            .height(88.dp)
+            .height(56.dp)
             .clip(RoundedCornerShape(rounded_md))
             .background(bgColor)
-            .clickable(onClick = onClick)
-            .padding(spacing_4)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = option.emoji,
-                fontSize = 28.sp,
-                textAlign = TextAlign.Center
-            )
+            Text(text = option.emoji, fontSize = 20.sp, textAlign = TextAlign.Center)
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = option.label,
-                style = MaterialTheme.typography.labelSmall,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = textColor,
                 textAlign = TextAlign.Center,
-                fontSize = 11.sp
+                maxLines = 1
             )
         }
     }
 }
 
-// ── Difficulty Slider Card ──────────────────────────────────────────
+// ── Meal Type Card ───────────────────────────────────────────────────
 
 @Composable
-private fun DifficultyCard(
-    level: Float,
-    onLevelChange: (Float) -> Unit,
+private fun MealTypeCard(
+    option: MealTypeOption,
+    isSelected: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val label = when (level.toInt()) {
-        1 -> "Fácil"; 2 -> "Medio"; else -> "Difícil"
-    }
+    val bgColor by animateColorAsState(
+        targetValue = if (isSelected) option.accent.copy(alpha = 0.1f) else SurfaceContainerLow,
+        animationSpec = tween(300),
+        label = "mealBg"
+    )
 
     Box(
         modifier = modifier
+            .height(90.dp)
             .clip(RoundedCornerShape(rounded_lg))
-            .background(SurfaceContainerLow)
+            .background(bgColor)
+            .then(
+                if (isSelected)
+                    Modifier.border(2.dp, option.accent, RoundedCornerShape(rounded_lg))
+                else
+                    Modifier
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.padding(spacing_6),
-            verticalArrangement = Arrangement.spacedBy(spacing_4)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(spacing_2)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "DIFICULTAD MÁXIMA",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = OnSurfaceVariant,
-                    letterSpacing = 1.2.sp
-                )
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Primary,
-                    fontSize = 14.sp
-                )
-            }
-
-            Slider(
-                value = level,
-                onValueChange = onLevelChange,
-                valueRange = 1f..3f,
-                steps = 1,
-                modifier = Modifier.fillMaxWidth(),
-                colors = SliderDefaults.colors(
-                    thumbColor = Primary,
-                    activeTrackColor = Primary,
-                    inactiveTrackColor = SurfaceContainer
-                )
+            Text(text = option.emoji, fontSize = 28.sp, textAlign = TextAlign.Center)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = option.label,
+                fontSize = 11.sp,
+                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.SemiBold,
+                color = if (isSelected) option.accent else OnSurfaceVariant,
+                textAlign = TextAlign.Center
             )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 2.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                listOf("FÁCIL", "MEDIO", "DIFÍCIL").forEach { t ->
-                    Text(
-                        text = t,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Outline,
-                        letterSpacing = (-0.3).sp
-                    )
+        }
+    }
+}
+
+// ── Difficulty Selector ──────────────────────────────────────────────
+
+@Composable
+private fun DifficultySelector(selected: String, onSelect: (String) -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(rounded_lg))
+            .background(SurfaceContainerLow)
+            .padding(spacing_2)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            difficultyOptions.forEach { opt ->
+                val isSelected = opt.label == selected
+                val bg by animateColorAsState(
+                    targetValue = if (isSelected) opt.color else Color.Transparent,
+                    animationSpec = tween(250),
+                    label = "diffBg"
+                )
+                val fg by animateColorAsState(
+                    targetValue = if (isSelected) Color.White else OnSurfaceVariant,
+                    animationSpec = tween(250),
+                    label = "diffFg"
+                )
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(rounded_md))
+                        .background(bg)
+                        .clickable { onSelect(opt.label) }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = opt.emoji, fontSize = 20.sp)
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = opt.label,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = fg
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-// ── Portions Stepper Card ───────────────────────────────────────────
+// ── Portions Stepper ─────────────────────────────────────────────────
 
 @Composable
-private fun PortionsCard(
-    count: Int,
-    onChange: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
+private fun PortionsStepper(count: Int, onChange: (Int) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
             .clip(RoundedCornerShape(rounded_lg))
-            .background(SurfaceContainerHigh)
+            .background(SurfaceContainerLow)
+            .padding(horizontal = spacing_6, vertical = spacing_4),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(modifier = Modifier.padding(spacing_6)) {
+        Column {
             Text(
-                text = "NÚMERO DE PORCIONES",
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                color = OnSurfaceVariant,
-                letterSpacing = 1.2.sp,
-                modifier = Modifier.padding(bottom = spacing_4)
+                text = "Porciones",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp,
+                color = OnSurface
+            )
+            Text(
+                text = "personas por comida",
+                fontSize = 11.sp,
+                color = OnSurfaceVariant
+            )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(spacing_4)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(SurfaceContainerHigh)
+                    .clickable { if (count > 1) onChange(count - 1) },
+                contentAlignment = Alignment.Center
+            ) {
+                Text("−", fontSize = 20.sp, fontWeight = FontWeight.Medium, color = OnSurface)
+            }
+
+            Text(
+                text = "$count",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Primary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.widthIn(min = 28.dp)
             )
 
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(rounded_full))
-                    .background(SurfaceContainerLowest)
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(Primary)
+                    .clickable { onChange(count + 1) },
+                contentAlignment = Alignment.Center
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(spacing_2),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // minus
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .clickable { if (count > 1) onChange(count - 1) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "−",
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Light,
-                            color = OnSurface
-                        )
-                    }
-
-                    Text(
-                        text = "$count",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = OnSurface,
-                        textAlign = TextAlign.Center
-                    )
-
-                    // plus
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(Primary)
-                            .clickable { onChange(count + 1) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = "Aumentar",
-                            tint = OnPrimary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-// ── Recipe Type Chips ───────────────────────────────────────────────
-
-@Composable
-private fun RecipeTypeChips(
-    selected: Set<String>,
-    onToggle: (String) -> Unit
-) {
-    // Row 1: first 2 chips, Row 2: next 2, Row 3: last one
-    Column(verticalArrangement = Arrangement.spacedBy(spacing_3)) {
-        // Build rows manually to wrap
-        val rows = listOf(
-            recipeTypeLabels.take(2),
-            recipeTypeLabels.drop(2).take(2),
-            recipeTypeLabels.drop(4)
-        ).filter { it.isNotEmpty() }
-
-        rows.forEach { rowLabels ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing_3)
-            ) {
-                rowLabels.forEach { label ->
-                    val isSelected = label in selected
-                    val bg by animateColorAsState(
-                        if (isSelected) PrimaryFixed else SurfaceContainerHighest,
-                        tween(300), label = "chipBg"
-                    )
-                    val fg by animateColorAsState(
-                        if (isSelected) OnPrimaryFixed else OnSurfaceVariant,
-                        tween(300), label = "chipFg"
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(rounded_full))
-                            .background(bg)
-                            .clickable { onToggle(label) }
-                            .padding(horizontal = spacing_4, vertical = spacing_3),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(spacing_2)
-                        ) {
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.SemiBold,
-                                color = fg,
-                                fontSize = 12.sp
-                            )
-                            Icon(
-                                imageVector = if (isSelected) Icons.Filled.Check else Icons.Filled.Add,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = fg
-                            )
-                        }
-                    }
-                }
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Aumentar",
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
             }
         }
     }
