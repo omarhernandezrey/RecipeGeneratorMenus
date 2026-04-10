@@ -57,6 +57,7 @@ import com.example.recipe_generator.RecipeGeneratorApp
 import com.example.recipe_generator.domain.model.WeeklyPlan
 import com.example.recipe_generator.presentation.components.EditorialCard
 import com.example.recipe_generator.presentation.components.RecipeImage
+import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
 import com.example.recipe_generator.presentation.theme.Background
 import com.example.recipe_generator.presentation.theme.OnPrimary
 import com.example.recipe_generator.presentation.theme.OnSurface
@@ -130,11 +131,11 @@ fun MyWeeklyPlanScreen(
     val uiState     by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedSlot by remember { mutableStateOf<PlanSlot?>(null) }
 
-    val filledCount = uiState.plan.size
-    val totalSlots  = weeklyPlanDays.size * weeklyPlanMealTypes.size   // 21
-    val progress    = filledCount.toFloat() / totalSlots
-
-    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val filledCount   = uiState.plan.size
+    val totalSlots    = weeklyPlanDays.size * weeklyPlanMealTypes.size   // 21
+    val progress      = filledCount.toFloat() / totalSlots
+    val statusBarTop  = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val bottomNavPad  = editorialBottomBarContentPadding()
 
     Column(
         modifier = modifier
@@ -266,7 +267,8 @@ fun MyWeeklyPlanScreen(
                 plan          = uiState.plan,
                 onSelectSlot  = { day, mealType -> selectedSlot = PlanSlot(day, mealType) },
                 onRemoveMeal  = viewModel::removeMeal,
-                onRecipeClick = onRecipeClick
+                onRecipeClick = onRecipeClick,
+                bottomPadding = bottomNavPad
             )
         }
     }
@@ -292,13 +294,19 @@ private fun WeeklyPlanTable(
     plan: List<WeeklyPlan>,
     onSelectSlot: (String, String) -> Unit,
     onRemoveMeal: (String, String) -> Unit,
-    onRecipeClick: (String) -> Unit
+    onRecipeClick: (String) -> Unit,
+    bottomPadding: Dp = 0.dp
 ) {
     val colW   = 164.dp
     val labelW = 100.dp
 
     Column(
-        modifier = Modifier.padding(spacing_4),
+        modifier = Modifier.padding(
+            start  = spacing_4,
+            end    = spacing_4,
+            top    = spacing_4,
+            bottom = spacing_4 + bottomPadding
+        ),
         verticalArrangement = Arrangement.spacedBy(spacing_3)
     ) {
         // Cabecera — días
