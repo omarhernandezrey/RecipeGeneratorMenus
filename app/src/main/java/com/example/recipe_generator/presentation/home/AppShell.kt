@@ -13,6 +13,7 @@ import com.example.recipe_generator.domain.repository.FavoritesRepository
 import com.example.recipe_generator.domain.repository.UserPrefsRepository
 import com.example.recipe_generator.domain.repository.WeeklyPlanRepository
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
 import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
 import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
 import com.example.recipe_generator.presentation.favorites.FavoritesScreen
@@ -23,6 +24,7 @@ import com.example.recipe_generator.presentation.profile.ProfileHubScreen
 import com.example.recipe_generator.presentation.settings.SettingsScreen
 import com.example.recipe_generator.presentation.settings.SettingsViewModel
 import com.example.recipe_generator.domain.model.Recipe
+import com.example.recipe_generator.domain.usecase.GetRecipeDetailUseCase
 import com.example.recipe_generator.presentation.detail.RecipeDetailBottomSheet
 import com.example.recipe_generator.presentation.myrecipes.MyRecipesScreen
 import com.example.recipe_generator.presentation.weeklyplan.MyWeeklyPlanScreen
@@ -49,6 +51,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AppShell(
     getMenuForDayUseCase: GetMenuForDayUseCase,
+    getRecipeDetailUseCase: GetRecipeDetailUseCase,
     favoritesRepository: FavoritesRepository,
     generateMenuUseCase: GenerateMenuUseCase,
     userPrefsRepository: UserPrefsRepository,
@@ -68,6 +71,11 @@ fun AppShell(
     val favoriteIds by favoritesRepository
         .getFavoriteIds(userId)
         .collectAsStateWithLifecycle(initialValue = emptySet())
+
+    // Receta completa (con ingredientes y pasos) para el modal
+    val fullRecipe: Recipe? by remember(selectedRecipe?.id) {
+        selectedRecipe?.let { r -> getRecipeDetailUseCase(r.id) } ?: flowOf(null)
+    }.collectAsStateWithLifecycle(initialValue = selectedRecipe)
 
     // ── ViewModels ───────────────────────────────────────────────────
     val homeViewModel: HomeViewModel = viewModel(
@@ -272,10 +280,10 @@ fun AppShell(
     // ═══════════════════════════════════════════════════════════════════
     // Modal de detalle — aparece al pulsar cualquier receta en la app
     // ═══════════════════════════════════════════════════════════════════
-    selectedRecipe?.let { recipe ->
+    if (selectedRecipe != null) {
         RecipeDetailBottomSheet(
-            recipe = recipe,
-            isFavorite = recipe.id in favoriteIds,
+            recipe = fullRecipe ?: selectedRecipe!!,
+            isFavorite = (fullRecipe?.id ?: selectedRecipe!!.id) in favoriteIds,
             onToggleFavorite = { recipeId ->
                 coroutineScope.launch {
                     favoritesRepository.toggleFavorite(userId, recipeId)

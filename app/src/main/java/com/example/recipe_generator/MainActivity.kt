@@ -182,6 +182,7 @@ class MainActivity : AppCompatActivity() {
                 val container = (application as RecipeGeneratorApp).container
                 AppShell(
                     getMenuForDayUseCase = container.getMenuForDayUseCase,
+                    getRecipeDetailUseCase = container.getRecipeDetailUseCase,
                     favoritesRepository = container.favoritesRepository,
                     generateMenuUseCase = container.generateMenuUseCase,
                     userPrefsRepository = container.userPrefsRepository,
