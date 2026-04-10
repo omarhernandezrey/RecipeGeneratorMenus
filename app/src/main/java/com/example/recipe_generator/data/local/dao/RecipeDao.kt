@@ -24,10 +24,10 @@ interface RecipeDao {
 
     // ── Queries de recetas ────────────────────────────────────────────
 
-    @Query("SELECT * FROM recipes ORDER BY dayOfWeek, category")
+    @Query("SELECT * FROM recipes ORDER BY dayOfWeek, CASE category WHEN 'Desayuno' THEN 1 WHEN 'Almuerzo' THEN 2 WHEN 'Cena' THEN 3 ELSE 4 END")
     fun getAllRecipes(): Flow<List<RecipeEntity>>
 
-    @Query("SELECT * FROM recipes WHERE dayOfWeek = :day ORDER BY category")
+    @Query("SELECT * FROM recipes WHERE dayOfWeek = :day ORDER BY CASE category WHEN 'Desayuno' THEN 1 WHEN 'Almuerzo' THEN 2 WHEN 'Cena' THEN 3 ELSE 4 END")
     fun getRecipesByDay(day: String): Flow<List<RecipeEntity>>
 
     @Query("SELECT * FROM recipes WHERE isFavorite = 1")

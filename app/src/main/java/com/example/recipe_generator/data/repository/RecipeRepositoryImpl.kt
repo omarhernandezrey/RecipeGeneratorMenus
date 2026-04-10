@@ -40,7 +40,9 @@ class RecipeRepositoryImpl(
         if (recipeDao != null)
             recipeDao.getRecipesByDay(day).map { entities -> entities.map { it.toDomain() } }
         else
-            inMemoryRecipes!!.map { all -> all.filter { it.dayOfWeek == day } }
+            inMemoryRecipes!!.map { all ->
+                all.filter { it.dayOfWeek == day }.sortedBy { mealTypeOrder(it.category) }
+            }
 
     override fun getRecipesByCategory(category: String): Flow<List<Recipe>> =
         if (recipeDao != null)
@@ -98,4 +100,11 @@ class RecipeRepositoryImpl(
     override suspend fun count(): Int =
         if (recipeDao != null) recipeDao.count()
         else inMemoryRecipes!!.value.size
+}
+
+private fun mealTypeOrder(category: String) = when (category) {
+    "Desayuno" -> 1
+    "Almuerzo" -> 2
+    "Cena"     -> 3
+    else       -> 4
 }

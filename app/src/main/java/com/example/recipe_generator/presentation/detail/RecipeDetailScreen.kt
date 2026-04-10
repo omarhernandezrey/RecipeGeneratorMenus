@@ -35,11 +35,14 @@ import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -83,6 +86,7 @@ import com.example.recipe_generator.presentation.theme.spacing_4
 import com.example.recipe_generator.presentation.theme.spacing_5
 import com.example.recipe_generator.presentation.theme.spacing_6
 import com.example.recipe_generator.presentation.theme.spacing_8
+import com.example.recipe_generator.presentation.theme.spacing_10
 import java.util.Locale
 
 @Composable
@@ -571,6 +575,339 @@ private fun StepsList(recipe: Recipe) {
                     )
                 }
             }
+        }
+    }
+}
+
+// ─── Modal Bottom Sheet ───────────────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RecipeDetailBottomSheet(
+    recipe: Recipe,
+    isFavorite: Boolean,
+    onToggleFavorite: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Background,
+        contentColor = OnSurface,
+        dragHandle = null
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+        ) {
+            // ── Hero: imagen + drag handle superpuesto + chips ──────────
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+            ) {
+                RecipeImage(
+                    recipeTitle = recipe.title,
+                    imageRes    = recipe.imageRes,
+                    modifier    = Modifier.fillMaxSize()
+                )
+
+                // Gradiente inferior para que los chips sean legibles
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colorStops = arrayOf(
+                                    0.0f to Color.Transparent,
+                                    0.55f to Color.Transparent,
+                                    1.0f to Color.Black.copy(alpha = 0.72f)
+                                )
+                            )
+                        )
+                )
+
+                // Drag handle encima de la imagen
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = spacing_3),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(40.dp)
+                            .height(4.dp)
+                            .clip(RoundedCornerShape(rounded_full))
+                            .background(Color.White.copy(alpha = 0.55f))
+                    )
+                }
+
+                // Chips de info rápida en la parte inferior
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(horizontal = spacing_6, vertical = spacing_5),
+                    horizontalArrangement = Arrangement.spacedBy(spacing_2)
+                ) {
+                    if (recipe.timeInMinutes > 0) {
+                        QuickInfoChip(
+                            icon = Icons.Outlined.AccessTime,
+                            text = "${recipe.timeInMinutes} min",
+                            iconTint = Primary
+                        )
+                    }
+                    if (recipe.difficulty.isNotBlank()) {
+                        QuickInfoChip(
+                            icon = Icons.Outlined.Tune,
+                            text = recipe.difficulty,
+                            iconTint = Primary
+                        )
+                    }
+                    QuickInfoChip(
+                        icon = Icons.Filled.Star,
+                        text = String.format(Locale.US, "%.1f", recipe.rating),
+                        iconTint = Tertiary
+                    )
+                }
+            }
+
+            // ── Bloque de encabezado: categoría + título + descripción ──
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Background)
+                    .padding(horizontal = spacing_6, vertical = spacing_6),
+                verticalArrangement = Arrangement.spacedBy(spacing_3)
+            ) {
+                // Fila: badge categoría + día
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(rounded_full),
+                        color = PrimaryFixedDim.copy(alpha = 0.22f)
+                    ) {
+                        Text(
+                            text = recipe.category.uppercase(),
+                            modifier = Modifier.padding(horizontal = spacing_4, vertical = spacing_2),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Primary,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.4.sp
+                        )
+                    }
+                    if (recipe.dayOfWeek.isNotBlank()) {
+                        Text(
+                            text = recipe.dayOfWeek,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = OnSurfaceVariant,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                // Título
+                Text(
+                    text = recipe.title,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = OnSurface,
+                    fontWeight = FontWeight.ExtraBold
+                )
+
+                // Descripción
+                if (recipe.description.isNotBlank()) {
+                    Text(
+                        text = recipe.description,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = OnSurfaceVariant,
+                        lineHeight = 22.sp
+                    )
+                }
+            }
+
+            // ── Botón favorito ──────────────────────────────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Background)
+                    .padding(horizontal = spacing_6)
+            ) {
+                ActionHub(
+                    isFavorite = isFavorite,
+                    onFavoriteClick = { onToggleFavorite(recipe.id) }
+                )
+            }
+
+            // ── Separador ───────────────────────────────────────────────
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = spacing_6, vertical = spacing_6)
+                    .height(1.dp)
+                    .background(OnSurfaceVariant.copy(alpha = 0.1f))
+            )
+
+            // ── Estadísticas nutricionales en fila ──────────────────────
+            if (recipe.calories > 0 || recipe.proteinGrams > 0) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Background)
+                        .padding(horizontal = spacing_6)
+                ) {
+                    SheetSectionLabel(text = "Información nutricional")
+                    Spacer(modifier = Modifier.height(spacing_4))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(spacing_3)
+                    ) {
+                        SheetNutrientTile(
+                            modifier   = Modifier.weight(1f),
+                            label      = "Calorías",
+                            value      = "${recipe.calories}",
+                            unit       = "kcal",
+                            accentColor = Primary
+                        )
+                        SheetNutrientTile(
+                            modifier = Modifier.weight(1f),
+                            label    = "Proteína",
+                            value    = "${recipe.proteinGrams}",
+                            unit     = "g"
+                        )
+                        SheetNutrientTile(
+                            modifier = Modifier.weight(1f),
+                            label    = "Carbos",
+                            value    = "${recipe.carbsGrams}",
+                            unit     = "g"
+                        )
+                        SheetNutrientTile(
+                            modifier = Modifier.weight(1f),
+                            label    = "Grasas",
+                            value    = "${recipe.fatGrams}",
+                            unit     = "g"
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = spacing_6, vertical = spacing_6)
+                        .height(1.dp)
+                        .background(OnSurfaceVariant.copy(alpha = 0.1f))
+                )
+            }
+
+            // ── Ingredientes ────────────────────────────────────────────
+            if (recipe.ingredients.isNotEmpty() || recipe.ingredientTags.isNotEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Background)
+                        .padding(horizontal = spacing_6)
+                ) {
+                    SheetSectionLabel(text = "Ingredientes")
+                    Spacer(modifier = Modifier.height(spacing_4))
+                    IngredientsList(recipe = recipe)
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = spacing_6, vertical = spacing_6)
+                        .height(1.dp)
+                        .background(OnSurfaceVariant.copy(alpha = 0.1f))
+                )
+            }
+
+            // ── Pasos de preparación ────────────────────────────────────
+            if (recipe.steps.isNotEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Background)
+                        .padding(horizontal = spacing_6)
+                ) {
+                    SheetSectionLabel(text = "Preparación")
+                    Spacer(modifier = Modifier.height(spacing_4))
+                    StepsList(recipe = recipe)
+                }
+            }
+
+            // Espacio inferior para gestos del sistema
+            Spacer(modifier = Modifier.height(spacing_10))
+        }
+    }
+}
+
+@Composable
+private fun SheetSectionLabel(text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacing_3)
+    ) {
+        Box(
+            modifier = Modifier
+                .width(4.dp)
+                .height(20.dp)
+                .clip(RoundedCornerShape(rounded_full))
+                .background(Primary)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleLarge,
+            color = OnSurface,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun SheetNutrientTile(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    unit: String,
+    accentColor: Color = OnSurface
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(spacing_3),
+        color = SurfaceContainerLow
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = spacing_4, horizontal = spacing_2),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(spacing_1)
+        ) {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleLarge,
+                color = accentColor,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = unit,
+                style = MaterialTheme.typography.labelSmall,
+                color = OnSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = OnSurfaceVariant,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

@@ -22,6 +22,8 @@ import com.example.recipe_generator.presentation.generator.MenuGeneratorViewMode
 import com.example.recipe_generator.presentation.profile.ProfileHubScreen
 import com.example.recipe_generator.presentation.settings.SettingsScreen
 import com.example.recipe_generator.presentation.settings.SettingsViewModel
+import com.example.recipe_generator.domain.model.Recipe
+import com.example.recipe_generator.presentation.detail.RecipeDetailBottomSheet
 import com.example.recipe_generator.presentation.myrecipes.MyRecipesScreen
 import com.example.recipe_generator.presentation.weeklyplan.MyWeeklyPlanScreen
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
@@ -58,8 +60,14 @@ fun AppShell(
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     var isProfileOpen by remember { mutableStateOf(false) }
+    var selectedRecipe by remember { mutableStateOf<Recipe?>(null) }
     val coroutineScope = rememberCoroutineScope()
     val isSyncingValue by isSyncing.collectAsStateWithLifecycle()
+
+    // Favoritos hoisted para el modal y para Tab 0
+    val favoriteIds by favoritesRepository
+        .getFavoriteIds(userId)
+        .collectAsStateWithLifecycle(initialValue = emptySet())
 
     // ── ViewModels ───────────────────────────────────────────────────
     val homeViewModel: HomeViewModel = viewModel(
@@ -125,9 +133,6 @@ fun AppShell(
         0 -> {
             val selectedDay by homeViewModel.selectedDay.collectAsStateWithLifecycle()
             val recipes by homeViewModel.recipes.collectAsStateWithLifecycle()
-            val favoriteIds by favoritesRepository
-                .getFavoriteIds(userId)
-                .collectAsStateWithLifecycle(initialValue = emptySet())
 
             RecipeListScreen(
                 selectedDay = selectedDay,
@@ -141,7 +146,7 @@ fun AppShell(
                         favoritesRepository.toggleFavorite(userId, recipeId)
                     }
                 },
-                onRecipeSelected = { /* TODO: navegar a detalle */ },
+                onRecipeSelected = { selectedRecipe = it },
                 onProfileClick = { isProfileOpen = true },
                 isSyncing = isSyncingValue
             )
@@ -166,7 +171,7 @@ fun AppShell(
                 onCategorySelected = favoritesViewModel::onCategorySelected,
                 selectedNavItem = 1,
                 onNavItemSelected = onNavigate,
-                onRecipeSelected = { /* TODO: navegar a detalle */ },
+                onRecipeSelected = { selectedRecipe = it },
                 onRemoveFavorite = { recipeId ->
                     coroutineScope.launch {
                         favoritesRepository.toggleFavorite(userId, recipeId)
@@ -262,5 +267,21 @@ fun AppShell(
                 onLogout = onLogout
             )
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Modal de detalle — aparece al pulsar cualquier receta en la app
+    // ═══════════════════════════════════════════════════════════════════
+    selectedRecipe?.let { recipe ->
+        RecipeDetailBottomSheet(
+            recipe = recipe,
+            isFavorite = recipe.id in favoriteIds,
+            onToggleFavorite = { recipeId ->
+                coroutineScope.launch {
+                    favoritesRepository.toggleFavorite(userId, recipeId)
+                }
+            },
+            onDismiss = { selectedRecipe = null }
+        )
     }
 }

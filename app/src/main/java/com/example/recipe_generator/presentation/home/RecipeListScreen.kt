@@ -9,7 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.material3.*
@@ -17,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +27,6 @@ import com.example.recipe_generator.presentation.components.EditorialBottomNavBa
 import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
 import com.example.recipe_generator.presentation.components.InfoChip
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
-import com.example.recipe_generator.presentation.components.editorialFabBottomPadding
 import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
 import com.example.recipe_generator.presentation.components.RecipeImage
 import com.example.recipe_generator.domain.model.Recipe
@@ -115,33 +112,7 @@ fun RecipeListScreen(
             )
         }
 
-        // 4. FAB (Botón de la estrella) - AL FINAL PARA QUE ESTÉ SIEMPRE ENCIMA
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = spacing_6, bottom = editorialFabBottomPadding())
-                .size(64.dp)
-                .shadow(
-                    elevation = 16.dp,
-                    shape = RoundedCornerShape(rounded_full)
-                )
-                .clip(RoundedCornerShape(rounded_full))
-                .background(
-                    Brush.linearGradient(listOf(Primary, PrimaryContainer))
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            IconButton(onClick = {}) {
-                Icon(
-                    imageVector = Icons.Filled.Star,
-                    contentDescription = "Sorpréndeme",
-                    tint = Color.White,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-        }
-
-        // 5. Barra superior
+        // 4. Barra superior
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
