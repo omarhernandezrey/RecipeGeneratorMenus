@@ -22,11 +22,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -78,23 +73,21 @@ import com.example.recipe_generator.presentation.theme.spacing_6
 
 // ── Data ────────────────────────────────────────────────────────────
 
-private data class DietOption(val iconName: String, val label: String)
+private data class DietOption(val emoji: String, val label: String)
 
 private val dietOptions = listOf(
-    DietOption("eco", "Vegetariano"),
-    DietOption("energy_savings_leaf", "Vegano"),
-    DietOption("grain", "Sin gluten"),
-    DietOption("opacity", "Sin lácteos"),
-    DietOption("nutrition", "Keto"),
-    DietOption("egg", "Paleo")
+    DietOption("🥗", "Vegetariano"),
+    DietOption("🌿", "Vegano"),
+    DietOption("🌾", "Sin gluten"),
+    DietOption("🥛", "Sin lácteos"),
+    DietOption("🥑", "Keto"),
+    DietOption("🍖", "Paleo")
 )
 
 private val recipeTypeLabels = listOf(
-    "Desayunos",
-    "Cenas Ligeras",
-    "Almuerzos Ejecutivos",
-    "Postres Healthy",
-    "Snacks"
+    "Desayuno",
+    "Almuerzo",
+    "Cena"
 )
 
 // ── Main Screen ─────────────────────────────────────────────────────
@@ -403,12 +396,6 @@ private fun DietOptionChip(
         animationSpec = tween(300),
         label = "chipText"
     )
-    val iconColor by animateColorAsState(
-        targetValue = if (selected) OnSecondaryContainer else Secondary,
-        animationSpec = tween(300),
-        label = "chipIcon"
-    )
-
     Box(
         modifier = modifier
             .height(88.dp)
@@ -422,19 +409,10 @@ private fun DietOptionChip(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = when(option.iconName) {
-                    "eco" -> Icons.Filled.Favorite
-                    "energy_savings_leaf" -> Icons.Filled.FavoriteBorder
-                    "grain" -> Icons.Filled.Home
-                    "opacity" -> Icons.Filled.Search
-                    "nutrition" -> Icons.Filled.Settings
-                    "egg" -> Icons.Filled.Favorite
-                    else -> Icons.Filled.Favorite
-                },
-                contentDescription = option.label,
-                modifier = Modifier.size(24.dp),
-                tint = iconColor
+            Text(
+                text = option.emoji,
+                fontSize = 28.sp,
+                textAlign = TextAlign.Center
             )
             Text(
                 text = option.label,

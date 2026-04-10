@@ -581,7 +581,9 @@ fun getAllRecipesAsDomainModel(): List<com.example.recipe_generator.domain.model
                         unit = ""
                     )
                 },
-                ingredientTags = legacyRecipe.ingredientTags,
+                // Combina ingredientTags + nombres de ingredientes principales
+                // para que el filtro de dieta pueda detectar carne, gluten, lácteos, etc.
+                ingredientTags = (legacyRecipe.ingredientTags + legacyRecipe.ingredients).distinct(),
                 steps = legacyRecipe.steps.mapIndexed { index, recipeStep ->
                     com.example.recipe_generator.domain.model.RecipeStep(
                         stepNumber = index + 1,

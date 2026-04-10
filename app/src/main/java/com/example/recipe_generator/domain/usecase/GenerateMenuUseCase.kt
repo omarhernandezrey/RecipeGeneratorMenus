@@ -52,10 +52,7 @@ class GenerateMenuUseCase(
 
     private fun matchesType(category: String, selectedTypes: Set<String>): Boolean {
         if (selectedTypes.isEmpty()) return true
-        return selectedTypes.any { type ->
-            category.contains(type, ignoreCase = true) ||
-            type.contains(category, ignoreCase = true)
-        }
+        return selectedTypes.any { type -> category.equals(type, ignoreCase = true) }
     }
 
     /**

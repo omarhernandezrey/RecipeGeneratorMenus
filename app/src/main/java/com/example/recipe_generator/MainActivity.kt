@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.recipe_generator.data.connectivity.NetworkConnectivityObserver
+import com.example.recipe_generator.domain.model.UserPreferences
 import com.example.recipe_generator.presentation.auth.AuthScreen
 import com.example.recipe_generator.presentation.auth.AuthViewModel
 import com.example.recipe_generator.presentation.home.AppShell
@@ -52,14 +53,24 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            RecipeGeneratorTheme {
-                AppContent()
-            }
+            AppContent()
         }
     }
 
     @Composable
     private fun AppContent() {
+        val container = (application as RecipeGeneratorApp).container
+        val prefs by container.userPrefsRepository.getUserPreferences()
+            .collectAsState(initial = UserPreferences())
+        val darkTheme = prefs.theme == "Oscuro"
+
+        RecipeGeneratorTheme(darkTheme = darkTheme) {
+        AppContentInner()
+        }
+    }
+
+    @Composable
+    private fun AppContentInner() {
         val authViewModel: AuthViewModel = viewModel(
             factory = AuthViewModelFactory(
                 authRepository = (application as RecipeGeneratorApp).container.authRepository
