@@ -32,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -41,10 +40,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import com.example.recipe_generator.RecipeGeneratorApp
 import com.example.recipe_generator.domain.model.WeeklyPlan
 import com.example.recipe_generator.presentation.components.EditorialCard
+import com.example.recipe_generator.presentation.components.RecipeImage
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
@@ -58,8 +57,6 @@ import com.example.recipe_generator.presentation.theme.spacing_2
 import com.example.recipe_generator.presentation.theme.spacing_3
 import com.example.recipe_generator.presentation.theme.spacing_4
 import com.example.recipe_generator.presentation.theme.spacing_6
-import java.io.File
-
 private data class PlanSlot(val day: String, val mealType: String)
 
 private val weeklyPlanDays = listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
@@ -244,38 +241,15 @@ private fun WeeklyPlanCell(
                 }
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(spacing_2)) {
-                    // Imagen de la receta si existe
-                    if (entry.imageRes.isNotBlank()) {
-                        val model: Any = if (entry.imageRes.startsWith("http"))
-                            entry.imageRes else File(entry.imageRes)
-                        AsyncImage(
-                            model          = model,
-                            contentDescription = entry.recipeTitle,
-                            contentScale   = ContentScale.Crop,
-                            modifier       = Modifier
-                                .fillMaxWidth()
-                                .height(80.dp)
-                                .clip(RoundedCornerShape(rounded_lg))
-                                .background(PrimaryContainer.copy(alpha = 0.15f))
-                        )
-                    } else {
-                        // Placeholder letra
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .clip(RoundedCornerShape(rounded_lg))
-                                .background(PrimaryContainer.copy(alpha = 0.2f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = entry.recipeTitle.take(2).uppercase(),
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Primary
-                            )
-                        }
-                    }
+                    // Imagen de la receta — carga automáticamente si no hay URL
+                    RecipeImage(
+                        recipeTitle = entry.recipeTitle,
+                        imageRes    = entry.imageRes,
+                        modifier    = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp)
+                            .clip(RoundedCornerShape(rounded_lg))
+                    )
 
                     Text(
                         text = entry.recipeTitle.ifBlank { "Receta" },

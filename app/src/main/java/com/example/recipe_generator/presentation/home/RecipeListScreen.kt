@@ -13,21 +13,16 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import coil.compose.AsyncImage
-import com.example.recipe_generator.data.remote.PixabayApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.recipe_generator.R
 import com.example.recipe_generator.presentation.components.DayTabLayout
 import com.example.recipe_generator.presentation.components.DifficultyChip
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
@@ -36,6 +31,7 @@ import com.example.recipe_generator.presentation.components.InfoChip
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
 import com.example.recipe_generator.presentation.components.editorialFabBottomPadding
 import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
+import com.example.recipe_generator.presentation.components.RecipeImage
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.presentation.theme.*
 
@@ -222,8 +218,8 @@ fun RecipeCard(
                     .clickable(onClick = onClick)
             ) {
                 RecipeImage(
-                    imageRes    = recipe.imageRes,
                     recipeTitle = recipe.title,
+                    imageRes    = recipe.imageRes,
                     modifier    = Modifier.fillMaxSize()
                 )
 
@@ -275,36 +271,3 @@ fun RecipeCard(
     }
 }
 
-@Composable
-private fun RecipeImage(
-    imageRes: String,
-    recipeTitle: String,
-    modifier: Modifier = Modifier
-) {
-    var url by remember(recipeTitle) { mutableStateOf(imageRes) }
-
-    LaunchedEffect(recipeTitle) {
-        if (url.isBlank()) {
-            val results = PixabayApi.searchImages("$recipeTitle comida")
-            url = results.firstOrNull()?.thumbUrl.orEmpty()
-        }
-    }
-
-    if (url.startsWith("http")) {
-        AsyncImage(
-            model           = url,
-            contentDescription = recipeTitle,
-            modifier        = modifier,
-            contentScale    = ContentScale.Crop,
-            placeholder     = painterResource(R.drawable.img_placeholder),
-            error           = painterResource(R.drawable.img_placeholder)
-        )
-    } else {
-        androidx.compose.foundation.Image(
-            painter         = painterResource(R.drawable.img_placeholder),
-            contentDescription = recipeTitle,
-            modifier        = modifier,
-            contentScale    = ContentScale.Crop
-        )
-    }
-}

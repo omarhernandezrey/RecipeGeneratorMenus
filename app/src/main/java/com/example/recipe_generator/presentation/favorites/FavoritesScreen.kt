@@ -42,17 +42,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.recipe_generator.R
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.HomeEditorialTopAppBar
+import com.example.recipe_generator.presentation.components.RecipeImage
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
 import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
 import com.example.recipe_generator.presentation.theme.Background
@@ -249,11 +247,10 @@ private fun FavoriteGridCard(
                     .fillMaxWidth()
                     .height(240.dp)
             ) {
-                androidx.compose.foundation.Image(
-                    painter = painterResource(id = R.drawable.img_placeholder),
-                    contentDescription = recipe.title,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                RecipeImage(
+                    recipeTitle = recipe.title,
+                    imageRes    = recipe.imageRes,
+                    modifier    = Modifier.fillMaxSize()
                 )
 
                 IconButton(
@@ -332,11 +329,10 @@ private fun FavoriteFeaturedCard(
                         .weight(1f)
                         .height(280.dp)
                 ) {
-                    androidx.compose.foundation.Image(
-                        painter = painterResource(id = R.drawable.img_placeholder),
-                        contentDescription = recipe.title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                    RecipeImage(
+                        recipeTitle = recipe.title,
+                        imageRes    = recipe.imageRes,
+                        modifier    = Modifier.fillMaxSize()
                     )
                 }
 
@@ -353,11 +349,10 @@ private fun FavoriteFeaturedCard(
                         .fillMaxWidth()
                         .height(240.dp)
                 ) {
-                    androidx.compose.foundation.Image(
-                        painter = painterResource(id = R.drawable.img_placeholder),
-                        contentDescription = recipe.title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                    RecipeImage(
+                        recipeTitle = recipe.title,
+                        imageRes    = recipe.imageRes,
+                        modifier    = Modifier.fillMaxSize()
                     )
                 }
 
