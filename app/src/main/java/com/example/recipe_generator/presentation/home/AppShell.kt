@@ -18,7 +18,6 @@ import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
 import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
 import com.example.recipe_generator.presentation.favorites.FavoritesScreen
 import com.example.recipe_generator.presentation.favorites.FavoritesViewModel
-import com.example.recipe_generator.presentation.generator.MenuGeneratorScreen
 import com.example.recipe_generator.presentation.generator.MenuGeneratorViewModel
 import com.example.recipe_generator.presentation.profile.ProfileHubScreen
 import com.example.recipe_generator.presentation.settings.SettingsScreen
@@ -26,8 +25,8 @@ import com.example.recipe_generator.presentation.settings.SettingsViewModel
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.domain.usecase.GetRecipeDetailUseCase
 import com.example.recipe_generator.presentation.detail.RecipeDetailBottomSheet
-import com.example.recipe_generator.presentation.myrecipes.MyRecipesScreen
 import com.example.recipe_generator.presentation.weeklyplan.MyWeeklyPlanScreen
+import com.example.recipe_generator.presentation.unified.UnifiedRecipesScreen
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
 import androidx.compose.foundation.layout.Box
@@ -216,56 +215,36 @@ fun AppShell(
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // Tab 3: Mis Recetas — MyRecipesScreen (E-01)
+        // Tab 3: Cocina Personal — UnifiedRecipesScreen (Generador + Mis Recetas)
         // ═══════════════════════════════════════════════════════════════
         3 -> {
-            Box(modifier = Modifier.fillMaxSize()) {
-                MyRecipesScreen(
-                    modifier = Modifier.padding(bottom = editorialBottomBarContentPadding()),
-                    onBack = { selectedTab = 0 }
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .align(Alignment.BottomCenter),
-                    contentAlignment = Alignment.BottomCenter
-                ) {
-                    EditorialBottomNavBar(selectedItem = 3, onItemSelected = onNavigate)
-                }
-            }
-        }
-
-        // ═══════════════════════════════════════════════════════════════
-        // Tab 4: Generador — MenuGeneratorScreen
-        // ═══════════════════════════════════════════════════════════════
-        4 -> {
             val selectedDiets      by generatorViewModel.selectedDiets.collectAsStateWithLifecycle()
             val selectedDifficulty by generatorViewModel.maxDifficulty.collectAsStateWithLifecycle()
             val portions           by generatorViewModel.portions.collectAsStateWithLifecycle()
             val selectedTypes      by generatorViewModel.selectedTypes.collectAsStateWithLifecycle()
             val generatorUiState   by generatorViewModel.uiState.collectAsStateWithLifecycle()
 
-            MenuGeneratorScreen(
-                selectedNavItem    = 4,
-                selectedDiets      = selectedDiets,
-                onToggleDiet       = generatorViewModel::toggleDiet,
-                selectedDifficulty = selectedDifficulty,
+            UnifiedRecipesScreen(
+                selectedNavItem      = 3,
+                onNavItemSelected    = onNavigate,
+                selectedDiets        = selectedDiets,
+                onToggleDiet         = generatorViewModel::toggleDiet,
+                selectedDifficulty   = selectedDifficulty,
                 onDifficultySelected = generatorViewModel::setDifficulty,
-                portions           = portions,
-                onPortionsChange   = generatorViewModel::setPortions,
-                selectedRecipeTypes = selectedTypes,
-                onToggleRecipeType = generatorViewModel::toggleType,
-                uiState            = generatorUiState,
-                onGenerateClick    = generatorViewModel::generateAndSavePlan,
-                onGoToPlan         = { selectedTab = 2 },
-                onNavigate         = onNavigate
+                portions             = portions,
+                onPortionsChange     = generatorViewModel::setPortions,
+                selectedRecipeTypes  = selectedTypes,
+                onToggleRecipeType   = generatorViewModel::toggleType,
+                generatorUiState     = generatorUiState,
+                onGenerateClick      = generatorViewModel::generateAndSavePlan,
+                onGoToPlan           = { selectedTab = 2 }
             )
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // Tab 5: Ajustes — SettingsScreen
+        // Tab 4: Ajustes — SettingsScreen
         // ═══════════════════════════════════════════════════════════════
-        5 -> {
+        4 -> {
             val prefs by settingsViewModel.preferences.collectAsStateWithLifecycle()
 
             SettingsScreen(
@@ -277,7 +256,7 @@ fun AppShell(
                 onThemeSelect = settingsViewModel::saveTheme,
                 selectedLanguage = prefs.language,
                 onLanguageSelect = settingsViewModel::saveLanguage,
-                selectedNavItem = 5,
+                selectedNavItem = 4,
                 onNavItemSelected = onNavigate,
                 onLogout = onLogout
             )

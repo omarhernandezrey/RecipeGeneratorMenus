@@ -73,7 +73,8 @@ private sealed interface MyRecipesRoute {
 @Composable
 fun MyRecipesScreen(
     modifier: Modifier = Modifier,
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    embeddedMode: Boolean = false
 ) {
     val appContainer = (LocalContext.current.applicationContext as RecipeGeneratorApp).container
     val userId = remember(appContainer) { appContainer.requireAuthenticatedUserId() }
@@ -102,6 +103,7 @@ fun MyRecipesScreen(
         MyRecipesRoute.List -> MyRecipesListContent(
             modifier = modifier,
             onBack = onBack,
+            showHeader = !embeddedMode,
             onCreateRecipe = { route = MyRecipesRoute.Create },
             onSearchRecipes = { route = MyRecipesRoute.Search },
             onEditRecipe = { recipe -> route = MyRecipesRoute.Edit(recipe) }
@@ -113,6 +115,7 @@ fun MyRecipesScreen(
 private fun MyRecipesListContent(
     modifier: Modifier,
     onBack: () -> Unit,
+    showHeader: Boolean = true,
     onCreateRecipe: () -> Unit,
     onSearchRecipes: () -> Unit,
     onEditRecipe: (UserRecipe) -> Unit
@@ -134,42 +137,44 @@ private fun MyRecipesListContent(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing_4, vertical = spacing_4),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = OnSurface
-                    )
-                }
-                Column(
+            if (showHeader) {
+                Row(
                     modifier = Modifier
-                        .padding(start = spacing_2)
-                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(horizontal = spacing_4, vertical = spacing_4),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Mis recetas",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = OnSurface
-                    )
-                    Text(
-                        text = "${recipes.size} recetas creadas por el usuario",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSurfaceVariant
-                    )
-                }
-                IconButton(onClick = onSearchRecipes) {
-                    Icon(
-                        imageVector = Icons.Outlined.TravelExplore,
-                        contentDescription = "Buscar recetas en internet",
-                        tint = Primary
-                    )
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = OnSurface
+                        )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .padding(start = spacing_2)
+                            .weight(1f)
+                    ) {
+                        Text(
+                            text = "Mis recetas",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = OnSurface
+                        )
+                        Text(
+                            text = "${recipes.size} recetas creadas por el usuario",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = OnSurfaceVariant
+                        )
+                    }
+                    IconButton(onClick = onSearchRecipes) {
+                        Icon(
+                            imageVector = Icons.Outlined.TravelExplore,
+                            contentDescription = "Buscar recetas en internet",
+                            tint = Primary
+                        )
+                    }
                 }
             }
 
