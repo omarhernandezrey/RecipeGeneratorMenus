@@ -4,6 +4,7 @@ package com.example.recipe_generator.di
 
 import android.content.Context
 import com.example.recipe_generator.data.local.AppDatabase
+import com.example.recipe_generator.data.repository.AppNotificationRepositoryImpl
 import com.example.recipe_generator.data.repository.FirebaseAuthRepository
 import com.example.recipe_generator.data.repository.MockAuthRepository
 import com.example.recipe_generator.data.repository.RecipeRepositoryImpl
@@ -14,6 +15,7 @@ import com.example.recipe_generator.data.repository.UserRecipeRepositoryImpl
 import com.example.recipe_generator.data.repository.WeeklyPlanRepositoryImpl
 import com.example.recipe_generator.data.sync.FirestoreSyncService
 import com.example.recipe_generator.data.sync.FirestoreWeeklyPlanSync
+import com.example.recipe_generator.domain.repository.AppNotificationRepository
 import com.example.recipe_generator.domain.repository.AuthRepository
 import com.example.recipe_generator.domain.repository.FavoritesRepository
 import com.example.recipe_generator.domain.repository.RecipeRepository
@@ -114,6 +116,10 @@ class AppContainer(private val context: Context) {
 
     val userProfileRepository: UserProfileRepository by lazy {
         UserProfileRepositoryImpl(database.userProfileDao())
+    }
+
+    val appNotificationRepository: AppNotificationRepository by lazy {
+        AppNotificationRepositoryImpl(database.appNotificationDao())
     }
 
     val firestoreSyncService: FirestoreSyncService by lazy {

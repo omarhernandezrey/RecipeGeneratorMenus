@@ -26,6 +26,7 @@ import androidx.compose.material.icons.outlined.RestaurantMenu
 import androidx.compose.material.icons.outlined.TravelExplore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,22 +41,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.recipe_generator.RecipeGeneratorApp
 import com.example.recipe_generator.domain.model.UserRecipe
 import com.example.recipe_generator.presentation.components.EditorialCard
+import com.example.recipe_generator.presentation.components.editorialFabBottomPadding
 import com.example.recipe_generator.presentation.profile.rememberProfileImage
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
-import com.example.recipe_generator.presentation.theme.PrimaryContainer
 import com.example.recipe_generator.presentation.theme.Surface
+import com.example.recipe_generator.presentation.theme.SurfaceContainerLow
 import com.example.recipe_generator.presentation.theme.rounded_full
 import com.example.recipe_generator.presentation.theme.rounded_lg
+import com.example.recipe_generator.presentation.theme.rounded_md
 import com.example.recipe_generator.presentation.theme.spacing_10
 import com.example.recipe_generator.presentation.theme.spacing_2
 import com.example.recipe_generator.presentation.theme.spacing_3
@@ -63,56 +69,60 @@ import com.example.recipe_generator.presentation.theme.spacing_4
 import com.example.recipe_generator.presentation.theme.spacing_6
 import kotlinx.coroutines.launch
 
+private val ErrorRed = Color(0xFFBA1A1A)
+
 private sealed interface MyRecipesRoute {
-    data object List : MyRecipesRoute
+    data object List   : MyRecipesRoute
     data object Create : MyRecipesRoute
     data object Search : MyRecipesRoute
-    data class Edit(val recipe: UserRecipe) : MyRecipesRoute
+    data class  Edit(val recipe: UserRecipe) : MyRecipesRoute
 }
 
 @Composable
 fun MyRecipesScreen(
     modifier: Modifier = Modifier,
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    embeddedMode: Boolean = false
 ) {
     val appContainer = (LocalContext.current.applicationContext as RecipeGeneratorApp).container
     val userId = remember(appContainer) { appContainer.requireAuthenticatedUserId() }
     var route by remember { mutableStateOf<MyRecipesRoute>(MyRecipesRoute.List) }
 
-    when (val currentRoute = route) {
+    when (val current = route) {
         MyRecipesRoute.Create -> CreateRecipeScreen(
-            onBack = { route = MyRecipesRoute.List },
+            onBack  = { route = MyRecipesRoute.List },
             onSaved = { route = MyRecipesRoute.List }
         )
-
         is MyRecipesRoute.Edit -> EditRecipeScreen(
-            recipe = currentRoute.recipe,
-            onBack = { route = MyRecipesRoute.List },
+            recipe  = current.recipe,
+            onBack  = { route = MyRecipesRoute.List },
             onSaved = { route = MyRecipesRoute.List }
         )
-
         MyRecipesRoute.Search -> RecipeSearchScreen(
-            userId = userId,
+            userId               = userId,
             userRecipeRepository = appContainer.userRecipeRepository,
             firestoreSyncService = appContainer.firestoreSyncService,
-            onBack = { route = MyRecipesRoute.List },
-            onImported = { route = MyRecipesRoute.List }
+            onBack               = { route = MyRecipesRoute.List },
+            onImported           = { route = MyRecipesRoute.List }
         )
-
         MyRecipesRoute.List -> MyRecipesListContent(
-            modifier = modifier,
-            onBack = onBack,
-            onCreateRecipe = { route = MyRecipesRoute.Create },
+            modifier        = modifier,
+            onBack          = onBack,
+            showHeader      = !embeddedMode,
+            onCreateRecipe  = { route = MyRecipesRoute.Create },
             onSearchRecipes = { route = MyRecipesRoute.Search },
-            onEditRecipe = { recipe -> route = MyRecipesRoute.Edit(recipe) }
+            onEditRecipe    = { recipe -> route = MyRecipesRoute.Edit(recipe) }
         )
     }
 }
+
+// ── List content ─────────────────────────────────────────────────────
 
 @Composable
 private fun MyRecipesListContent(
     modifier: Modifier,
     onBack: () -> Unit,
+    showHeader: Boolean = true,
     onCreateRecipe: () -> Unit,
     onSearchRecipes: () -> Unit,
     onEditRecipe: (UserRecipe) -> Unit
@@ -126,59 +136,58 @@ private fun MyRecipesListContent(
     val coroutineScope = rememberCoroutineScope()
     var pendingDelete by remember { mutableStateOf<UserRecipe?>(null) }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Surface)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing_4, vertical = spacing_4),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = OnSurface
-                    )
-                }
-                Column(
+    val fabBottomPadding = editorialFabBottomPadding()
+
+    Box(modifier = modifier.fillMaxSize().background(Surface)) {
+
+        Column(modifier = Modifier.fillMaxSize()) {
+
+            // ── Header (standalone mode) ───────────────────────────
+            if (showHeader) {
+                Row(
                     modifier = Modifier
-                        .padding(start = spacing_2)
-                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(horizontal = spacing_4, vertical = spacing_4),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Mis recetas",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = OnSurface
-                    )
-                    Text(
-                        text = "${recipes.size} recetas creadas por el usuario",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSurfaceVariant
-                    )
-                }
-                IconButton(onClick = onSearchRecipes) {
-                    Icon(
-                        imageVector = Icons.Outlined.TravelExplore,
-                        contentDescription = "Buscar recetas en internet",
-                        tint = Primary
-                    )
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Volver", tint = OnSurface)
+                    }
+                    Column(modifier = Modifier.padding(start = spacing_2).weight(1f)) {
+                        Text("Mis recetas", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = OnSurface)
+                        Text("${recipes.size} recetas personales", style = MaterialTheme.typography.bodyMedium, color = OnSurfaceVariant)
+                    }
+                    IconButton(onClick = onSearchRecipes) {
+                        Icon(Icons.Outlined.TravelExplore, "Buscar en internet", tint = Primary)
+                    }
                 }
             }
 
+            // ── Mini info bar (embedded mode) ─────────────────────
+            if (!showHeader) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = spacing_6, vertical = spacing_2),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (recipes.isEmpty()) "Sin recetas aún" else "${recipes.size} receta${if (recipes.size != 1) "s" else ""} personales",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = OnSurfaceVariant
+                    )
+                    IconButton(onClick = onSearchRecipes) {
+                        Icon(Icons.Outlined.TravelExplore, "Buscar en internet", tint = Primary)
+                    }
+                }
+            }
+
+            // ── Content ──────────────────────────────────────────
             if (recipes.isEmpty()) {
                 EmptyRecipesState(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = spacing_6),
-                    onCreateRecipe = onCreateRecipe,
+                    modifier        = Modifier.fillMaxSize().padding(horizontal = spacing_6),
+                    onCreateRecipe  = onCreateRecipe,
                     onSearchRecipes = onSearchRecipes
                 )
             } else {
@@ -190,61 +199,55 @@ private fun MyRecipesListContent(
 
                     items(recipes, key = { it.id }) { recipe ->
                         RecipeSummaryCard(
-                            recipe = recipe,
-                            onEdit = { onEditRecipe(recipe) },
+                            recipe   = recipe,
+                            onEdit   = { onEditRecipe(recipe) },
                             onDelete = { pendingDelete = recipe }
                         )
                     }
 
-                    item { Spacer(modifier = Modifier.height(spacing_10 * 2)) }
+                    // Espacio para que el último card no quede detrás del FAB + nav
+                    item { Spacer(modifier = Modifier.height(fabBottomPadding + spacing_10)) }
                 }
             }
         }
 
+        // ── FAB (siempre por encima del nav bar) ──────────────────
         FloatingActionButton(
-            onClick = onCreateRecipe,
-            modifier = Modifier
+            onClick        = onCreateRecipe,
+            modifier       = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(spacing_6),
+                .padding(end = spacing_6, bottom = fabBottomPadding + spacing_4),
             containerColor = Primary,
-            shape = RoundedCornerShape(rounded_full)
+            shape          = RoundedCornerShape(rounded_full)
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Add,
-                contentDescription = "Crear receta"
-            )
+            Icon(Icons.Outlined.Add, "Crear receta", tint = Color.White)
         }
     }
 
+    // ── Delete dialog ─────────────────────────────────────────────
     if (pendingDelete != null) {
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text("Eliminar receta") },
-            text = {
-                Text("La receta desaparecerá de Mis Recetas y del plan semanal si estaba asignada.")
-            },
+            title   = { Text("Eliminar receta") },
+            text    = { Text("La receta desaparecerá de Mis Recetas y del plan semanal si estaba asignada.") },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        val recipe = pendingDelete ?: return@TextButton
-                        pendingDelete = null
-                        coroutineScope.launch {
-                            appContainer.userRecipeRepository.deleteRecipe(recipe)
-                            appContainer.firestoreSyncService.deleteRecipeFromCloud(recipe.userId, recipe.id)
-                        }
+                TextButton(onClick = {
+                    val recipe = pendingDelete ?: return@TextButton
+                    pendingDelete = null
+                    coroutineScope.launch {
+                        appContainer.userRecipeRepository.deleteRecipe(recipe)
+                        appContainer.firestoreSyncService.deleteRecipeFromCloud(recipe.userId, recipe.id)
                     }
-                ) {
-                    Text("Eliminar")
-                }
+                }) { Text("Eliminar", color = ErrorRed) }
             },
             dismissButton = {
-                TextButton(onClick = { pendingDelete = null }) {
-                    Text("Cancelar")
-                }
+                TextButton(onClick = { pendingDelete = null }) { Text("Cancelar") }
             }
         )
     }
 }
+
+// ── Recipe card ──────────────────────────────────────────────────────
 
 @Composable
 private fun RecipeSummaryCard(
@@ -254,111 +257,130 @@ private fun RecipeSummaryCard(
 ) {
     val image = rememberProfileImage(recipe.imageRes.takeIf { it.isNotBlank() })
 
-    EditorialCard(
-        modifier = Modifier.padding(horizontal = spacing_6)
-    ) {
-        // Thumbnail si hay imagen
+    EditorialCard(modifier = Modifier.padding(horizontal = spacing_6)) {
+
+        // Imagen
         if (image != null) {
             Image(
-                bitmap = image,
-                contentDescription = "Imagen de ${recipe.title}",
-                modifier = Modifier
+                bitmap           = image,
+                contentDescription = null,
+                modifier         = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
                     .clip(RoundedCornerShape(rounded_lg)),
-                contentScale = ContentScale.Crop
+                contentScale     = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(spacing_4))
         }
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(spacing_3)
-        ) {
-            Text(
-                text = recipe.title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = OnSurface
-            )
-
-            Text(
-                text = buildString {
-                    append(recipe.category.ifBlank { "Sin categoría" })
-                    if (recipe.dayOfWeek.isNotBlank()) {
-                        append(" · ")
-                        append(recipe.dayOfWeek)
-                    }
-                    if (recipe.mealType.isNotBlank()) {
-                        append(" · ")
-                        append(recipe.mealType)
-                    }
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = OnSurfaceVariant
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${recipe.timeInMinutes} min · ${recipe.calories} cal",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Primary,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(spacing_2)
-                ) {
-                    ActionPill(
-                        label = "Editar",
-                        icon = Icons.Outlined.Edit,
-                        onClick = onEdit
-                    )
-                    ActionPill(
-                        label = "Eliminar",
-                        icon = Icons.Outlined.DeleteOutline,
-                        onClick = onDelete
-                    )
-                }
+        // Chips de metadata
+        val chips = buildList {
+            if (recipe.category.isNotBlank()) add(recipe.category)
+            if (recipe.mealType.isNotBlank())  add(recipe.mealType)
+            if (recipe.dayOfWeek.isNotBlank()) add(recipe.dayOfWeek)
+        }
+        if (chips.isNotEmpty()) {
+            Row(horizontalArrangement = Arrangement.spacedBy(spacing_2)) {
+                chips.forEach { MetaChip(it) }
             }
+            Spacer(modifier = Modifier.height(spacing_2))
+        }
+
+        // Título
+        Text(
+            text       = recipe.title,
+            style      = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.ExtraBold,
+            color      = OnSurface
+        )
+
+        // Stats
+        if (recipe.timeInMinutes > 0 || recipe.calories > 0) {
+            Spacer(modifier = Modifier.height(spacing_3))
+            Row(horizontalArrangement = Arrangement.spacedBy(spacing_6), verticalAlignment = Alignment.CenterVertically) {
+                if (recipe.timeInMinutes > 0) StatItem("⏱", "${recipe.timeInMinutes} min")
+                if (recipe.calories > 0)      StatItem("🔥", "${recipe.calories} cal")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(spacing_4))
+
+        // Divider
+        HorizontalDivider(color = OnSurface.copy(alpha = 0.08f), thickness = 1.dp)
+
+        Spacer(modifier = Modifier.height(spacing_3))
+
+        // Botones de acción — dos columnas iguales
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(spacing_3)
+        ) {
+            CardActionButton(
+                label          = "Editar",
+                icon           = Icons.Outlined.Edit,
+                containerColor = Primary.copy(alpha = 0.08f),
+                contentColor   = Primary,
+                onClick        = onEdit,
+                modifier       = Modifier.weight(1f)
+            )
+            CardActionButton(
+                label          = "Eliminar",
+                icon           = Icons.Outlined.DeleteOutline,
+                containerColor = ErrorRed.copy(alpha = 0.07f),
+                contentColor   = ErrorRed,
+                onClick        = onDelete,
+                modifier       = Modifier.weight(1f)
+            )
         }
     }
 }
 
+// ── Card helpers ─────────────────────────────────────────────────────
+
 @Composable
-private fun ActionPill(
-    label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit
-) {
-    Row(
+private fun MetaChip(text: String) {
+    Box(
         modifier = Modifier
-            .background(
-                color = Primary.copy(alpha = 0.08f),
-                shape = RoundedCornerShape(rounded_full)
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = spacing_3, vertical = spacing_2),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(spacing_2)
+            .background(Primary.copy(alpha = 0.08f), RoundedCornerShape(rounded_full))
+            .padding(horizontal = spacing_3, vertical = 4.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Primary,
-            modifier = Modifier.size(16.dp)
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = Primary
-        )
+        Text(text, fontSize = 11.sp, color = Primary, fontWeight = FontWeight.SemiBold)
     }
 }
+
+@Composable
+private fun StatItem(emoji: String, label: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(emoji, fontSize = 14.sp)
+        Text(label, fontSize = 13.sp, color = OnSurfaceVariant, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+private fun CardActionButton(
+    label: String,
+    icon: ImageVector,
+    containerColor: Color,
+    contentColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .height(40.dp)
+            .clip(RoundedCornerShape(rounded_md))
+            .background(containerColor)
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Icon(icon, null, tint = contentColor, modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(label, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = contentColor)
+    }
+}
+
+// ── Empty state ──────────────────────────────────────────────────────
 
 @Composable
 private fun EmptyRecipesState(
@@ -367,43 +389,68 @@ private fun EmptyRecipesState(
     onSearchRecipes: () -> Unit
 ) {
     Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        modifier                = modifier,
+        horizontalAlignment     = Alignment.CenterHorizontally,
+        verticalArrangement     = Arrangement.Center
     ) {
-        Icon(
-            imageVector = Icons.Outlined.RestaurantMenu,
-            contentDescription = null,
-            tint = Primary,
-            modifier = Modifier.size(56.dp)
-        )
+        Box(
+            modifier            = Modifier
+                .size(80.dp)
+                .background(Primary.copy(alpha = 0.08f), RoundedCornerShape(rounded_lg)),
+            contentAlignment    = Alignment.Center
+        ) {
+            Icon(Icons.Outlined.RestaurantMenu, null, tint = Primary, modifier = Modifier.size(40.dp))
+        }
+
         Spacer(modifier = Modifier.height(spacing_4))
+
         Text(
-            text = "Todavía no hay recetas personales",
-            style = MaterialTheme.typography.titleLarge,
+            text       = "Aún no tienes recetas",
+            style      = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.ExtraBold,
-            color = OnSurface
+            color      = OnSurface
         )
         Spacer(modifier = Modifier.height(spacing_2))
         Text(
-            text = "Crea tu propia receta o busca e importa una receta internacional.",
-            style = MaterialTheme.typography.bodyLarge,
+            text  = "Crea tu propia receta o importa una receta internacional.",
+            style = MaterialTheme.typography.bodyMedium,
             color = OnSurfaceVariant
         )
+
         Spacer(modifier = Modifier.height(spacing_6))
-        Row(horizontalArrangement = Arrangement.spacedBy(spacing_3)) {
-            TextButton(onClick = onCreateRecipe) {
-                Text("Crear receta")
-            }
-            TextButton(onClick = onSearchRecipes) {
-                Icon(
-                    imageVector = Icons.Outlined.TravelExplore,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(spacing_2))
-                Text("Buscar receta")
-            }
+
+        // Botón primario
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .clip(RoundedCornerShape(rounded_full))
+                .background(Primary)
+                .clickable(onClick = onCreateRecipe),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(Icons.Outlined.Add, null, tint = Color.White, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(spacing_2))
+            Text("Crear receta", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+        }
+
+        Spacer(modifier = Modifier.height(spacing_3))
+
+        // Botón secundario
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .clip(RoundedCornerShape(rounded_full))
+                .background(SurfaceContainerLow)
+                .clickable(onClick = onSearchRecipes),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(Icons.Outlined.TravelExplore, null, tint = Primary, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(spacing_2))
+            Text("Buscar en internet", color = Primary, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
         }
     }
 }
