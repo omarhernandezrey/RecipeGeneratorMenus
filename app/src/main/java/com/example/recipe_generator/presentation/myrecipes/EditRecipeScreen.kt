@@ -42,7 +42,8 @@ fun EditRecipeScreen(
                 return CreateRecipeViewModel(
                     userId = recipe.userId,
                     userRecipeRepository = appContainer.userRecipeRepository,
-                    firestoreSyncService = appContainer.firestoreSyncService
+                    firestoreSyncService = appContainer.firestoreSyncService,
+                    resolveRecipeVideoUseCase = appContainer.resolveRecipeVideoUseCase
                 ) as T
             }
         }

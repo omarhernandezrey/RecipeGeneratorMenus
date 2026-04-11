@@ -51,6 +51,8 @@ data class UserRecipeEntity(
     /** "Desayuno" | "Almuerzo" | "Cena" */
     val mealType: String = "",
 
+    val videoYoutube: String? = null,
+
     /** Lista de ingredientes serializada en JSON. Ej: ["200g harina","2 huevos"] */
     val ingredientsJson: String = "[]",
 

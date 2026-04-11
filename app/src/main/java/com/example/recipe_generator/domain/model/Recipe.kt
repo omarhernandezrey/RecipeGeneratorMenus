@@ -29,6 +29,7 @@ data class Recipe(
     val fatGrams: Int = 0,
     /** "Lunes" | "Martes" | ... | "Domingo" */
     val dayOfWeek: String,
+    val videoYoutube: String? = null,
     val ingredients: List<Ingredient> = emptyList(),
     val ingredientTags: List<String> = emptyList(),
     val steps: List<RecipeStep> = emptyList()

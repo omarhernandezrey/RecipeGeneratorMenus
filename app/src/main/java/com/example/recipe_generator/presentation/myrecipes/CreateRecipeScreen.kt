@@ -45,6 +45,7 @@ fun CreateRecipeScreen(
                     userId = userId,
                     userRecipeRepository = appContainer.userRecipeRepository,
                     firestoreSyncService = appContainer.firestoreSyncService,
+                    resolveRecipeVideoUseCase = appContainer.resolveRecipeVideoUseCase,
                     appNotificationRepository = appContainer.appNotificationRepository
                 ) as T
             }

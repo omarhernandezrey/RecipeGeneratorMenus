@@ -1,24 +1,35 @@
 package com.example.recipe_generator.presentation.home
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.recipe_generator.presentation.components.DayTabLayout
@@ -29,7 +40,10 @@ import com.example.recipe_generator.presentation.components.InfoChip
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
 import com.example.recipe_generator.presentation.components.editorialTopBarContentPadding
 import com.example.recipe_generator.presentation.components.RecipeImage
+import com.example.recipe_generator.data.remote.RecipeVideoResolver
 import com.example.recipe_generator.domain.model.Recipe
+import androidx.compose.ui.platform.LocalContext
+import com.example.recipe_generator.presentation.detail.components.openRecipeVideo
 import com.example.recipe_generator.presentation.theme.*
 
 @Composable
@@ -174,11 +188,18 @@ fun RecipeCard(
     onToggleFavorite: () -> Unit = {},
     onClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val resolvedVideoUrl = remember(recipe.title, recipe.videoYoutube) {
+        RecipeVideoResolver().resolve(
+            currentVideoUrl = recipe.videoYoutube,
+            recipeTitle = recipe.title
+        )
+    }
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(rounded_md),
         colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
             Box(
@@ -218,14 +239,16 @@ fun RecipeCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onClick)
-                    .padding(horizontal = spacing_8, vertical = spacing_6)
+                    .padding(horizontal = spacing_8, vertical = spacing_6),
+                verticalArrangement = Arrangement.spacedBy(spacing_4)
             ) {
                 Text(
                     text = recipe.title,
                     style = MaterialTheme.typography.headlineMedium,
                     color = OnSurface,
                     fontWeight = FontWeight.ExtraBold,
-                    modifier = Modifier.padding(bottom = spacing_3)
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Row(
@@ -235,8 +258,67 @@ fun RecipeCard(
                 ) {
                     InfoChip(icon = Icons.Outlined.AccessTime, text = "${recipe.timeInMinutes} min")
                     InfoChip(icon = Icons.Outlined.Whatshot, text = "${recipe.calories} Cal")
-                    DifficultyChip(difficulty = recipe.difficulty)
+                    if (recipe.difficulty.isNotBlank()) {
+                        DifficultyChip(difficulty = recipe.difficulty)
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    MiniAnimatedYoutubePlayButton(
+                        onClick = { openRecipeVideo(context, resolvedVideoUrl) }
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MiniAnimatedYoutubePlayButton(
+    onClick: () -> Unit
+) {
+    val transition = rememberInfiniteTransition(label = "miniVideoPulse")
+    val pulseScale = transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 900, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseScale"
+    )
+    val pulseAlpha = transition.animateFloat(
+        initialValue = 0.16f,
+        targetValue = 0.34f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 900, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
+
+    Box(
+        modifier = Modifier.size(34.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .scale(pulseScale.value)
+                .background(Color(0xFFFF0000).copy(alpha = pulseAlpha.value), CircleShape)
+        )
+        Surface(
+            modifier = Modifier
+                .size(30.dp)
+                .clip(CircleShape)
+                .clickable(onClick = onClick),
+            color = Color(0xFFFF0000)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Filled.PlayArrow,
+                    contentDescription = "Reproducir video",
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
             }
         }
     }

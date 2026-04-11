@@ -33,6 +33,7 @@ data class RecipeEntity(
     val carbsGrams: Int = 0,
     val fatGrams: Int = 0,
     val dayOfWeek: String,
+    val videoYoutube: String? = null,
     /** Tags de ingredientes serializados con "|". Ej: "Mantequilla|Sal y pimienta|Limón" */
     val ingredientTags: String = ""
 )

@@ -102,6 +102,7 @@ fun MyRecipesScreen(
             userId               = userId,
             userRecipeRepository = appContainer.userRecipeRepository,
             firestoreSyncService = appContainer.firestoreSyncService,
+            resolveRecipeVideoUseCase = appContainer.resolveRecipeVideoUseCase,
             onBack               = { route = MyRecipesRoute.List },
             onImported           = { route = MyRecipesRoute.List }
         )

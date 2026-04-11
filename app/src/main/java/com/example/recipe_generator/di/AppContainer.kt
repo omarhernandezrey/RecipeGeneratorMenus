@@ -3,10 +3,13 @@
 package com.example.recipe_generator.di
 
 import android.content.Context
+import com.example.recipe_generator.BuildConfig
 import com.example.recipe_generator.data.local.AppDatabase
+import com.example.recipe_generator.data.remote.RecipeVideoResolver
 import com.example.recipe_generator.data.repository.AppNotificationRepositoryImpl
 import com.example.recipe_generator.data.repository.FirebaseAuthRepository
 import com.example.recipe_generator.data.repository.MockAuthRepository
+import com.example.recipe_generator.data.repository.RecipeVideoRepositoryImpl
 import com.example.recipe_generator.data.repository.RecipeRepositoryImpl
 import com.example.recipe_generator.data.repository.RoomFavoritesRepositoryImpl
 import com.example.recipe_generator.data.repository.UserProfileRepositoryImpl
@@ -15,20 +18,25 @@ import com.example.recipe_generator.data.repository.UserRecipeRepositoryImpl
 import com.example.recipe_generator.data.repository.WeeklyPlanRepositoryImpl
 import com.example.recipe_generator.data.sync.FirestoreSyncService
 import com.example.recipe_generator.data.sync.FirestoreWeeklyPlanSync
+import com.example.recipe_generator.data.sync.RecipeVideoStorageService
 import com.example.recipe_generator.domain.repository.AppNotificationRepository
 import com.example.recipe_generator.domain.repository.AuthRepository
 import com.example.recipe_generator.domain.repository.FavoritesRepository
 import com.example.recipe_generator.domain.repository.RecipeRepository
+import com.example.recipe_generator.domain.repository.RecipeVideoRepository
 import com.example.recipe_generator.domain.repository.UserProfileRepository
 import com.example.recipe_generator.domain.repository.UserPrefsRepository
 import com.example.recipe_generator.domain.repository.UserRecipeRepository
 import com.example.recipe_generator.domain.repository.WeeklyPlanRepository
+import com.example.recipe_generator.domain.usecase.EnsureRecipeVideoUseCase
 import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
 import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
 import com.example.recipe_generator.domain.usecase.GetRecipeDetailUseCase
+import com.example.recipe_generator.domain.usecase.ResolveRecipeVideoUseCase
 import com.example.recipe_generator.domain.usecase.ToggleFavoriteUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -69,6 +77,26 @@ class AppContainer(private val context: Context) {
 
     private val firebaseFirestore: FirebaseFirestore by lazy {
         FirebaseFirestore.getInstance()
+    }
+
+    private val firebaseStorage: FirebaseStorage by lazy {
+        FirebaseStorage.getInstance()
+    }
+
+    val recipeVideoResolver: RecipeVideoResolver by lazy {
+        RecipeVideoResolver()
+    }
+
+    val recipeVideoStorageService: RecipeVideoStorageService by lazy {
+        RecipeVideoStorageService(firebaseStorage)
+    }
+
+    val recipeVideoRepository: RecipeVideoRepository by lazy {
+        RecipeVideoRepositoryImpl(
+            firestore = firebaseFirestore,
+            recipeVideoStorageService = recipeVideoStorageService,
+            youtubeApiKey = BuildConfig.YOUTUBE_API_KEY
+        )
     }
 
     // ── Repositorios (interfaces de Dominio, impls de Datos) ──────────
@@ -126,7 +154,8 @@ class AppContainer(private val context: Context) {
         FirestoreSyncService(
             firestore = firebaseFirestore,
             userRecipeDao = database.userRecipeDao(),
-            userProfileDao = database.userProfileDao()
+            userProfileDao = database.userProfileDao(),
+            recipeVideoStorageService = recipeVideoStorageService
         )
     }
 
@@ -178,4 +207,10 @@ class AppContainer(private val context: Context) {
 
     val generateMenuUseCase: GenerateMenuUseCase
         get() = GenerateMenuUseCase(recipeRepository)
+
+    val ensureRecipeVideoUseCase: EnsureRecipeVideoUseCase
+        get() = EnsureRecipeVideoUseCase(recipeVideoRepository)
+
+    val resolveRecipeVideoUseCase: ResolveRecipeVideoUseCase
+        get() = ResolveRecipeVideoUseCase(recipeVideoRepository)
 }

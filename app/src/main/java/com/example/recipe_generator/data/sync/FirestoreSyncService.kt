@@ -1,14 +1,17 @@
 package com.example.recipe_generator.data.sync
 
 import android.util.Log
+import com.example.recipe_generator.BuildConfig
 import com.example.recipe_generator.data.local.dao.UserProfileDao
 import com.example.recipe_generator.data.local.dao.UserRecipeDao
 import com.example.recipe_generator.data.local.entity.UserProfileEntity
 import com.example.recipe_generator.data.local.entity.UserRecipeEntity
+import com.example.recipe_generator.data.remote.GlobalRecipeVideoPipeline
 import com.example.recipe_generator.domain.model.UserProfile
 import com.example.recipe_generator.domain.model.UserRecipe
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -32,13 +35,16 @@ import kotlinx.coroutines.tasks.await
 class FirestoreSyncService(
     private val firestore: FirebaseFirestore,
     private val userRecipeDao: UserRecipeDao,
-    private val userProfileDao: UserProfileDao
+    private val userProfileDao: UserProfileDao,
+    private val recipeVideoStorageService: RecipeVideoStorageService =
+        RecipeVideoStorageService(FirebaseStorage.getInstance())
 ) {
 
     companion object {
         private const val TAG = "FirestoreSyncService"
         private const val USERS = "users"
         private const val RECIPES = "recipes"
+        private const val RECETAS = "recetas"
         private const val PROFILE = "profile"
         private const val PROFILE_DOC = "data"
     }
@@ -51,6 +57,9 @@ class FirestoreSyncService(
     private fun profileDocument(userId: String) =
         firestore.collection(USERS).document(userId).collection(PROFILE).document(PROFILE_DOC)
 
+    private fun recetasDocument(recipeId: String) =
+        firestore.collection(RECETAS).document(recipeId)
+
     // ── ESCRITURA: Room + Firestore ───────────────────────────────────
 
     /**
@@ -59,12 +68,41 @@ class FirestoreSyncService(
      */
     suspend fun uploadRecipe(recipe: UserRecipeEntity) {
         try {
-            recipesCollection(recipe.userId)
-                .document(recipe.id)
-                .set(recipe.toFirestoreMap(), SetOptions.merge())
+            val resolvedVideo = GlobalRecipeVideoPipeline.ensurePersistenceVideo(
+                currentVideoUrl = recipe.videoYoutube,
+                recipeTitle = recipe.title,
+                youTubeApiKey = BuildConfig.YOUTUBE_API_KEY
+            )
+            val recipeToSync = recipe.copy(videoYoutube = resolvedVideo)
+
+            recipesCollection(recipeToSync.userId)
+                .document(recipeToSync.id)
+                .set(recipeToSync.toFirestoreMap(), SetOptions.merge())
                 .await()
-            userRecipeDao.markSynced(recipe.id)
-            Log.d(TAG, "Receta subida a Firestore: ${recipe.id}")
+
+            recetasDocument(recipeToSync.id)
+                .set(recipeToSync.toRecetasMap(), SetOptions.merge())
+                .await()
+
+            recipeToSync.videoYoutube
+                ?.takeIf { it.isNotBlank() }
+                ?.let { videoUrl ->
+                    runCatching {
+                        recipeVideoStorageService.cacheVideoMetadata(
+                            recipeId = recipeToSync.id,
+                            videoUrl = videoUrl,
+                            ownerUserId = recipeToSync.userId,
+                            sourceCollection = "users/${
+                                recipeToSync.userId
+                            }/recipes"
+                        )
+                    }.onFailure { storageError ->
+                        Log.w(TAG, "Video no cacheado en Storage para ${recipeToSync.id}: ${storageError.message}")
+                    }
+                }
+            userRecipeDao.insert(recipeToSync.copy(isSynced = true))
+            userRecipeDao.markSynced(recipeToSync.id)
+            Log.d(TAG, "Receta subida a Firestore: ${recipeToSync.id}")
         } catch (e: Exception) {
             Log.w(TAG, "Error al subir receta ${recipe.id}: ${e.message}")
             // isSynced permanece false — se reintentará en syncPendingRecipes()
@@ -82,6 +120,7 @@ class FirestoreSyncService(
     suspend fun deleteRecipeFromCloud(userId: String, recipeId: String) {
         try {
             recipesCollection(userId).document(recipeId).delete().await()
+            recetasDocument(recipeId).delete().await()
             Log.d(TAG, "Receta eliminada de Firestore: $recipeId")
         } catch (e: Exception) {
             Log.w(TAG, "Error al eliminar receta $recipeId de Firestore: ${e.message}")
@@ -211,10 +250,25 @@ private fun UserRecipeEntity.toFirestoreMap(): Map<String, Any?> = mapOf(
     "description" to description,
     "dayOfWeek" to dayOfWeek,
     "mealType" to mealType,
+    "videoYoutube" to videoYoutube,
     "ingredientsJson" to ingredientsJson,
     "stepsJson" to stepsJson,
     "createdAt" to createdAt,
     "updatedAt" to updatedAt
+)
+
+private fun UserRecipeEntity.toRecetasMap(): Map<String, Any?> = mapOf(
+    "nombre" to title,
+    "imagen" to imageRes,
+    "preparacion" to parseJsonArraySafe(stepsJson),
+    "aliases" to listOf(title),
+    "pais" to "",
+    "keywords" to buildKeywords(
+        title = title,
+        category = category,
+        ingredients = parseJsonArraySafe(ingredientsJson)
+    ),
+    "videoYoutube" to videoYoutube
 )
 
 private fun UserProfileEntity.toFirestoreMap(): Map<String, Any?> = mapOf(
@@ -244,6 +298,8 @@ private fun com.google.firebase.firestore.DocumentSnapshot.toRecipeEntity(
         description = getString("description") ?: "",
         dayOfWeek = getString("dayOfWeek") ?: "",
         mealType = getString("mealType") ?: "",
+        videoYoutube = getString("videoYoutube")
+            ?: fallbackVideoForTitle(getString("title") ?: ""),
         ingredientsJson = getString("ingredientsJson") ?: "[]",
         stepsJson = getString("stepsJson") ?: "[]",
         isSynced = true,
@@ -284,6 +340,7 @@ private fun UserRecipe.toEntity(): UserRecipeEntity = UserRecipeEntity(
     description = description,
     dayOfWeek = dayOfWeek,
     mealType = mealType,
+    videoYoutube = videoYoutube,
     ingredientsJson = org.json.JSONArray(ingredients).toString(),
     stepsJson = org.json.JSONArray(steps).toString(),
     isSynced = isSynced,
@@ -300,3 +357,32 @@ private fun UserProfile.toEntity(): UserProfileEntity = UserProfileEntity(
     defaultPortions = defaultPortions,
     createdAt = createdAt
 )
+
+private fun parseJsonArraySafe(json: String): List<String> = try {
+    val array = org.json.JSONArray(json)
+    List(array.length()) { index -> array.optString(index) }
+        .filter { it.isNotBlank() }
+} catch (_: Exception) {
+    emptyList()
+}
+
+private fun buildKeywords(
+    title: String,
+    category: String,
+    ingredients: List<String>
+): List<String> {
+    val tokens = (listOf(title, category) + ingredients)
+        .flatMap { text ->
+            text.lowercase()
+                .split(" ", ",", ";", ".", ":", "-", "_")
+                .filter { it.length > 2 }
+        }
+    return tokens.distinct().take(25)
+}
+
+private fun fallbackVideoForTitle(title: String): String {
+    return GlobalRecipeVideoPipeline.ensureDisplayVideo(
+        currentVideoUrl = null,
+        recipeTitle = title
+    )
+}

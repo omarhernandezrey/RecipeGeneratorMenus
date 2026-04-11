@@ -1,5 +1,6 @@
 package com.example.recipe_generator.presentation.myrecipes
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.recipe_generator.data.sync.FirestoreSyncService
@@ -7,6 +8,7 @@ import com.example.recipe_generator.domain.model.AppNotification
 import com.example.recipe_generator.domain.model.UserRecipe
 import com.example.recipe_generator.domain.repository.AppNotificationRepository
 import com.example.recipe_generator.domain.repository.UserRecipeRepository
+import com.example.recipe_generator.domain.usecase.ResolveRecipeVideoUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +30,8 @@ data class RecipeFormUiState(
     val steps: List<String> = listOf(""),
     /** file:// URI local o cadena vacía si no tiene imagen */
     val imageRes: String = "",
+    val videoYoutube: String? = null,
+    val isEditMode: Boolean = false,
     val isSaving: Boolean = false,
     val error: String? = null,
     val saveVersion: Int = 0,
@@ -38,6 +42,7 @@ class CreateRecipeViewModel(
     private val userId: String,
     private val userRecipeRepository: UserRecipeRepository,
     private val firestoreSyncService: FirestoreSyncService,
+    private val resolveRecipeVideoUseCase: ResolveRecipeVideoUseCase,
     private val appNotificationRepository: AppNotificationRepository? = null
 ) : ViewModel() {
 
@@ -91,6 +96,8 @@ class CreateRecipeViewModel(
             ingredients = recipe.ingredients.ifEmpty { listOf("") },
             steps = recipe.steps.ifEmpty { listOf("") },
             imageRes = recipe.imageRes,
+            videoYoutube = recipe.videoYoutube,
+            isEditMode = true,
             createdAt = recipe.createdAt
         )
     }
@@ -106,13 +113,24 @@ class CreateRecipeViewModel(
         viewModelScope.launch {
             updateState { copy(isSaving = true, error = null) }
 
-            val recipe = current.toRecipe(userId)
+            val resolvedVideo = runCatching {
+                resolveRecipeVideoUseCase(
+                    currentVideoUrl = current.videoYoutube,
+                    recipeTitle = current.title.trim()
+                )
+            }.getOrElse {
+                android.util.Log.w("CreateRecipeViewModel", "No se pudo resolver video: ${it.message}")
+                current.videoYoutube.takeIf { !it.isNullOrBlank() }
+                    ?: "https://www.youtube.com/results?search_query=${Uri.encode("como preparar ${current.title.trim()} receta tutorial")}"
+            }
+
+            val recipe = current.copy(videoYoutube = resolvedVideo).toRecipe(userId)
 
             runCatching {
-                if (current.recipeId == null) {
-                    userRecipeRepository.addRecipe(recipe)
-                } else {
+                if (current.isEditMode) {
                     userRecipeRepository.updateRecipe(recipe)
+                } else {
+                    userRecipeRepository.addRecipe(recipe)
                 }
                 firestoreSyncService.uploadRecipe(recipe)
             }.onSuccess {
@@ -176,6 +194,7 @@ private fun RecipeFormUiState.toRecipe(userId: String): UserRecipe = UserRecipe(
     description = description.trim(),
     dayOfWeek = dayOfWeek,
     mealType = mealType,
+    videoYoutube = videoYoutube,
     ingredients = ingredients.map(String::trim).filter(String::isNotBlank),
     steps = steps.map(String::trim).filter(String::isNotBlank),
     createdAt = createdAt ?: System.currentTimeMillis(),

@@ -9,12 +9,11 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import com.bumptech.glide.Glide
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 
 @Composable
 internal fun rememberProfileImage(photoRef: String?): ImageBitmap? {
@@ -44,16 +43,12 @@ internal suspend fun loadProfileImage(
                 "file" -> BitmapFactory.decodeFile(uri.path)?.asImageBitmap()
 
                 "http", "https" -> {
-                    val connection = (URL(photoRef).openConnection() as HttpURLConnection).apply {
-                        connectTimeout = 5_000
-                        readTimeout = 5_000
-                        instanceFollowRedirects = true
-                        doInput = true
-                    }
-
-                    connection.inputStream.use { stream ->
-                        BitmapFactory.decodeStream(stream)?.asImageBitmap()
-                    }
+                    Glide.with(context.applicationContext)
+                        .asBitmap()
+                        .load(photoRef)
+                        .submit()
+                        .get()
+                        .asImageBitmap()
                 }
 
                 else -> {
@@ -89,15 +84,11 @@ internal suspend fun downloadImageToInternalStorage(
     imageUrl: String
 ): String? = withContext(Dispatchers.IO) {
     runCatching {
-        val connection = (URL(imageUrl).openConnection() as HttpURLConnection).apply {
-            connectTimeout = 10_000
-            readTimeout = 10_000
-            instanceFollowRedirects = true
-            doInput = true
-        }
-        val bitmap = connection.inputStream.use { BitmapFactory.decodeStream(it) }
-        connection.disconnect()
-        checkNotNull(bitmap) { "Bitmap nulo" }
+        val bitmap = Glide.with(context.applicationContext)
+            .asBitmap()
+            .load(imageUrl)
+            .submit()
+            .get()
         val outputFile = File(context.filesDir, "$fileName.jpg")
         FileOutputStream(outputFile).use { out ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)

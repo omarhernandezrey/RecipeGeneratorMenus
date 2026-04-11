@@ -44,6 +44,8 @@ data class UserRecipe(
     /** "Desayuno" | "Almuerzo" | "Cena" */
     val mealType: String = "",
 
+    val videoYoutube: String? = null,
+
     /** Lista de ingredientes. Ej: ["200g harina", "2 huevos"] */
     val ingredients: List<String> = emptyList(),
 

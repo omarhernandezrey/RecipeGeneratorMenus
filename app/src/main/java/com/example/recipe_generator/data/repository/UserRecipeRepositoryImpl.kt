@@ -3,6 +3,7 @@ package com.example.recipe_generator.data.repository
 import com.example.recipe_generator.data.local.dao.UserRecipeDao
 import com.example.recipe_generator.data.local.dao.WeeklyPlanDao
 import com.example.recipe_generator.data.local.entity.UserRecipeEntity
+import com.example.recipe_generator.data.remote.GlobalRecipeVideoPipeline
 import com.example.recipe_generator.domain.model.UserRecipe
 import com.example.recipe_generator.domain.repository.UserRecipeRepository
 import kotlinx.coroutines.flow.Flow
@@ -32,27 +33,27 @@ class UserRecipeRepositoryImpl(
 
     override fun getMyRecipes(userId: String): Flow<List<UserRecipe>> =
         userRecipeDao.getByUserId(userId).map { entities ->
-            entities.map { it.toDomain() }
+            entities.map { it.toDomain().withGuaranteedVideo() }
         }
 
     override fun getRecipesForDay(userId: String, day: String): Flow<List<UserRecipe>> =
         userRecipeDao.getByDay(userId, day).map { entities ->
-            entities.map { it.toDomain() }
+            entities.map { it.toDomain().withGuaranteedVideo() }
         }
 
     override fun searchRecipes(userId: String, query: String): Flow<List<UserRecipe>> =
         userRecipeDao.searchByTitle(userId, query).map { entities ->
-            entities.map { it.toDomain() }
+            entities.map { it.toDomain().withGuaranteedVideo() }
         }
 
     // ── Escritura ─────────────────────────────────────────────────────
 
     override suspend fun addRecipe(recipe: UserRecipe) {
-        userRecipeDao.insert(recipe.toEntity(isSynced = false))
+        userRecipeDao.insert(recipe.withGuaranteedVideo().toEntity(isSynced = false))
     }
 
     override suspend fun updateRecipe(recipe: UserRecipe) {
-        userRecipeDao.update(recipe.toEntity(isSynced = false))
+        userRecipeDao.update(recipe.withGuaranteedVideo().toEntity(isSynced = false))
     }
 
     override suspend fun deleteRecipe(recipe: UserRecipe) {
@@ -80,6 +81,7 @@ private fun UserRecipeEntity.toDomain(): UserRecipe = UserRecipe(
     description = description,
     dayOfWeek = dayOfWeek,
     mealType = mealType,
+    videoYoutube = videoYoutube,
     ingredients = parseJsonArray(ingredientsJson),
     steps = parseJsonArray(stepsJson),
     isSynced = isSynced,
@@ -101,6 +103,7 @@ private fun UserRecipe.toEntity(isSynced: Boolean): UserRecipeEntity = UserRecip
     description = description,
     dayOfWeek = dayOfWeek,
     mealType = mealType,
+    videoYoutube = videoYoutube,
     ingredientsJson = toJsonArray(ingredients),
     stepsJson = toJsonArray(steps),
     isSynced = isSynced,
@@ -121,3 +124,10 @@ private fun parseJsonArray(json: String): List<String> = try {
 /** Serializa una lista de strings a JSON array. */
 private fun toJsonArray(list: List<String>): String =
     JSONArray(list).toString()
+
+private fun UserRecipe.withGuaranteedVideo(): UserRecipe = copy(
+    videoYoutube = GlobalRecipeVideoPipeline.ensureDisplayVideo(
+        currentVideoUrl = videoYoutube,
+        recipeTitle = title
+    )
+)
