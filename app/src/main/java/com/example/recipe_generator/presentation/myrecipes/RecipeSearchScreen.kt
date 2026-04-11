@@ -1,5 +1,6 @@
 package com.example.recipe_generator.presentation.myrecipes
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -57,8 +59,11 @@ import com.example.recipe_generator.data.remote.MealDbFullRecipe
 import com.example.recipe_generator.data.sync.FirestoreSyncService
 import com.example.recipe_generator.domain.model.UserRecipe
 import com.example.recipe_generator.domain.repository.UserRecipeRepository
+import com.example.recipe_generator.domain.usecase.ResolveRecipeVideoUseCase
 import com.example.recipe_generator.presentation.components.EditorialCard
 import com.example.recipe_generator.presentation.components.PrimaryButton
+import com.example.recipe_generator.presentation.detail.components.RecipeVideoSection
+import com.example.recipe_generator.presentation.detail.components.RecipeVideoUiState
 import com.example.recipe_generator.presentation.profile.downloadImageToInternalStorage
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
@@ -79,6 +84,7 @@ fun RecipeSearchScreen(
     userId: String,
     userRecipeRepository: UserRecipeRepository,
     firestoreSyncService: FirestoreSyncService,
+    resolveRecipeVideoUseCase: ResolveRecipeVideoUseCase,
     onBack: () -> Unit,
     onImported: () -> Unit
 ) {
@@ -90,6 +96,7 @@ fun RecipeSearchScreen(
             userId = userId,
             userRecipeRepository = userRecipeRepository,
             firestoreSyncService = firestoreSyncService,
+            resolveRecipeVideoUseCase = resolveRecipeVideoUseCase,
             onBack = { selectedRecipe = null },
             onImported = onImported
         )
@@ -494,6 +501,7 @@ private fun RecipeImportPreviewScreen(
     userId: String,
     userRecipeRepository: UserRecipeRepository,
     firestoreSyncService: FirestoreSyncService,
+    resolveRecipeVideoUseCase: ResolveRecipeVideoUseCase,
     onBack: () -> Unit,
     onImported: () -> Unit
 ) {
@@ -507,6 +515,36 @@ private fun RecipeImportPreviewScreen(
             .map { it.trim() }
             .filter { it.isNotBlank() && it.length > 3 }
             .ifEmpty { listOf(recipe.instructions.trim()) }
+    }
+    val fallbackUrl = remember(recipe.name) { buildVideoFallbackUrl(recipe.name) }
+    val videoUiState by produceState<RecipeVideoUiState>(
+        initialValue = RecipeVideoUiState.Loading,
+        key1 = recipe.name
+    ) {
+        val resolved = runCatching {
+            resolveRecipeVideoUseCase(
+                currentVideoUrl = null,
+                recipeTitle = recipe.name
+            )
+        }.getOrElse {
+            value = RecipeVideoUiState.Error(
+                message = "No se pudo resolver el video",
+                fallbackUrl = fallbackUrl
+            )
+            return@produceState
+        }
+
+        value = if (resolved.isBlank()) {
+            RecipeVideoUiState.Error(
+                message = "No se encontró un video exacto",
+                fallbackUrl = fallbackUrl
+            )
+        } else {
+            RecipeVideoUiState.Ready(
+                videoUrl = resolved,
+                fromFallback = resolved.contains("/results?search_query=")
+            )
+        }
     }
 
     fun importRecipe() {
@@ -533,6 +571,12 @@ private fun RecipeImportPreviewScreen(
                 },
                 ingredients = recipe.ingredients,
                 steps       = steps,
+                videoYoutube = when (val state = videoUiState) {
+                    is RecipeVideoUiState.Ready -> state.videoUrl
+                    is RecipeVideoUiState.Error -> state.fallbackUrl ?: fallbackUrl
+                    RecipeVideoUiState.Empty -> fallbackUrl
+                    RecipeVideoUiState.Loading -> fallbackUrl
+                },
                 difficulty  = "Medio",
                 createdAt   = System.currentTimeMillis(),
                 updatedAt   = System.currentTimeMillis()
@@ -691,6 +735,8 @@ private fun RecipeImportPreviewScreen(
                 }
             }
 
+            RecipeVideoSection(videoUiState = videoUiState)
+
             Spacer(modifier = Modifier.height(spacing_2))
         }
 
@@ -709,4 +755,10 @@ private fun mapToLocalCategory(category: String): String = when (category.lowerc
     "postre"          -> "Postre"
     "snack", "entrada", "aperitivo" -> "Snack"
     else              -> "Almuerzo"
+}
+
+private fun buildVideoFallbackUrl(recipeName: String): String {
+    return "https://www.youtube.com/results?search_query=${
+        Uri.encode("como preparar $recipeName receta tutorial")
+    }"
 }

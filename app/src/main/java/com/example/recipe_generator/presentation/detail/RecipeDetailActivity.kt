@@ -2,6 +2,7 @@ package com.example.recipe_generator.presentation.detail
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,13 +15,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.recipe_generator.RecipeGeneratorApp
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.domain.repository.FavoritesRepository
+import com.example.recipe_generator.domain.usecase.EnsureRecipeVideoUseCase
 import com.example.recipe_generator.domain.usecase.GetRecipeDetailUseCase
 import com.example.recipe_generator.domain.usecase.ToggleFavoriteUseCase
+import com.example.recipe_generator.presentation.detail.components.RecipeVideoUiState
 import com.example.recipe_generator.presentation.theme.RecipeGeneratorTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Collections
 
 /**
  * Segunda Activity — RecipeDetailActivity.
@@ -59,6 +64,7 @@ class RecipeDetailActivity : AppCompatActivity() {
             DetailActivityViewModelFactory(
                 container.getRecipeDetailUseCase,
                 container.toggleFavoriteUseCase,
+                container.ensureRecipeVideoUseCase,
                 container.favoritesRepository,
                 container.requireAuthenticatedUserId()
             )
@@ -77,6 +83,7 @@ class RecipeDetailActivity : AppCompatActivity() {
             RecipeGeneratorTheme(darkTheme = preferences.theme == "Oscuro") {
                 val recipe = viewModel.recipe.collectAsStateWithLifecycle().value
                 val isFavorite = viewModel.isFavorite.collectAsStateWithLifecycle().value
+                val videoUiState = viewModel.videoUiState.collectAsStateWithLifecycle().value
 
                 if (recipe != null) {
                     // F3-07: botón favorito con animateColorAsState en RecipeDetailScreen
@@ -86,7 +93,8 @@ class RecipeDetailActivity : AppCompatActivity() {
                         onNavItemSelected = {},
                         isFavorite = isFavorite,
                         onToggleFavorite = { viewModel.toggleFavorite() },
-                        onBackClick = { onBackPressedDispatcher.onBackPressed() }
+                        onBackClick = { onBackPressedDispatcher.onBackPressed() },
+                        videoUiState = videoUiState
                     )
                 }
             }
@@ -101,15 +109,20 @@ class RecipeDetailActivity : AppCompatActivity() {
 class DetailActivityViewModel(
     private val getRecipeDetailUseCase: GetRecipeDetailUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val ensureRecipeVideoUseCase: EnsureRecipeVideoUseCase,
     private val favoritesRepository: FavoritesRepository,
     private val userId: String
 ) : ViewModel() {
+    private val cachedVideoRecipeIds = Collections.synchronizedSet(mutableSetOf<String>())
+    private val pendingVideoRecipeIds = Collections.synchronizedSet(mutableSetOf<String>())
 
     private val _recipe = MutableStateFlow<Recipe?>(null)
     val recipe: StateFlow<Recipe?> = _recipe.asStateFlow()
 
     private val _isFavorite = MutableStateFlow(false)
     val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
+    private val _videoUiState = MutableStateFlow<RecipeVideoUiState>(RecipeVideoUiState.Loading)
+    val videoUiState: StateFlow<RecipeVideoUiState> = _videoUiState.asStateFlow()
 
     private var currentRecipeId: String = ""
 
@@ -118,6 +131,23 @@ class DetailActivityViewModel(
         viewModelScope.launch {
             getRecipeDetailUseCase(recipeId).collect { r ->
                 _recipe.value = r
+                if (r == null) {
+                    _videoUiState.value = RecipeVideoUiState.Empty
+                } else {
+                    r.videoYoutube?.takeIf { it.isNotBlank() }?.let { currentUrl ->
+                        _videoUiState.value = RecipeVideoUiState.Ready(
+                            videoUrl = currentUrl,
+                            fromFallback = isFallbackUrl(currentUrl)
+                        )
+                    } ?: run {
+                        _videoUiState.value = RecipeVideoUiState.Loading
+                    }
+                    cacheVideoIfNeeded(
+                        recipeId = r.id,
+                        recipeTitle = r.title,
+                        currentVideoUrl = r.videoYoutube
+                    )
+                }
             }
         }
         viewModelScope.launch {
@@ -133,11 +163,60 @@ class DetailActivityViewModel(
             toggleFavoriteUseCase(userId, currentRecipeId)
         }
     }
+
+    fun cacheVideoIfNeeded(recipeId: String, recipeTitle: String, currentVideoUrl: String?) {
+        if (recipeId.isBlank()) return
+        synchronized(this) {
+            if (recipeId in cachedVideoRecipeIds || recipeId in pendingVideoRecipeIds) return
+            pendingVideoRecipeIds.add(recipeId)
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = runCatching {
+                ensureRecipeVideoUseCase(
+                    recipeId = recipeId,
+                    recipeTitle = recipeTitle,
+                    currentVideoUrl = currentVideoUrl,
+                    ownerUserId = userId
+                )
+            }.getOrElse {
+                _videoUiState.value = RecipeVideoUiState.Error(
+                    message = "No se pudo resolver el video",
+                    fallbackUrl = buildFallbackUrl(recipeTitle)
+                )
+                markCacheFinished(recipeId, wasSuccessful = false)
+                android.util.Log.e("VideoCache", "Error cacheando video: ${it.message}")
+                return@launch
+            }
+
+            _videoUiState.value = RecipeVideoUiState.Ready(
+                videoUrl = result.resolvedVideoUrl,
+                fromFallback = isFallbackUrl(result.resolvedVideoUrl)
+            )
+            markCacheFinished(recipeId, wasSuccessful = result.persisted)
+        }
+    }
+
+    private fun markCacheFinished(recipeId: String, wasSuccessful: Boolean) {
+        synchronized(this) {
+            pendingVideoRecipeIds.remove(recipeId)
+            if (wasSuccessful) cachedVideoRecipeIds.add(recipeId)
+        }
+    }
+
+    private fun buildFallbackUrl(recipeTitle: String): String {
+        return "https://www.youtube.com/results?search_query=${
+            Uri.encode("como preparar $recipeTitle receta tutorial")
+        }"
+    }
+
+    private fun isFallbackUrl(url: String): Boolean = url.contains("/results?search_query=")
 }
 
 private class DetailActivityViewModelFactory(
     private val getRecipeDetailUseCase: GetRecipeDetailUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val ensureRecipeVideoUseCase: EnsureRecipeVideoUseCase,
     private val favoritesRepository: FavoritesRepository,
     private val userId: String
 ) : ViewModelProvider.Factory {
@@ -146,6 +225,7 @@ private class DetailActivityViewModelFactory(
         return DetailActivityViewModel(
             getRecipeDetailUseCase,
             toggleFavoriteUseCase,
+            ensureRecipeVideoUseCase,
             favoritesRepository,
             userId
         ) as T

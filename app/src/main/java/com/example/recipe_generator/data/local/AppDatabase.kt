@@ -49,7 +49,7 @@ import com.example.recipe_generator.data.local.entity.WeeklyPlanEntity
         UserProfileEntity::class,
         AppNotificationEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -62,6 +62,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun appNotificationDao(): AppNotificationDao
 
     companion object {
+        val MIGRATION_9_TO_10 = object : androidx.room.migration.Migration(9, 10) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE recipes ADD COLUMN videoYoutube TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE user_recipes ADD COLUMN videoYoutube TEXT DEFAULT NULL")
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -72,6 +79,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "recipe_generator_db"
                 )
+                .addMigrations(MIGRATION_9_TO_10)
                 .fallbackToDestructiveMigration(dropAllTables = true)
                 .build().also { INSTANCE = it }
             }

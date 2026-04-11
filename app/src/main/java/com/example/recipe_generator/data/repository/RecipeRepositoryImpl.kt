@@ -4,6 +4,7 @@ import com.example.recipe_generator.data.legacy.getAllRecipesAsDomainModel
 import com.example.recipe_generator.data.local.dao.RecipeDao
 import com.example.recipe_generator.data.mapper.toEntity
 import com.example.recipe_generator.data.mapper.toDomain
+import com.example.recipe_generator.data.remote.GlobalRecipeVideoPipeline
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.domain.repository.RecipeRepository
 import kotlinx.coroutines.flow.Flow
@@ -32,24 +33,32 @@ class RecipeRepositoryImpl(
 
     override fun getAllRecipes(): Flow<List<Recipe>> =
         if (recipeDao != null)
-            recipeDao.getAllRecipes().map { entities -> entities.map { it.toDomain() } }
+            recipeDao.getAllRecipes().map { entities ->
+                entities.map { it.toDomain() }.withGuaranteedVideo()
+            }
         else
-            inMemoryRecipes!!
+            inMemoryRecipes!!.map { it.withGuaranteedVideo() }
 
     override fun getRecipesByDay(day: String): Flow<List<Recipe>> =
         if (recipeDao != null)
-            recipeDao.getRecipesByDay(day).map { entities -> entities.map { it.toDomain() } }
+            recipeDao.getRecipesByDay(day).map { entities ->
+                entities.map { it.toDomain() }.withGuaranteedVideo()
+            }
         else
             inMemoryRecipes!!.map { all ->
-                all.filter { it.dayOfWeek == day }.sortedBy { mealTypeOrder(it.category) }
+                all.filter { it.dayOfWeek == day }
+                    .sortedBy { mealTypeOrder(it.category) }
+                    .withGuaranteedVideo()
             }
 
     override fun getRecipesByCategory(category: String): Flow<List<Recipe>> =
         if (recipeDao != null)
-            recipeDao.getRecipesByCategory(category).map { entities -> entities.map { it.toDomain() } }
+            recipeDao.getRecipesByCategory(category).map { entities ->
+                entities.map { it.toDomain() }.withGuaranteedVideo()
+            }
         else
             inMemoryRecipes!!.map { all ->
-                all.filter { it.category.equals(category, ignoreCase = true) }
+                all.filter { it.category.equals(category, ignoreCase = true) }.withGuaranteedVideo()
             }
 
     override fun getRecipeById(id: String): Flow<Recipe?> =
@@ -59,32 +68,35 @@ class RecipeRepositoryImpl(
                 if (entity != null) {
                     val ingredients = recipeDao.getIngredientsByRecipeId(id)
                     val steps = recipeDao.getStepsByRecipeId(id)
-                    emit(entity.toDomain(ingredients, steps))
+                    emit(entity.toDomain(ingredients, steps).withGuaranteedVideo())
                 } else {
                     emit(null)
                 }
             }
         } else {
-            inMemoryRecipes!!.map { all -> all.firstOrNull { it.id == id } }
+            inMemoryRecipes!!.map { all -> all.firstOrNull { it.id == id }?.withGuaranteedVideo() }
         }
 
     override fun searchRecipes(query: String): Flow<List<Recipe>> =
         if (recipeDao != null)
-            recipeDao.searchRecipes(query).map { entities -> entities.map { it.toDomain() } }
+            recipeDao.searchRecipes(query).map { entities ->
+                entities.map { it.toDomain() }.withGuaranteedVideo()
+            }
         else
             inMemoryRecipes!!.map { all ->
                 all.filter { recipe ->
                     recipe.title.contains(query, ignoreCase = true) ||
                         recipe.description.contains(query, ignoreCase = true)
-                }
+                }.withGuaranteedVideo()
             }
 
     // ── Escritura ─────────────────────────────────────────────────────
 
     override suspend fun insertAll(recipes: List<Recipe>) {
+        val normalizedRecipes = recipes.withGuaranteedVideo()
         if (recipeDao != null) {
-            recipeDao.insertRecipes(recipes.map { it.toEntity() })
-            recipes.forEach { recipe ->
+            recipeDao.insertRecipes(normalizedRecipes.map { it.toEntity() })
+            normalizedRecipes.forEach { recipe ->
                 if (recipe.ingredients.isNotEmpty()) {
                     recipeDao.insertIngredients(recipe.ingredients.map { it.toEntity(recipe.id) })
                 }
@@ -93,7 +105,7 @@ class RecipeRepositoryImpl(
                 }
             }
         } else {
-            inMemoryRecipes!!.value = recipes
+            inMemoryRecipes!!.value = normalizedRecipes
         }
     }
 
@@ -108,3 +120,12 @@ private fun mealTypeOrder(category: String) = when (category) {
     "Cena"     -> 3
     else       -> 4
 }
+
+private fun List<Recipe>.withGuaranteedVideo(): List<Recipe> = map { it.withGuaranteedVideo() }
+
+private fun Recipe.withGuaranteedVideo(): Recipe = copy(
+    videoYoutube = GlobalRecipeVideoPipeline.ensureDisplayVideo(
+        currentVideoUrl = videoYoutube,
+        recipeTitle = title
+    )
+)

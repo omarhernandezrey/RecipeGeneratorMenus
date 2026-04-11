@@ -40,6 +40,7 @@ fun RecipeEntity.toDomain(
     carbsGrams = carbsGrams,
     fatGrams = fatGrams,
     dayOfWeek = dayOfWeek,
+    videoYoutube = videoYoutube,
     ingredients = ingredients.map { it.toDomain() },
     ingredientTags = ingredientTags.split("|").filter { it.isNotBlank() },
     steps = steps.map { it.toDomain() }
@@ -77,6 +78,7 @@ fun Recipe.toEntity(): RecipeEntity = RecipeEntity(
     carbsGrams = carbsGrams,
     fatGrams = fatGrams,
     dayOfWeek = dayOfWeek,
+    videoYoutube = videoYoutube,
     ingredientTags = ingredientTags.joinToString("|")
 )
 

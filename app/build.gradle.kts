@@ -18,6 +18,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+        val youtubeApiKey = (project.findProperty("YOUTUBE_API_KEY") as String?) ?: ""
+        buildConfigField("String", "YOUTUBE_API_KEY", "\"$youtubeApiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -37,6 +39,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -83,6 +86,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
 
     // A-05: Google Sign-In con Credential Manager (moderno — reemplaza GoogleSignInClient legacy)
     implementation("androidx.credentials:credentials:1.3.0")
@@ -91,6 +95,9 @@ dependencies {
 
     // Coil — carga de imágenes en Compose (búsqueda TheMealDB)
     implementation(libs.coil.compose)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.glide)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
