@@ -4,11 +4,13 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.recipe_generator.data.local.dao.AppNotificationDao
 import com.example.recipe_generator.data.local.dao.FavoriteDao
 import com.example.recipe_generator.data.local.dao.RecipeDao
 import com.example.recipe_generator.data.local.dao.UserProfileDao
 import com.example.recipe_generator.data.local.dao.UserRecipeDao
 import com.example.recipe_generator.data.local.dao.WeeklyPlanDao
+import com.example.recipe_generator.data.local.entity.AppNotificationEntity
 import com.example.recipe_generator.data.local.entity.FavoriteEntity
 import com.example.recipe_generator.data.local.entity.IngredientEntity
 import com.example.recipe_generator.data.local.entity.RecipeEntity
@@ -44,9 +46,10 @@ import com.example.recipe_generator.data.local.entity.WeeklyPlanEntity
         StepEntity::class,
         UserRecipeEntity::class,
         WeeklyPlanEntity::class,
-        UserProfileEntity::class
+        UserProfileEntity::class,
+        AppNotificationEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -56,6 +59,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userRecipeDao(): UserRecipeDao
     abstract fun weeklyPlanDao(): WeeklyPlanDao
     abstract fun userProfileDao(): UserProfileDao
+    abstract fun appNotificationDao(): AppNotificationDao
 
     companion object {
         @Volatile

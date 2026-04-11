@@ -3,7 +3,9 @@ package com.example.recipe_generator.presentation.myrecipes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.recipe_generator.data.sync.FirestoreSyncService
+import com.example.recipe_generator.domain.model.AppNotification
 import com.example.recipe_generator.domain.model.UserRecipe
+import com.example.recipe_generator.domain.repository.AppNotificationRepository
 import com.example.recipe_generator.domain.repository.UserRecipeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,7 +37,8 @@ data class RecipeFormUiState(
 class CreateRecipeViewModel(
     private val userId: String,
     private val userRecipeRepository: UserRecipeRepository,
-    private val firestoreSyncService: FirestoreSyncService
+    private val firestoreSyncService: FirestoreSyncService,
+    private val appNotificationRepository: AppNotificationRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecipeFormUiState())
@@ -113,6 +116,14 @@ class CreateRecipeViewModel(
                 }
                 firestoreSyncService.uploadRecipe(recipe)
             }.onSuccess {
+                // Guardar notificación in-app
+                appNotificationRepository?.insert(AppNotification(
+                    id        = UUID.randomUUID().toString(),
+                    title     = "Receta creada",
+                    body      = "\"${current.title.trim().ifBlank { "Nueva receta" }}\" se guardó en Mis Recetas",
+                    type      = "recipe_created",
+                    createdAt = System.currentTimeMillis()
+                ))
                 updateState { copy(isSaving = false, saveVersion = saveVersion + 1) }
             }.onFailure { throwable ->
                 updateState {

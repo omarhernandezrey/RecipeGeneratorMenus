@@ -2,6 +2,8 @@ package com.example.recipe_generator.presentation.generator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.recipe_generator.domain.model.AppNotification
+import com.example.recipe_generator.domain.repository.AppNotificationRepository
 import com.example.recipe_generator.domain.repository.UserRecipeRepository
 import com.example.recipe_generator.domain.repository.WeeklyPlanRepository
 import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
@@ -10,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 data class GeneratorUiState(
     val isGenerating: Boolean = false,
@@ -25,7 +28,8 @@ class MenuGeneratorViewModel(
     private val generateMenuUseCase: GenerateMenuUseCase,
     private val weeklyPlanRepository: WeeklyPlanRepository,
     private val userRecipeRepository: UserRecipeRepository,
-    private val userId: String
+    private val userId: String,
+    private val appNotificationRepository: AppNotificationRepository? = null
 ) : ViewModel() {
 
     private val _maxDifficulty  = MutableStateFlow("Difícil")
@@ -99,13 +103,30 @@ class MenuGeneratorViewModel(
                     }
                 }
 
-                _uiState.value = GeneratorUiState(
+                val newState = GeneratorUiState(
                     planSaved     = true,
                     recipesFound  = totalFound,
                     hasBreakfasts = breakfasts.isNotEmpty(),
                     hasLunches    = lunches.isNotEmpty(),
                     hasDinners    = dinners.isNotEmpty()
                 )
+                _uiState.value = newState
+
+                // Guardar notificación in-app
+                appNotificationRepository?.let { repo ->
+                    val mealList = buildList {
+                        if (newState.hasBreakfasts) add("Desayuno")
+                        if (newState.hasLunches)    add("Almuerzo")
+                        if (newState.hasDinners)    add("Cena")
+                    }
+                    repo.insert(AppNotification(
+                        id        = UUID.randomUUID().toString(),
+                        title     = "Plan semanal generado",
+                        body      = "Menú listo: ${mealList.joinToString(" · ")} — 7 días asignados",
+                        type      = "plan_generated",
+                        createdAt = System.currentTimeMillis()
+                    ))
+                }
 
             }.onFailure { e ->
                 _uiState.value = GeneratorUiState(error = e.message ?: "Error al generar el plan")

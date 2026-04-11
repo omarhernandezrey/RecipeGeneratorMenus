@@ -8,7 +8,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.recipe_generator.presentation.notifications.NotificationBellIcon
+import com.example.recipe_generator.presentation.notifications.NotificationPanel
+import com.example.recipe_generator.presentation.notifications.NotificationViewModel
 import com.example.recipe_generator.domain.repository.FavoritesRepository
 import com.example.recipe_generator.domain.repository.UserPrefsRepository
 import com.example.recipe_generator.domain.repository.WeeklyPlanRepository
@@ -63,8 +70,27 @@ fun AppShell(
     var selectedTab by remember { mutableIntStateOf(0) }
     var isProfileOpen by remember { mutableStateOf(false) }
     var selectedRecipe by remember { mutableStateOf<Recipe?>(null) }
+    var showNotificationPanel by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val isSyncingValue by isSyncing.collectAsStateWithLifecycle()
+
+    val appContainer = (LocalContext.current.applicationContext
+        as com.example.recipe_generator.RecipeGeneratorApp).container
+
+    val notificationViewModel: NotificationViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return NotificationViewModel(
+                    appContainer.appNotificationRepository
+                ) as T
+            }
+        }
+    )
+    val notifications by notificationViewModel.notifications.collectAsStateWithLifecycle()
+    val unreadCount   by notificationViewModel.unreadCount.collectAsStateWithLifecycle()
+
+    val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
     // Favoritos hoisted para el modal y para Tab 0
     val favoriteIds by favoritesRepository
@@ -95,18 +121,16 @@ fun AppShell(
         }
     )
 
-    val appContainer = (LocalContext.current.applicationContext
-        as com.example.recipe_generator.RecipeGeneratorApp).container
-
     val generatorViewModel: MenuGeneratorViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
                 return MenuGeneratorViewModel(
-                    generateMenuUseCase  = generateMenuUseCase,
-                    weeklyPlanRepository = weeklyPlanRepository,
-                    userRecipeRepository = appContainer.userRecipeRepository,
-                    userId               = userId
+                    generateMenuUseCase       = generateMenuUseCase,
+                    weeklyPlanRepository      = weeklyPlanRepository,
+                    userRecipeRepository      = appContainer.userRecipeRepository,
+                    userId                    = userId,
+                    appNotificationRepository = appContainer.appNotificationRepository
                 ) as T
             }
         }
@@ -133,6 +157,7 @@ fun AppShell(
         return
     }
 
+    Box(modifier = Modifier.fillMaxSize()) {
     when (selectedTab) {
         // ═══════════════════════════════════════════════════════════════
         // Tab 0: Inicio — RecipeListScreen (Menú Semanal)
@@ -263,6 +288,20 @@ fun AppShell(
         }
     }
 
+    // ── Notification Bell overlay ────────────────────────────────────────
+    NotificationBellIcon(
+        unreadCount = unreadCount,
+        modifier    = Modifier
+            .align(Alignment.TopEnd)
+            .padding(top = statusBarPadding + 10.dp, end = 16.dp),
+        onClick = {
+            notificationViewModel.markAllRead()
+            showNotificationPanel = true
+        }
+    )
+
+    } // end outer Box
+
     // ═══════════════════════════════════════════════════════════════════
     // Modal de detalle — aparece al pulsar cualquier receta en la app
     // ═══════════════════════════════════════════════════════════════════
@@ -276,6 +315,17 @@ fun AppShell(
                 }
             },
             onDismiss = { selectedRecipe = null }
+        )
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Panel de notificaciones in-app
+    // ═══════════════════════════════════════════════════════════════════
+    if (showNotificationPanel) {
+        NotificationPanel(
+            notifications = notifications,
+            onDelete      = notificationViewModel::deleteById,
+            onDismiss     = { showNotificationPanel = false }
         )
     }
 }

@@ -44,7 +44,8 @@ fun CreateRecipeScreen(
                 return CreateRecipeViewModel(
                     userId = userId,
                     userRecipeRepository = appContainer.userRecipeRepository,
-                    firestoreSyncService = appContainer.firestoreSyncService
+                    firestoreSyncService = appContainer.firestoreSyncService,
+                    appNotificationRepository = appContainer.appNotificationRepository
                 ) as T
             }
         }
