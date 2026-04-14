@@ -5,9 +5,13 @@ package com.example.recipe_generator.di
 import android.content.Context
 import com.example.recipe_generator.BuildConfig
 import com.example.recipe_generator.data.local.AppDatabase
+import com.example.recipe_generator.data.remote.GeminiRecipeDataSource
+import com.example.recipe_generator.data.remote.GlobalRecipeFirestoreDataSource
 import com.example.recipe_generator.data.remote.RecipeVideoResolver
+import com.example.recipe_generator.data.remote.TheMealDbServiceFactory
 import com.example.recipe_generator.data.repository.AppNotificationRepositoryImpl
 import com.example.recipe_generator.data.repository.FirebaseAuthRepository
+import com.example.recipe_generator.data.repository.GlobalRecipeSearchRepositoryImpl
 import com.example.recipe_generator.data.repository.MockAuthRepository
 import com.example.recipe_generator.data.repository.RecipeVideoRepositoryImpl
 import com.example.recipe_generator.data.repository.RecipeRepositoryImpl
@@ -22,6 +26,7 @@ import com.example.recipe_generator.data.sync.RecipeVideoStorageService
 import com.example.recipe_generator.domain.repository.AppNotificationRepository
 import com.example.recipe_generator.domain.repository.AuthRepository
 import com.example.recipe_generator.domain.repository.FavoritesRepository
+import com.example.recipe_generator.domain.repository.GlobalRecipeSearchRepository
 import com.example.recipe_generator.domain.repository.RecipeRepository
 import com.example.recipe_generator.domain.repository.RecipeVideoRepository
 import com.example.recipe_generator.domain.repository.UserProfileRepository
@@ -33,6 +38,7 @@ import com.example.recipe_generator.domain.usecase.GenerateMenuUseCase
 import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
 import com.example.recipe_generator.domain.usecase.GetRecipeDetailUseCase
 import com.example.recipe_generator.domain.usecase.ResolveRecipeVideoUseCase
+import com.example.recipe_generator.domain.usecase.SearchGlobalRecipeUseCase
 import com.example.recipe_generator.domain.usecase.ToggleFavoriteUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -43,71 +49,39 @@ import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Contenedor de dependencias manual — sin Hilt ni Dagger.
- *
- * Actúa como Service Locator para toda la aplicación.
- * Instanciado una sola vez en RecipeGeneratorApp.onCreate().
- *
- * FLUJO DE DEPENDENCIAS (Dependency Rule — Clean Architecture):
- *
- *   Presentation → Domain ← Data
- *
- * La capa de Dominio NO conoce a Presentation ni a Data.
- * AppContainer construye las implementaciones concretas de Data
- * e inyecta las interfaces de Dominio hacia arriba (Presentation).
- *
- * Capa: DI (infraestructura transversal)
- *
- * NOTA: Las implementaciones concretas (RecipeRepositoryImpl, etc.)
- * se instanciarán aquí en F2-21 y F3-29/F3-30 cuando se cree Room
- * y DataStore. Por ahora las propiedades están declaradas como lateinit
- * para dejar explícita la arquitectura.
  */
 class AppContainer(private val context: Context) {
     private val appContext = context.applicationContext
 
-    // ── Base de datos Room (F3-29) ────────────────────────────────────
+    // ── Clave Gemini (A-AI) ──────────────────────────────────────────
+    private val GEMINI_API_KEY = "AIzaSyB3kfS_PTXewRw1kPZHaAaOjwsHSKuN1nU"
+
+    // ── Base de datos Room ────────────────────────────────────────────
     private val database: AppDatabase by lazy {
         AppDatabase.getInstance(appContext)
     }
 
-    // ── Firebase Authentication ────────────────────────────────────────
-    private val firebaseAuth: FirebaseAuth by lazy {
-        FirebaseAuth.getInstance()
+    // ── Firebase ──────────────────────────────────────────────────────
+    private val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+    private val firebaseFirestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
+    private val firebaseStorage: FirebaseStorage by lazy { FirebaseStorage.getInstance() }
+
+    // ── Data Sources Remotos ──────────────────────────────────────────
+    val geminiRecipeDataSource: GeminiRecipeDataSource by lazy {
+        GeminiRecipeDataSource(GEMINI_API_KEY)
     }
 
-    private val firebaseFirestore: FirebaseFirestore by lazy {
-        FirebaseFirestore.getInstance()
+    private val theMealDbService by lazy { TheMealDbServiceFactory.create() }
+
+    private val globalRecipeFirestoreDataSource: GlobalRecipeFirestoreDataSource by lazy {
+        GlobalRecipeFirestoreDataSource(firebaseFirestore)
     }
 
-    private val firebaseStorage: FirebaseStorage by lazy {
-        FirebaseStorage.getInstance()
-    }
-
-    val recipeVideoResolver: RecipeVideoResolver by lazy {
-        RecipeVideoResolver()
-    }
-
-    val recipeVideoStorageService: RecipeVideoStorageService by lazy {
-        RecipeVideoStorageService(firebaseStorage)
-    }
-
-    val recipeVideoRepository: RecipeVideoRepository by lazy {
-        RecipeVideoRepositoryImpl(
-            firestore = firebaseFirestore,
-            recipeVideoStorageService = recipeVideoStorageService,
-            youtubeApiKey = BuildConfig.YOUTUBE_API_KEY
-        )
-    }
-
-    // ── Repositorios (interfaces de Dominio, impls de Datos) ──────────
-    // En F3-29 FavoritesRepository migra a Room.
-
+    // ── Repositorios ──────────────────────────────────────────────────
     val authRepository: AuthRepository by lazy {
         try {
-            // Intenta usar Firebase, si falla usa Mock para desarrollo
             FirebaseAuthRepository(firebaseAuth)
         } catch (e: Exception) {
-            android.util.Log.w("AppContainer", "Firebase no disponible, usando MockAuthRepository: ${e.message}")
             MockAuthRepository()
         }
     }
@@ -117,10 +91,7 @@ class AppContainer(private val context: Context) {
     }
 
     val favoritesRepository: FavoritesRepository by lazy {
-        RoomFavoritesRepositoryImpl(
-            favoriteDao = database.favoriteDao(),
-            recipeRepository = recipeRepository
-        )
+        RoomFavoritesRepositoryImpl(database.favoriteDao(), recipeRepository)
     }
 
     val userPrefsRepository: UserPrefsRepository by lazy {
@@ -128,18 +99,11 @@ class AppContainer(private val context: Context) {
     }
 
     val userRecipeRepository: UserRecipeRepository by lazy {
-        UserRecipeRepositoryImpl(
-            userRecipeDao = database.userRecipeDao(),
-            weeklyPlanDao = database.weeklyPlanDao()
-        )
+        UserRecipeRepositoryImpl(database.userRecipeDao(), database.weeklyPlanDao())
     }
 
     val weeklyPlanRepository: WeeklyPlanRepository by lazy {
-        WeeklyPlanRepositoryImpl(
-            weeklyPlanDao = database.weeklyPlanDao(),
-            userRecipeDao = database.userRecipeDao(),
-            recipeDao = database.recipeDao()
-        )
+        WeeklyPlanRepositoryImpl(database.weeklyPlanDao(), database.userRecipeDao(), database.recipeDao())
     }
 
     val userProfileRepository: UserProfileRepository by lazy {
@@ -150,67 +114,51 @@ class AppContainer(private val context: Context) {
         AppNotificationRepositoryImpl(database.appNotificationDao())
     }
 
+    val recipeVideoStorageService: RecipeVideoStorageService by lazy {
+        RecipeVideoStorageService(firebaseStorage)
+    }
+
+    val recipeVideoRepository: RecipeVideoRepository by lazy {
+        RecipeVideoRepositoryImpl(firebaseFirestore, recipeVideoStorageService, BuildConfig.YOUTUBE_API_KEY)
+    }
+
+    val globalRecipeSearchRepository: GlobalRecipeSearchRepository by lazy {
+        GlobalRecipeSearchRepositoryImpl(globalRecipeFirestoreDataSource, theMealDbService)
+    }
+
+    // ── Servicios de Sincronización ───────────────────────────────────
     val firestoreSyncService: FirestoreSyncService by lazy {
-        FirestoreSyncService(
-            firestore = firebaseFirestore,
-            userRecipeDao = database.userRecipeDao(),
-            userProfileDao = database.userProfileDao(),
-            recipeVideoStorageService = recipeVideoStorageService
-        )
+        FirestoreSyncService(firebaseFirestore, database.userRecipeDao(), database.userProfileDao(), recipeVideoStorageService)
     }
 
     val firestoreWeeklyPlanSync: FirestoreWeeklyPlanSync by lazy {
-        FirestoreWeeklyPlanSync(
-            firestore = firebaseFirestore,
-            weeklyPlanDao = database.weeklyPlanDao(),
-            userRecipeDao = database.userRecipeDao(),
-            recipeDao = database.recipeDao()
-        )
+        FirestoreWeeklyPlanSync(firebaseFirestore, database.weeklyPlanDao(), database.userRecipeDao(), database.recipeDao())
     }
 
-    /**
-     * UID actual que debe pasarse a los repositorios de datos por usuario.
-     * Lanza excepción si la capa de presentación intenta usar estos repos
-     * sin tener una sesión autenticada activa.
-     */
-    /** E-08: estado de sincronización visible en la UI. */
+    // ── Estado de Sincronización ──────────────────────────────────────
     private val _isSyncing = MutableStateFlow(false)
     val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
-
     fun setSyncing(value: Boolean) { _isSyncing.value = value }
 
     fun requireAuthenticatedUserId(): String =
-        authRepository.getCurrentUserId()
-            ?: throw IllegalStateException("No hay usuario autenticado")
+        authRepository.getCurrentUserId() ?: throw IllegalStateException("No hay usuario autenticado")
 
-    /**
-     * E-05: Limpia todos los datos locales del usuario de Room antes de cerrar sesión.
-     * Los datos permanecen en Firestore — solo se borra la caché local.
-     * Permite que otro usuario inicie sesión sin ver datos ajenos.
-     */
     suspend fun clearLocalUserData(userId: String) {
         database.favoriteDao().deleteAllByUser(userId)
         database.weeklyPlanDao().deleteAllByUser(userId)
-        firestoreSyncService.clearLocalData(userId) // userRecipes + userProfile
+        firestoreSyncService.clearLocalData(userId)
     }
 
     // ── Casos de Uso ─────────────────────────────────────────────────
+    val getMenuForDayUseCase: GetMenuForDayUseCase get() = GetMenuForDayUseCase(recipeRepository)
+    val getRecipeDetailUseCase: GetRecipeDetailUseCase get() = GetRecipeDetailUseCase(recipeRepository)
+    val toggleFavoriteUseCase: ToggleFavoriteUseCase get() = ToggleFavoriteUseCase(favoritesRepository)
+    
+    // Aquí es donde la IA toma el control
+    val generateMenuUseCase: GenerateMenuUseCase 
+        get() = GenerateMenuUseCase(recipeRepository, geminiRecipeDataSource)
 
-    val getMenuForDayUseCase: GetMenuForDayUseCase
-        get() = GetMenuForDayUseCase(recipeRepository)
-
-    val getRecipeDetailUseCase: GetRecipeDetailUseCase
-        get() = GetRecipeDetailUseCase(recipeRepository)
-
-    val toggleFavoriteUseCase: ToggleFavoriteUseCase
-        get() = ToggleFavoriteUseCase(favoritesRepository)
-
-    val generateMenuUseCase: GenerateMenuUseCase
-        get() = GenerateMenuUseCase(recipeRepository)
-
-    val ensureRecipeVideoUseCase: EnsureRecipeVideoUseCase
-        get() = EnsureRecipeVideoUseCase(recipeVideoRepository)
-
-    val resolveRecipeVideoUseCase: ResolveRecipeVideoUseCase
-        get() = ResolveRecipeVideoUseCase(recipeVideoRepository)
+    val ensureRecipeVideoUseCase: EnsureRecipeVideoUseCase get() = EnsureRecipeVideoUseCase(recipeVideoRepository)
+    val resolveRecipeVideoUseCase: ResolveRecipeVideoUseCase get() = ResolveRecipeVideoUseCase(recipeVideoRepository)
+    val searchGlobalRecipeUseCase: SearchGlobalRecipeUseCase get() = SearchGlobalRecipeUseCase(globalRecipeSearchRepository)
 }

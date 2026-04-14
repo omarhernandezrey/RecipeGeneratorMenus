@@ -314,6 +314,6 @@ private fun relativeTime(timestampMs: Long): String {
         diffMs < TimeUnit.MINUTES.toMillis(1)  -> "Ahora mismo"
         diffMs < TimeUnit.HOURS.toMillis(1)    -> "${TimeUnit.MILLISECONDS.toMinutes(diffMs)} min"
         diffMs < TimeUnit.DAYS.toMillis(1)     -> "Hace ${TimeUnit.MILLISECONDS.toHours(diffMs)} h"
-        else -> SimpleDateFormat("d MMM", Locale("es")).format(Date(timestampMs))
+        else -> SimpleDateFormat("d MMM", Locale.forLanguageTag("es")).format(Date(timestampMs))
     }
 }

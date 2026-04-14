@@ -21,6 +21,8 @@ data class RecipeEntity(
     val id: String,
     val title: String,
     val imageRes: String,
+    /** URL remota persistida tras búsqueda exitosa (F-Images) */
+    val imageUrl: String? = null,
     val timeInMinutes: Int,
     val calories: Int,
     val difficulty: String,

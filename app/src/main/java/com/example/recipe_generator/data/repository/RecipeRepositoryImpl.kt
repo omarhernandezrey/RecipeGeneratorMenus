@@ -37,7 +37,7 @@ class RecipeRepositoryImpl(
                 entities.map { it.toDomain() }.withGuaranteedVideo()
             }
         else
-            inMemoryRecipes!!.map { it.withGuaranteedVideo() }
+            inMemoryRecipes!!.map { it }
 
     override fun getRecipesByDay(day: String): Flow<List<Recipe>> =
         if (recipeDao != null)
@@ -48,7 +48,6 @@ class RecipeRepositoryImpl(
             inMemoryRecipes!!.map { all ->
                 all.filter { it.dayOfWeek == day }
                     .sortedBy { mealTypeOrder(it.category) }
-                    .withGuaranteedVideo()
             }
 
     override fun getRecipesByCategory(category: String): Flow<List<Recipe>> =
@@ -58,7 +57,7 @@ class RecipeRepositoryImpl(
             }
         else
             inMemoryRecipes!!.map { all ->
-                all.filter { it.category.equals(category, ignoreCase = true) }.withGuaranteedVideo()
+                all.filter { it.category.equals(category, ignoreCase = true) }
             }
 
     override fun getRecipeById(id: String): Flow<Recipe?> =
@@ -74,7 +73,9 @@ class RecipeRepositoryImpl(
                 }
             }
         } else {
-            inMemoryRecipes!!.map { all -> all.firstOrNull { it.id == id }?.withGuaranteedVideo() }
+            inMemoryRecipes!!.map { all ->
+                all.firstOrNull { it.id == id }
+            }
         }
 
     override fun searchRecipes(query: String): Flow<List<Recipe>> =
@@ -87,13 +88,13 @@ class RecipeRepositoryImpl(
                 all.filter { recipe ->
                     recipe.title.contains(query, ignoreCase = true) ||
                         recipe.description.contains(query, ignoreCase = true)
-                }.withGuaranteedVideo()
+                }
             }
 
     // ── Escritura ─────────────────────────────────────────────────────
 
     override suspend fun insertAll(recipes: List<Recipe>) {
-        val normalizedRecipes = recipes.withGuaranteedVideo()
+        val normalizedRecipes = if (recipeDao != null) recipes.withGuaranteedVideo() else recipes
         if (recipeDao != null) {
             recipeDao.insertRecipes(normalizedRecipes.map { it.toEntity() })
             normalizedRecipes.forEach { recipe ->

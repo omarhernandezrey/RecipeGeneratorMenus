@@ -3,49 +3,19 @@ package com.example.recipe_generator.presentation.myrecipes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.Collections
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -53,18 +23,7 @@ import com.example.recipe_generator.presentation.components.AppTextField
 import com.example.recipe_generator.presentation.components.EditorialCard
 import com.example.recipe_generator.presentation.components.PrimaryButton
 import com.example.recipe_generator.presentation.profile.rememberProfileImage
-import com.example.recipe_generator.presentation.theme.OnSurface
-import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
-import com.example.recipe_generator.presentation.theme.Primary
-import com.example.recipe_generator.presentation.theme.PrimaryContainer
-import com.example.recipe_generator.presentation.theme.Surface
-import com.example.recipe_generator.presentation.theme.rounded_full
-import com.example.recipe_generator.presentation.theme.rounded_lg
-import com.example.recipe_generator.presentation.theme.spacing_10
-import com.example.recipe_generator.presentation.theme.spacing_2
-import com.example.recipe_generator.presentation.theme.spacing_3
-import com.example.recipe_generator.presentation.theme.spacing_4
-import com.example.recipe_generator.presentation.theme.spacing_6
+import com.example.recipe_generator.presentation.theme.*
 
 @Composable
 internal fun RecipeFormContent(
@@ -88,9 +47,12 @@ internal fun RecipeFormContent(
     onPickImageFromGallery: () -> Unit,
     onTakePhoto: () -> Unit,
     onSearchImage: () -> Unit,
+    onAiGenerate: (String) -> Unit, // Función para el asistente IA
     onBack: () -> Unit,
     onSave: () -> Unit
 ) {
+    var aiPrompt by remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -99,127 +61,82 @@ internal fun RecipeFormContent(
             .padding(spacing_6),
         verticalArrangement = Arrangement.spacedBy(spacing_6)
     ) {
+        // Cabecera
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Volver",
-                    tint = OnSurface
-                )
+                Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Volver", tint = OnSurface)
             }
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = OnSurface
+            Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.ExtraBold, color = OnSurface)
+        }
+
+        // SECCIÓN IA: ASISTENTE INTELIGENTE
+        EditorialCard {
+            Text("Asistente de Creación IA", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Primary)
+            Text("Escribe el nombre de un plato y la IA completará los campos por ti.", style = MaterialTheme.typography.bodySmall, color = OnSurfaceVariant)
+            Spacer(modifier = Modifier.height(spacing_4))
+            
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing_2)) {
+                AppTextField(
+                    value = aiPrompt,
+                    onValueChange = { aiPrompt = it },
+                    placeholder = "Ej: Ajiaco Colombiano",
+                    modifier = Modifier.weight(1f)
                 )
-                Text(
-                    text = "Completa el formulario para guardar la receta del usuario.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = OnSurfaceVariant
-                )
+                IconButton(
+                    onClick = { if(aiPrompt.isNotBlank()) onAiGenerate(aiPrompt) },
+                    enabled = !uiState.isGenerating && aiPrompt.isNotBlank(),
+                    modifier = Modifier.background(PrimaryContainer, RoundedCornerShape(rounded_full))
+                ) {
+                    if (uiState.isGenerating) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp, color = Primary)
+                    } else {
+                        Icon(Icons.Outlined.AutoAwesome, "Generar", tint = Primary)
+                    }
+                }
             }
         }
 
+        HorizontalDivider(color = OnSurface.copy(alpha = 0.05f))
+
+        // SECCIÓN MANUAL: LOS MISMOS CAMPOS DE SIEMPRE
         RecipeImagePicker(
             imageRes = uiState.imageRes,
+            imageUrl = uiState.imageUrl,
             onPickFromGallery = onPickImageFromGallery,
             onTakePhoto = onTakePhoto,
             onSearchImage = onSearchImage
         )
 
         EditorialCard {
-            Text("Información básica", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("Información de la receta", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(spacing_4))
-            AppTextField(uiState.title, onTitleChange, placeholder = "Título de la receta")
+            AppTextField(uiState.title, onTitleChange, placeholder = "Nombre del plato")
             Spacer(modifier = Modifier.height(spacing_3))
-            AppTextField(uiState.description, onDescriptionChange, placeholder = "Descripción")
+            AppTextField(uiState.description, onDescriptionChange, placeholder = "Descripción o historia del plato")
             Spacer(modifier = Modifier.height(spacing_3))
             Row(horizontalArrangement = Arrangement.spacedBy(spacing_3)) {
-                AppTextField(
-                    value = uiState.timeInMinutes,
-                    onValueChange = onTimeChange,
-                    placeholder = "Tiempo (min)",
-                    modifier = Modifier.weight(1f)
-                )
-                AppTextField(
-                    value = uiState.calories,
-                    onValueChange = onCaloriesChange,
-                    placeholder = "Calorías",
-                    modifier = Modifier.weight(1f)
-                )
+                AppTextField(uiState.timeInMinutes, onTimeChange, Modifier.weight(1f), "Mins")
+                AppTextField(uiState.calories, onCaloriesChange, Modifier.weight(1f), "Kcals")
             }
         }
 
         EditorialCard {
             Text("Clasificación", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(spacing_4))
-            AppDropdownField(
-                label = "Categoría",
-                value = uiState.category,
-                options = recipeCategories,
-                onSelected = onCategoryChange
-            )
+            AppDropdownField("Categoría", uiState.category, recipeCategories, onCategoryChange)
             Spacer(modifier = Modifier.height(spacing_3))
-            Row(horizontalArrangement = Arrangement.spacedBy(spacing_3)) {
-                AppDropdownField(
-                    label = "Día",
-                    value = uiState.dayOfWeek,
-                    options = recipeDaysOfWeek,
-                    onSelected = onDayChange,
-                    modifier = Modifier.weight(1f)
-                )
-                AppDropdownField(
-                    label = "Comida",
-                    value = uiState.mealType,
-                    options = mealTypeOptions,
-                    onSelected = onMealTypeChange,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Spacer(modifier = Modifier.height(spacing_4))
-            Text(
-                text = "Dificultad: ${sliderValueToDifficulty(uiState.difficultyLevel)}",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = Primary
-            )
-            Slider(
-                value = uiState.difficultyLevel,
-                onValueChange = onDifficultyChange,
-                valueRange = 0f..2f,
-                steps = 1
-            )
+            Text("Dificultad: ${sliderValueToDifficulty(uiState.difficultyLevel)}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = Primary)
+            Slider(value = uiState.difficultyLevel, onValueChange = onDifficultyChange, valueRange = 0f..2f, steps = 1)
         }
 
-        EditableStringSection(
-            title = "Ingredientes",
-            items = uiState.ingredients,
-            placeholder = "Ej. 2 huevos",
-            onValueChange = onIngredientChange,
-            onAdd = onAddIngredient,
-            onRemove = onRemoveIngredient
-        )
-
-        EditableStringSection(
-            title = "Pasos",
-            items = uiState.steps,
-            placeholder = "Ej. Mezclar todos los ingredientes",
-            onValueChange = onStepChange,
-            onAdd = onAddStep,
-            onRemove = onRemoveStep
-        )
+        EditableStringSection("Ingredientes", uiState.ingredients, "Añadir ingrediente", onIngredientChange, onAddIngredient, onRemoveIngredient)
+        EditableStringSection("Pasos de preparación", uiState.steps, "Añadir paso", onStepChange, onAddStep, onRemoveStep)
 
         if (!uiState.error.isNullOrBlank()) {
-            Text(
-                text = uiState.error,
-                style = MaterialTheme.typography.bodyMedium,
-                color = androidx.compose.ui.graphics.Color(0xFFBA1A1A)
-            )
+            Text(uiState.error, color = Color(0xFFBA1A1A), style = MaterialTheme.typography.bodyMedium)
         }
 
         PrimaryButton(
@@ -227,7 +144,6 @@ internal fun RecipeFormContent(
             onClick = onSave,
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(spacing_10))
     }
 }
@@ -242,46 +158,20 @@ private fun EditableStringSection(
     onRemove: (Int) -> Unit
 ) {
     EditorialCard {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Box(
-                modifier = Modifier
-                    .background(Primary.copy(alpha = 0.08f), RoundedCornerShape(rounded_full))
-                    .clickable(onClick = onAdd)
-                    .padding(horizontal = spacing_3, vertical = spacing_2)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.Add, contentDescription = null, tint = Primary)
-                    Spacer(modifier = Modifier.width(spacing_2))
-                    Text("Agregar", color = Primary, fontWeight = FontWeight.SemiBold)
-                }
+            TextButton(onClick = onAdd) {
+                Icon(Icons.Outlined.Add, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(4.dp))
+                Text("Añadir")
             }
         }
-        Spacer(modifier = Modifier.height(spacing_4))
-        Column(verticalArrangement = Arrangement.spacedBy(spacing_3)) {
-            items.forEachIndexed { index, item ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(spacing_3)
-                ) {
-                    AppTextField(
-                        value = item,
-                        onValueChange = { onValueChange(index, it) },
-                        placeholder = placeholder,
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(onClick = { onRemove(index) }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Delete,
-                            contentDescription = "Eliminar",
-                            tint = OnSurfaceVariant
-                        )
-                    }
+        Spacer(modifier = Modifier.height(spacing_2))
+        items.forEachIndexed { index, item ->
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                AppTextField(item, { onValueChange(index, it) }, Modifier.weight(1f), placeholder)
+                IconButton(onClick = { onRemove(index) }) {
+                    Icon(Icons.Outlined.RemoveCircleOutline, "Quitar", tint = OnSurfaceVariant.copy(alpha = 0.5f))
                 }
             }
         }
@@ -291,146 +181,52 @@ private fun EditableStringSection(
 @Composable
 private fun RecipeImagePicker(
     imageRes: String,
+    imageUrl: String?,
     onPickFromGallery: () -> Unit,
     onTakePhoto: () -> Unit,
     onSearchImage: () -> Unit
 ) {
-    val image = rememberProfileImage(imageRes.takeIf { it.isNotBlank() })
-
     EditorialCard {
-        Text(
-            text = "Foto de la receta",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
+        Text("Imagen de la receta", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(spacing_4))
-
-        // Preview o placeholder
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
-                .clip(RoundedCornerShape(rounded_lg))
-                .background(PrimaryContainer.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            if (image != null) {
-                Image(
-                    bitmap = image,
-                    contentDescription = "Imagen de la receta",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+        
+        Box(modifier = Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(rounded_lg)).background(PrimaryContainer.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) {
+            if (!imageUrl.isNullOrBlank()) {
+                com.example.recipe_generator.presentation.components.RecipeImage(
+                    recipeTitle = "Preview",
+                    imageRes = "",
+                    imageUrl = imageUrl,
+                    modifier = Modifier.fillMaxSize()
                 )
+            } else if (imageRes.isNotBlank()) {
+                val bitmap = rememberProfileImage(imageRes)
+                if (bitmap != null) Image(bitmap, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             } else {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(spacing_2)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Image,
-                        contentDescription = null,
-                        tint = Primary.copy(alpha = 0.4f),
-                        modifier = Modifier.size(40.dp)
-                    )
-                    Text(
-                        text = "Sin imagen",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSurfaceVariant
-                    )
-                }
+                Icon(Icons.Outlined.Image, null, modifier = Modifier.size(48.dp), tint = Primary.copy(alpha = 0.3f))
             }
         }
-
+        
         Spacer(modifier = Modifier.height(spacing_4))
-
-        // Fila 1: Buscar en internet (botón completo — opción principal)
-        OutlinedButton(
-            onClick = onSearchImage,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(rounded_full),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary)
-        ) {
-            Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.width(spacing_2))
-            Text("Buscar imagen en internet")
-        }
-
-        Spacer(modifier = Modifier.height(spacing_2))
-
-        // Fila 2: Galería y Cámara (opciones secundarias)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing_3)
-        ) {
-            OutlinedButton(
-                onClick = onPickFromGallery,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(rounded_full),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary)
-            ) {
-                Icon(Icons.Outlined.Collections, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(spacing_2))
-                Text("Galería")
-            }
-            OutlinedButton(
-                onClick = onTakePhoto,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(rounded_full),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary)
-            ) {
-                Icon(Icons.Outlined.CameraAlt, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(spacing_2))
-                Text("Cámara")
-            }
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing_2)) {
+            OutlinedButton(onClick = onSearchImage, modifier = Modifier.weight(1f)) { Text("Buscar", style = MaterialTheme.typography.labelSmall) }
+            OutlinedButton(onClick = onPickFromGallery, modifier = Modifier.weight(1f)) { Text("Galería", style = MaterialTheme.typography.labelSmall) }
+            OutlinedButton(onClick = onTakePhoto, modifier = Modifier.weight(1f)) { Text("Cámara", style = MaterialTheme.typography.labelSmall) }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppDropdownField(
-    label: String,
-    value: String,
-    options: List<String>,
-    onSelected: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun AppDropdownField(label: String, value: String, options: List<String>, onSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
-        modifier = modifier
-    ) {
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(
-            value = value,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(label) },
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            },
-            modifier = Modifier
-                .menuAnchor(
-                    type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                    enabled = true
-                )
-                .fillMaxWidth()
+            value = value, onValueChange = {}, readOnly = true, label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
         )
-
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        onSelected(option)
-                        expanded = false
-                    }
-                )
-            }
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { DropdownMenuItem(text = { Text(it) }, onClick = { onSelected(it); expanded = false }) }
         }
     }
 }

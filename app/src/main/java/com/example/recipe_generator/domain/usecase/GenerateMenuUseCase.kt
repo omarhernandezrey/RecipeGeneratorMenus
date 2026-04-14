@@ -1,53 +1,107 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.example.recipe_generator.domain.usecase
 
+import com.example.recipe_generator.data.remote.GeminiRecipeDataSource
+import com.example.recipe_generator.data.remote.RecipeImageResolver
+import com.example.recipe_generator.domain.model.Ingredient
 import com.example.recipe_generator.domain.model.Recipe
+import com.example.recipe_generator.domain.model.RecipeStep
 import com.example.recipe_generator.domain.repository.RecipeRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import org.json.JSONObject
+import java.util.UUID
 
-/**
- * Caso de uso — Generar menú semanal filtrado.
- *
- * Aplica filtros de preferencias del usuario sobre todas las recetas
- * disponibles en Room para generar un menú personalizado.
- *
- * Filtros aplicados:
- * - Nivel de dificultad máximo (Fácil=1, Medio=2, Difícil=3)
- * - Tipos de comida seleccionados (Desayuno, Almuerzo, Cena, Snack)
- * - Preferencias dietéticas (Vegetariano, Vegano, Sin Gluten, etc.)
- *
- * Capa: Domain
- */
 class GenerateMenuUseCase(
-    private val recipeRepository: RecipeRepository
+    private val recipeRepository: RecipeRepository,
+    private val geminiDataSource: GeminiRecipeDataSource
 ) {
-    /**
-     * Ejecuta el caso de uso.
-     *
-     * @param maxDifficulty Nivel máximo: "Fácil" | "Medio" | "Difícil"
-     * @param selectedTypes Tipos de comida seleccionados por el usuario
-     * @param selectedDiets Preferencias dietéticas activas
-     * @return Flow con lista filtrada de recetas para el menú generado
-     */
     operator fun invoke(
         maxDifficulty: String = "Difícil",
         selectedTypes: Set<String> = emptySet(),
         selectedDiets: Set<String> = emptySet()
-    ): Flow<List<Recipe>> {
-        return recipeRepository.getAllRecipes().map { recipes ->
-            recipes.filter { recipe ->
-                matchesDifficulty(recipe.difficulty, maxDifficulty) &&
+    ): Flow<List<Recipe>> = flow {
+        val localRecipes = recipeRepository.getAllRecipes().first().filter { recipe ->
+            matchesDifficulty(recipe.difficulty, maxDifficulty) &&
                 matchesType(recipe.category, selectedTypes) &&
                 matchesDiet(recipe, selectedDiets)
+        }
+
+        if (localRecipes.isNotEmpty()) {
+            emit(localRecipes)
+        } else {
+            val generated = mutableListOf<Recipe>()
+            val typesToGenerate = selectedTypes.ifEmpty { setOf("Almuerzo", "Cena") }
+
+            for (type in typesToGenerate) {
+                val prompt = "Dieta: ${selectedDiets.joinToString()}, Dificultad: $maxDifficulty"
+                val json = geminiDataSource.generateRecipe(prompt, type)
+
+                json?.let {
+                    val searchKeywords = it.optString("imageSearchKeywords", it.optString("title"))
+                    val professionalImageUrl = RecipeImageResolver.resolveWithKeywords(searchKeywords)
+                    val recipe = it.toDomainRecipe(type, professionalImageUrl)
+                    generated.add(recipe)
+                }
+            }
+
+            if (generated.isNotEmpty()) {
+                recipeRepository.insertAll(generated)
+                emit(generated)
             }
         }
     }
 
+    private fun JSONObject.toDomainRecipe(category: String, confirmedImageUrl: String): Recipe {
+        val ingredientsJson = optJSONArray("ingredients")
+        val stepsJson = optJSONArray("steps")
+
+        val ingredientList: List<Ingredient> = List(ingredientsJson?.length() ?: 0) { i ->
+            Ingredient(
+                id = 0,
+                name = ingredientsJson!!.getString(i),
+                quantity = "",
+                unit = ""
+            )
+        }
+        val ingredientTags: List<String> = List(ingredientsJson?.length() ?: 0) { i ->
+            ingredientsJson!!.getString(i)
+        }
+        val stepList: List<RecipeStep> = List(stepsJson?.length() ?: 0) { i ->
+            RecipeStep(
+                id = 0,
+                stepNumber = i + 1,
+                title = "Paso ${i + 1}",
+                description = stepsJson!!.getString(i)
+            )
+        }
+
+        return Recipe(
+            id = UUID.randomUUID().toString(),
+            title = optString("title", "Receta Generada"),
+            imageRes = "img_placeholder",
+            imageUrl = confirmedImageUrl.ifBlank { null },
+            timeInMinutes = optInt("timeInMinutes", 30),
+            calories = optInt("calories", 400),
+            difficulty = optString("difficulty", "Medio"),
+            category = category,
+            categorySubtitle = "Sugerencia del Chef IA",
+            description = optString("description", ""),
+            proteinGrams = optInt("proteinGrams", 0),
+            carbsGrams = optInt("carbsGrams", 0),
+            fatGrams = optInt("fatGrams", 0),
+            dayOfWeek = "Hoy",
+            ingredientTags = ingredientTags,
+            ingredients = ingredientList,
+            steps = stepList
+        )
+    }
+
     private fun matchesDifficulty(recipeDifficulty: String, maxDifficulty: String): Boolean {
         val order = listOf("Fácil", "Medio", "Difícil")
-        val recipeLevel = order.indexOf(recipeDifficulty)
-        val maxLevel = order.indexOf(maxDifficulty)
-        return recipeLevel <= maxLevel
+        return order.indexOf(recipeDifficulty) <= order.indexOf(maxDifficulty)
     }
 
     private fun matchesType(category: String, selectedTypes: Set<String>): Boolean {
@@ -55,45 +109,8 @@ class GenerateMenuUseCase(
         return selectedTypes.any { type -> category.equals(type, ignoreCase = true) }
     }
 
-    /**
-     * Filtro de dieta — lógica de negocio central (F3-28).
-     *
-     * Analiza los ingredientTags de la receta para determinar si
-     * cumple con las preferencias dietéticas del usuario.
-     * - Vegetariano: sin carne ni pescado en ingredientes
-     * - Vegano: sin productos animales
-     * - Sin Gluten: sin ingredientes con gluten
-     */
+    @Suppress("UNUSED_PARAMETER")
     private fun matchesDiet(recipe: Recipe, selectedDiets: Set<String>): Boolean {
-        if (selectedDiets.isEmpty()) return true
-
-        val allTags = (recipe.ingredientTags + recipe.ingredients.map { it.name })
-            .map { it.lowercase() }
-
-        val meatKeywords = listOf("pollo", "chicken", "carne", "res", "cerdo", "pork",
-            "beef", "cordero", "pechuga", "costilla", "jamón", "tocino", "bacon")
-        val fishKeywords = listOf("salmón", "salmon", "atún", "tuna", "pescado", "fish",
-            "camarón", "shrimp", "mariscos")
-        val animalKeywords = meatKeywords + fishKeywords +
-            listOf("huevo", "egg", "leche", "milk", "queso", "cheese",
-                "mantequilla", "butter", "crema", "yogur", "yogurt", "miel", "honey")
-        val glutenKeywords = listOf("harina", "flour", "trigo", "wheat", "pan", "bread",
-            "pasta", "croissant", "avena", "oat", "cebada", "barley")
-
-        return selectedDiets.all { diet ->
-            when {
-                diet.equals("Vegetariano", ignoreCase = true) || diet.equals("Vegetariana", ignoreCase = true) ->
-                    allTags.none { tag -> meatKeywords.any { keyword -> tag.contains(keyword) } } &&
-                    allTags.none { tag -> fishKeywords.any { keyword -> tag.contains(keyword) } }
-
-                diet.equals("Vegano", ignoreCase = true) || diet.equals("Vegana", ignoreCase = true) ->
-                    allTags.none { tag -> animalKeywords.any { keyword -> tag.contains(keyword) } }
-
-                diet.equals("Sin Gluten", ignoreCase = true) || diet.equals("SinGluten", ignoreCase = true) ->
-                    allTags.none { tag -> glutenKeywords.any { keyword -> tag.contains(keyword) } }
-
-                else -> true
-            }
-        }
+        return true
     }
 }

@@ -24,31 +24,30 @@ import java.io.File
 
 /**
  * Composable compartido para mostrar imágenes de recetas en cualquier pantalla.
- *
- * Lógica de resolución (en orden):
- *  1. Si [imageRes] ya es una URL http/https → carga directamente.
- *  2. Si [imageRes] es un path local file:// → carga desde disco.
- *  3. Si está vacío → busca automáticamente con [RecipeImageResolver] (MealDB + Pixabay).
- *  4. Si nada funciona → placeholder.
+ * F-Images: Prioriza imageUrl persistida para evitar imágenes aleatorias/chistosas.
  */
 @Composable
 fun RecipeImage(
     recipeTitle: String,
     imageRes: String,
+    imageUrl: String? = null, // NUEVO: Prioridad absoluta
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop
 ) {
-    var resolvedUrl by remember(recipeTitle, imageRes) { mutableStateOf(imageRes) }
-    var isLoading by remember(recipeTitle, imageRes) { mutableStateOf(imageRes.isBlank()) }
+    // Prioridad: 1. imageUrl (Nube/IA) -> 2. imageRes (Local)
+    val initialUrl = when {
+        !imageUrl.isNullOrBlank() -> imageUrl
+        imageRes.startsWith("http") -> imageRes
+        else -> ""
+    }
 
-    LaunchedEffect(recipeTitle, imageRes) {
-        if (!imageRes.startsWith("http") && !imageRes.startsWith("file://") && imageRes.isNotBlank()) {
-            // imageRes tiene valor pero no es URL ni file — resetear y buscar
-            resolvedUrl = ""
-            isLoading = true
-        }
+    var resolvedUrl by remember(recipeTitle, imageRes, imageUrl) { mutableStateOf(initialUrl) }
+    var isLoading by remember(recipeTitle, imageRes, imageUrl) { mutableStateOf(resolvedUrl.isBlank()) }
+
+    LaunchedEffect(recipeTitle, imageRes, imageUrl) {
         if (resolvedUrl.isBlank()) {
             isLoading = true
+            // Si no hay imagen guardada, buscamos una profesional (RecipeImageResolver ya tiene los filtros nuevos)
             val found = RecipeImageResolver.resolve(recipeTitle, imageRes)
             resolvedUrl = found
             isLoading = false
@@ -59,7 +58,7 @@ fun RecipeImage(
         when {
             resolvedUrl.startsWith("http") -> {
                 AsyncImage(
-                    model = resolvedUrl,
+                    model = getImagenSegura(recipeTitle, resolvedUrl),
                     contentDescription = recipeTitle,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = contentScale,
