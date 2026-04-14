@@ -2,6 +2,7 @@ package com.example.recipe_generator.presentation.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -70,8 +71,9 @@ import com.example.recipe_generator.presentation.theme.SurfaceContainerLowest
 import com.example.recipe_generator.presentation.theme.rounded_full
 import com.example.recipe_generator.presentation.theme.rounded_lg
 import com.example.recipe_generator.presentation.theme.rounded_md
-import com.example.recipe_generator.presentation.theme.spacing_10
-import com.example.recipe_generator.presentation.theme.spacing_12
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import com.example.recipe_generator.presentation.theme.spacing_2
 import com.example.recipe_generator.presentation.theme.spacing_3
 import com.example.recipe_generator.presentation.theme.spacing_4
@@ -158,6 +160,8 @@ fun ProfileScreen(
     }
     val preferredDiets = remember(profile) { profile?.preferredDiets.orEmpty() }
     val defaultPortions = remember(profile) { profile?.defaultPortions ?: 2 }
+    val culinaryStudies = remember(profile) { profile?.culinaryStudies.orEmpty() }
+    val culinaryExperience = remember(profile) { profile?.culinaryExperience.orEmpty() }
     val plannedDaysCount = remember(weeklyPlan) {
         weeklyPlan.map(WeeklyPlan::dayOfWeek).distinct().size
     }
@@ -169,6 +173,8 @@ fun ProfileScreen(
         photoUrl = photoUrl,
         preferredDiets = preferredDiets,
         defaultPortions = defaultPortions,
+        culinaryStudies = culinaryStudies,
+        culinaryExperience = culinaryExperience,
         recipesCount = userRecipes.size,
         favoritesCount = favoriteIds.size,
         plannedDaysCount = plannedDaysCount,
@@ -188,6 +194,8 @@ private fun ProfileScreenContent(
     photoUrl: String?,
     preferredDiets: List<String>,
     defaultPortions: Int,
+    culinaryStudies: String,
+    culinaryExperience: String,
     recipesCount: Int,
     favoritesCount: Int,
     plannedDaysCount: Int,
@@ -202,197 +210,308 @@ private fun ProfileScreenContent(
             .fillMaxSize()
             .background(Surface)
             .verticalScroll(rememberScrollState())
-            .padding(spacing_6),
-        verticalArrangement = Arrangement.spacedBy(spacing_6)
     ) {
-        Spacer(modifier = Modifier.height(spacing_2))
-
-        if (onBack != null) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = OnSurface
-                    )
-                }
-                Column(
-                    modifier = Modifier.padding(start = spacing_2)
-                ) {
-                    Text(
-                        text = "Perfil",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = OnSurface,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                    Text(
-                        text = "Accede a tu cuenta, recetas y plan semanal.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(rounded_lg),
-            colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        // ── CABECERA con fondo de color ──────────────────────────────────
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Primary)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(spacing_8),
+                    .padding(horizontal = spacing_6, vertical = spacing_8),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(spacing_4)
             ) {
-                ProfileAvatar(
-                    photoUrl = photoUrl,
-                    displayName = displayName
-                )
+                if (onBack != null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = spacing_4),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                contentDescription = "Volver",
+                                tint = OnPrimary
+                            )
+                        }
+                        Text(
+                            text = "Perfil",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = OnPrimary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Foto grande del perfil
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .background(PrimaryContainer)
+                        .border(3.dp, OnPrimary, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val remoteImage = rememberProfileImage(photoUrl)
+                    if (remoteImage != null) {
+                        Image(
+                            bitmap = remoteImage,
+                            contentDescription = "Foto de perfil",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Text(
+                            text = displayName.initials(),
+                            style = MaterialTheme.typography.displaySmall,
+                            color = OnPrimary,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                }
 
                 Text(
                     text = displayName,
                     style = MaterialTheme.typography.headlineMedium,
-                    color = OnSurface,
+                    color = OnPrimary,
                     fontWeight = FontWeight.ExtraBold
                 )
-
                 Text(
                     text = email,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = OnSurfaceVariant
+                    color = OnPrimary.copy(alpha = 0.85f)
                 )
 
+                // Botón editar perfil
                 Button(
                     onClick = onEditProfileClick,
                     shape = RoundedCornerShape(rounded_full),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Primary,
-                        contentColor = OnPrimary
+                        containerColor = OnPrimary,
+                        contentColor = Primary
                     )
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Edit,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(spacing_3))
                     Text(
                         text = "Editar perfil",
                         style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing_4)
+        // ── CUERPO ───────────────────────────────────────────────────────
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(spacing_6),
+            verticalArrangement = Arrangement.spacedBy(spacing_6)
         ) {
-            StatCard(
-                modifier = Modifier.weight(1f),
-                value = recipesCount.toString(),
-                label = "Mis recetas",
-                icon = Icons.Outlined.RestaurantMenu
-            )
-            StatCard(
-                modifier = Modifier.weight(1f),
-                value = favoritesCount.toString(),
-                label = "Favoritos",
-                icon = Icons.Outlined.Stars
-            )
-            StatCard(
-                modifier = Modifier.weight(1f),
-                value = plannedDaysCount.toString(),
-                label = "Días con plan",
-                icon = Icons.Outlined.Schedule
-            )
-        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(spacing_4)
-        ) {
-            QuickActionCard(
-                modifier = Modifier.weight(1f),
-                title = "Mis recetas",
-                subtitle = "Crear, editar y eliminar recetas personales",
-                icon = Icons.Outlined.RestaurantMenu,
-                onClick = onMyRecipesClick
-            )
-            QuickActionCard(
-                modifier = Modifier.weight(1f),
-                title = "Plan semanal",
-                subtitle = "Asignar comidas para cada día de la semana",
-                icon = Icons.Outlined.Schedule,
-                onClick = onWeeklyPlanClick
-            )
-        }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(rounded_lg),
-            colors = CardDefaults.cardColors(containerColor = SurfaceContainerLow),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(spacing_6),
-                verticalArrangement = Arrangement.spacedBy(spacing_4)
+            // ── Estadísticas ─────────────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing_4)
             ) {
-                Text(
-                    text = "CUENTA",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Primary,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.2.sp
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    value = recipesCount.toString(),
+                    label = "Recetas",
+                    icon = Icons.Outlined.RestaurantMenu
                 )
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    value = favoritesCount.toString(),
+                    label = "Favoritos",
+                    icon = Icons.Outlined.Stars
+                )
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    value = plannedDaysCount.toString(),
+                    label = "Días",
+                    icon = Icons.Outlined.Schedule
+                )
+            }
 
+            // ── Información personal ─────────────────────────────────────
+            ProfileSection(title = "INFORMACIÓN PERSONAL") {
                 ProfileInfoRow(
                     icon = Icons.Outlined.AlternateEmail,
-                    label = "Correo",
+                    label = "Correo electrónico",
                     value = email
-                )
-                ProfileInfoRow(
-                    icon = Icons.Outlined.Tune,
-                    label = "Porciones por defecto",
-                    value = "$defaultPortions porciones"
                 )
                 ProfileInfoRow(
                     icon = Icons.Outlined.LocalDining,
                     label = "Dietas preferidas",
                     value = preferredDiets.joinToString(", ").ifBlank { "Sin preferencias configuradas" }
                 )
+                ProfileInfoRow(
+                    icon = Icons.Outlined.Tune,
+                    label = "Porciones por defecto",
+                    value = "$defaultPortions porciones"
+                )
+            }
 
-                // Botón cerrar sesión (E-07)
-                androidx.compose.material3.HorizontalDivider(color = OnSurface.copy(alpha = 0.08f))
-                TextButton(
-                    onClick = onLogoutClick,
-                    modifier = Modifier.fillMaxWidth()
+            // ── Estudios ─────────────────────────────────────────────────
+            ProfileSection(title = "ESTUDIOS") {
+                Text(
+                    text = "Formación culinaria y académica",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OnSurfaceVariant,
+                    letterSpacing = 0.4.sp
+                )
+                Spacer(modifier = Modifier.height(spacing_2))
+                // Caja de texto con barra de desplazamiento propia
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .background(
+                            SurfaceContainerLow,
+                            shape = RoundedCornerShape(rounded_md)
+                        )
+                        .border(
+                            1.dp,
+                            if (culinaryStudies.isBlank()) OnSurface.copy(alpha = 0.10f)
+                            else Primary.copy(alpha = 0.40f),
+                            RoundedCornerShape(rounded_md)
+                        )
+                        .padding(spacing_4)
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Logout,
-                        contentDescription = null,
-                        tint = Error,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(spacing_3))
                     Text(
-                        text = "Cerrar sesión",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = Error,
-                        fontWeight = FontWeight.SemiBold
+                        text = culinaryStudies.ifBlank {
+                            "Sin información de estudios. Toca \"Editar perfil\" para añadir tu formación culinaria o académica."
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (culinaryStudies.isBlank()) OnSurfaceVariant else OnSurface,
+                        lineHeight = 22.sp
                     )
-                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
+
+            // ── Experiencia ──────────────────────────────────────────────
+            ProfileSection(title = "EXPERIENCIA") {
+                Text(
+                    text = "Experiencia en cocina y preparación de recetas",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OnSurfaceVariant,
+                    letterSpacing = 0.4.sp
+                )
+                Spacer(modifier = Modifier.height(spacing_2))
+                // Caja de texto con barra de desplazamiento propia
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .background(
+                            SurfaceContainerLow,
+                            shape = RoundedCornerShape(rounded_md)
+                        )
+                        .border(
+                            1.dp,
+                            if (culinaryExperience.isBlank()) OnSurface.copy(alpha = 0.10f)
+                            else Primary.copy(alpha = 0.40f),
+                            RoundedCornerShape(rounded_md)
+                        )
+                        .padding(spacing_4)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Text(
+                        text = culinaryExperience.ifBlank {
+                            "Sin información de experiencia. Toca \"Editar perfil\" para describir tu experiencia en cocina."
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (culinaryExperience.isBlank()) OnSurfaceVariant else OnSurface,
+                        lineHeight = 22.sp
+                    )
+                }
+            }
+
+            // ── Acciones rápidas ─────────────────────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing_4)
+            ) {
+                QuickActionCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Mis recetas",
+                    subtitle = "Crear, editar y gestionar recetas",
+                    icon = Icons.Outlined.RestaurantMenu,
+                    onClick = onMyRecipesClick
+                )
+                QuickActionCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Plan semanal",
+                    subtitle = "Organizar comidas por día",
+                    icon = Icons.Outlined.Schedule,
+                    onClick = onWeeklyPlanClick
+                )
+            }
+
+            // ── Cerrar sesión ────────────────────────────────────────────
+            androidx.compose.material3.HorizontalDivider(color = OnSurface.copy(alpha = 0.08f))
+            TextButton(
+                onClick = onLogoutClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.Logout,
+                    contentDescription = null,
+                    tint = Error,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(spacing_3))
+                Text(
+                    text = "Cerrar sesión",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Error,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
+
+            val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            Spacer(modifier = Modifier.height(spacing_8 + navBarPadding))
+        }
+    }
+}
+
+@Composable
+private fun ProfileSection(
+    title: String,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(rounded_lg),
+        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(spacing_6),
+            verticalArrangement = Arrangement.spacedBy(spacing_4)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelSmall,
+                color = Primary,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.2.sp
+            )
+            content()
         }
     }
 }
@@ -441,38 +560,6 @@ private fun QuickActionCard(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
                 color = OnSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun ProfileAvatar(
-    photoUrl: String?,
-    displayName: String
-) {
-    val remoteImage = rememberProfileImage(photoUrl)
-
-    Box(
-        modifier = Modifier
-            .size(128.dp)
-            .clip(CircleShape)
-            .background(PrimaryContainer),
-        contentAlignment = Alignment.Center
-    ) {
-        if (remoteImage != null) {
-            Image(
-                bitmap = remoteImage!!,
-                contentDescription = "Foto de perfil",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Text(
-                text = displayName.initials(),
-                style = MaterialTheme.typography.displaySmall,
-                color = OnPrimary,
-                fontWeight = FontWeight.ExtraBold
             )
         }
     }

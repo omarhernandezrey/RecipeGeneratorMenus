@@ -1,8 +1,11 @@
 package com.example.recipe_generator.presentation.myrecipes
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.recipe_generator.data.remote.GeminiRecipeDataSource
+import com.example.recipe_generator.data.remote.RecipeImageResolver
 import com.example.recipe_generator.data.sync.FirestoreSyncService
 import com.example.recipe_generator.domain.model.AppNotification
 import com.example.recipe_generator.domain.model.UserRecipe
@@ -16,7 +19,6 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 data class RecipeFormUiState(
-    /** UUID siempre disponible — se usa como nombre de archivo de la imagen */
     val recipeId: String = UUID.randomUUID().toString(),
     val title: String = "",
     val description: String = "",
@@ -28,11 +30,12 @@ data class RecipeFormUiState(
     val mealType: String = mealTypeOptions.first(),
     val ingredients: List<String> = listOf(""),
     val steps: List<String> = listOf(""),
-    /** file:// URI local o cadena vacía si no tiene imagen */
     val imageRes: String = "",
+    val imageUrl: String? = null,
     val videoYoutube: String? = null,
     val isEditMode: Boolean = false,
     val isSaving: Boolean = false,
+    val isGenerating: Boolean = false,
     val error: String? = null,
     val saveVersion: Int = 0,
     val createdAt: Long? = null
@@ -43,11 +46,58 @@ class CreateRecipeViewModel(
     private val userRecipeRepository: UserRecipeRepository,
     private val firestoreSyncService: FirestoreSyncService,
     private val resolveRecipeVideoUseCase: ResolveRecipeVideoUseCase,
+    private val geminiDataSource: GeminiRecipeDataSource? = null,
     private val appNotificationRepository: AppNotificationRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecipeFormUiState())
     val uiState: StateFlow<RecipeFormUiState> = _uiState.asStateFlow()
+
+    fun generateWithAI(prompt: String) {
+        if (prompt.isBlank()) return
+        if (geminiDataSource == null) {
+            updateState { copy(error = "Error: El motor de IA no está configurado.") }
+            return
+        }
+        
+        viewModelScope.launch {
+            updateState { copy(isGenerating = true, error = null) }
+            Log.d("GEMINI_VM", "Iniciando generación para: $prompt")
+            
+            try {
+                val json = geminiDataSource.generateRecipe(prompt, _uiState.value.category)
+                
+                if (json != null) {
+                    Log.d("GEMINI_VM", "JSON recibido con éxito")
+                    val searchKeywords = json.optString("imageSearchKeywords", prompt)
+                    val foundImageUrl = RecipeImageResolver.resolveWithKeywords(searchKeywords)
+                    
+                    updateState {
+                        copy(
+                            title = json.optString("title", prompt),
+                            description = json.optString("description", ""),
+                            timeInMinutes = json.optInt("timeInMinutes", 30).toString(),
+                            calories = json.optInt("calories", 400).toString(),
+                            ingredients = List(json.optJSONArray("ingredients")?.length() ?: 0) { i -> 
+                                json.getJSONArray("ingredients").getString(i) 
+                            }.ifEmpty { listOf("") },
+                            steps = List(json.optJSONArray("steps")?.length() ?: 0) { i -> 
+                                json.getJSONArray("steps").getString(i) 
+                            }.ifEmpty { listOf("") },
+                            imageUrl = if (foundImageUrl.isNotBlank()) foundImageUrl else null,
+                            isGenerating = false
+                        )
+                    }
+                } else {
+                    Log.w("GEMINI_VM", "El servidor de IA devolvió nulo o formato incorrecto")
+                    updateState { copy(isGenerating = false, error = "La IA no pudo procesar la receta. Intenta con otro nombre.") }
+                }
+            } catch (e: Exception) {
+                Log.e("GEMINI_VM", "Error fatal en ViewModel: ${e.message}")
+                updateState { copy(isGenerating = false, error = "Error de conexión con la IA: ${e.message}") }
+            }
+        }
+    }
 
     fun updateImageRes(value: String) = updateState { copy(imageRes = value) }
     fun updateTitle(value: String) = updateState { copy(title = value) }
@@ -61,22 +111,18 @@ class CreateRecipeViewModel(
     fun clearError() = updateState { copy(error = null) }
 
     fun addIngredient() = updateState { copy(ingredients = ingredients + "") }
-
     fun updateIngredient(index: Int, value: String) = updateState {
         copy(ingredients = ingredients.toMutableList().also { it[index] = value })
     }
-
     fun removeIngredient(index: Int) = updateState {
         if (ingredients.size == 1) copy(ingredients = listOf(""))
         else copy(ingredients = ingredients.toMutableList().also { it.removeAt(index) })
     }
 
     fun addStep() = updateState { copy(steps = steps + "") }
-
     fun updateStep(index: Int, value: String) = updateState {
         copy(steps = steps.toMutableList().also { it[index] = value })
     }
-
     fun removeStep(index: Int) = updateState {
         if (steps.size == 1) copy(steps = listOf(""))
         else copy(steps = steps.toMutableList().also { it.removeAt(index) })
@@ -96,6 +142,7 @@ class CreateRecipeViewModel(
             ingredients = recipe.ingredients.ifEmpty { listOf("") },
             steps = recipe.steps.ifEmpty { listOf("") },
             imageRes = recipe.imageRes,
+            imageUrl = recipe.imageUrl,
             videoYoutube = recipe.videoYoutube,
             isEditMode = true,
             createdAt = recipe.createdAt
@@ -104,9 +151,8 @@ class CreateRecipeViewModel(
 
     fun saveRecipe() {
         val current = _uiState.value
-        val validationError = validate(current)
-        if (validationError != null) {
-            updateState { copy(error = validationError) }
+        if (current.title.isBlank()) {
+            updateState { copy(error = "El título es obligatorio") }
             return
         }
 
@@ -119,47 +165,28 @@ class CreateRecipeViewModel(
                     recipeTitle = current.title.trim()
                 )
             }.getOrElse {
-                android.util.Log.w("CreateRecipeViewModel", "No se pudo resolver video: ${it.message}")
-                current.videoYoutube.takeIf { !it.isNullOrBlank() }
-                    ?: "https://www.youtube.com/results?search_query=${Uri.encode("como preparar ${current.title.trim()} receta tutorial")}"
+                current.videoYoutube ?: ""
             }
 
             val recipe = current.copy(videoYoutube = resolvedVideo).toRecipe(userId)
 
             runCatching {
-                if (current.isEditMode) {
-                    userRecipeRepository.updateRecipe(recipe)
-                } else {
-                    userRecipeRepository.addRecipe(recipe)
-                }
+                if (current.isEditMode) userRecipeRepository.updateRecipe(recipe)
+                else userRecipeRepository.addRecipe(recipe)
                 firestoreSyncService.uploadRecipe(recipe)
             }.onSuccess {
-                // Guardar notificación in-app
                 appNotificationRepository?.insert(AppNotification(
                     id        = UUID.randomUUID().toString(),
-                    title     = "Receta creada",
-                    body      = "\"${current.title.trim().ifBlank { "Nueva receta" }}\" se guardó en Mis Recetas",
+                    title     = "Receta guardada",
+                    body      = "\"${current.title.trim()}\" se añadió a tu colección",
                     type      = "recipe_created",
                     createdAt = System.currentTimeMillis()
                 ))
                 updateState { copy(isSaving = false, saveVersion = saveVersion + 1) }
             }.onFailure { throwable ->
-                updateState {
-                    copy(
-                        isSaving = false,
-                        error = throwable.message ?: "No se pudo guardar la receta"
-                    )
-                }
+                updateState { copy(isSaving = false, error = throwable.message ?: "Error al guardar") }
             }
         }
-    }
-
-    private fun validate(state: RecipeFormUiState): String? {
-        if (state.title.isBlank()) return "El título es obligatorio"
-        if (state.description.isBlank()) return "La descripción es obligatoria"
-        if (state.ingredients.none { it.isNotBlank() }) return "Agrega al menos un ingrediente"
-        if (state.steps.none { it.isNotBlank() }) return "Agrega al menos un paso"
-        return null
     }
 
     private fun updateState(transform: RecipeFormUiState.() -> RecipeFormUiState) {
@@ -187,6 +214,7 @@ private fun RecipeFormUiState.toRecipe(userId: String): UserRecipe = UserRecipe(
     userId = userId,
     title = title.trim(),
     imageRes = imageRes,
+    imageUrl = imageUrl,
     timeInMinutes = timeInMinutes.toIntOrNull() ?: 0,
     calories = calories.toIntOrNull() ?: 0,
     difficulty = sliderValueToDifficulty(difficultyLevel),

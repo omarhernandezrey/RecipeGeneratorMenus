@@ -3,6 +3,8 @@ package com.example.recipe_generator.presentation.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -11,6 +13,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -180,7 +183,9 @@ fun AppTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    placeholder: String = ""
+    placeholder: String = "",
+    imeAction: ImeAction = ImeAction.Default,
+    onImeAction: (() -> Unit)? = null
 ) {
     TextField(
         value = value,
@@ -193,6 +198,13 @@ fun AppTextField(
                 color = OnSurfaceVariant
             )
         },
+        keyboardOptions = KeyboardOptions(imeAction = imeAction),
+        keyboardActions = KeyboardActions(
+            onDone = { onImeAction?.invoke() },
+            onGo = { onImeAction?.invoke() },
+            onSearch = { onImeAction?.invoke() },
+            onSend = { onImeAction?.invoke() }
+        ),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = SurfaceContainerLowest,
             unfocusedContainerColor = SurfaceContainerLow,

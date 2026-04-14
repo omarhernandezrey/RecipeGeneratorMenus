@@ -46,6 +46,7 @@ fun CreateRecipeScreen(
                     userRecipeRepository = appContainer.userRecipeRepository,
                     firestoreSyncService = appContainer.firestoreSyncService,
                     resolveRecipeVideoUseCase = appContainer.resolveRecipeVideoUseCase,
+                    geminiDataSource = appContainer.geminiRecipeDataSource,
                     appNotificationRepository = appContainer.appNotificationRepository
                 ) as T
             }
@@ -101,8 +102,8 @@ fun CreateRecipeScreen(
     }
 
     RecipeFormContent(
-        title = "Nueva receta",
-        buttonLabel = "Guardar receta",
+        title = if (uiState.isEditMode) "Editar receta" else "Nueva receta",
+        buttonLabel = if (uiState.isEditMode) "Actualizar receta" else "Guardar receta",
         uiState = uiState,
         onTitleChange = viewModel::updateTitle,
         onDescriptionChange = viewModel::updateDescription,
@@ -125,6 +126,7 @@ fun CreateRecipeScreen(
         },
         onTakePhoto = { cameraLauncher.launch(null) },
         onSearchImage = { showImageSearch = true },
+        onAiGenerate = viewModel::generateWithAI,
         onBack = onBack,
         onSave = viewModel::saveRecipe
     )

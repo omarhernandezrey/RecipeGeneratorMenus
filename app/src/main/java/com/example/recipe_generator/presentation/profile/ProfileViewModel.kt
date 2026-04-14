@@ -156,7 +156,9 @@ class ProfileViewModel(
         displayName: String,
         photoUrl: String?,
         preferredDiets: List<String>,
-        defaultPortions: Int
+        defaultPortions: Int,
+        culinaryStudies: String = _profile.value?.culinaryStudies.orEmpty(),
+        culinaryExperience: String = _profile.value?.culinaryExperience.orEmpty()
     ) {
         val user = _currentUser.value ?: return
 
@@ -171,7 +173,9 @@ class ProfileViewModel(
                     displayName = displayName,
                     photoUrl = photoUrl,
                     preferredDiets = preferredDiets,
-                    defaultPortions = defaultPortions
+                    defaultPortions = defaultPortions,
+                    culinaryStudies = culinaryStudies,
+                    culinaryExperience = culinaryExperience
                 )
                 saveProfile(updatedProfile)
                 userPrefsRepository.saveDefaultPortions(defaultPortions)
@@ -195,7 +199,9 @@ class ProfileViewModel(
         displayName: String,
         photoUrl: String?,
         preferredDiets: List<String>,
-        defaultPortions: Int
+        defaultPortions: Int,
+        culinaryStudies: String = _profile.value?.culinaryStudies.orEmpty(),
+        culinaryExperience: String = _profile.value?.culinaryExperience.orEmpty()
     ): UserProfile {
         val currentProfile = _profile.value
         return UserProfile(
@@ -205,6 +211,8 @@ class ProfileViewModel(
             photoUrl = photoUrl,
             preferredDiets = preferredDiets,
             defaultPortions = defaultPortions,
+            culinaryStudies = culinaryStudies,
+            culinaryExperience = culinaryExperience,
             createdAt = currentProfile?.createdAt ?: System.currentTimeMillis()
         )
     }

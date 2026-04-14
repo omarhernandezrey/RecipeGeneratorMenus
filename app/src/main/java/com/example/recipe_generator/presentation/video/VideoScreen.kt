@@ -4,15 +4,19 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.widget.MediaController
 import android.widget.VideoView
+import com.example.recipe_generator.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -37,7 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,9 +74,7 @@ import com.example.recipe_generator.presentation.theme.spacing_8
  * Capa: Presentation
  */
 
-// URL pública de video de demostración (receta de cocina)
-private const val DEMO_VIDEO_URL =
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+// Video local en res/raw — sin dependencia de red
 
 @Composable
 fun VideoScreen(modifier: Modifier = Modifier) {
@@ -147,7 +149,9 @@ fun VideoScreen(modifier: Modifier = Modifier) {
                             mediaController.setAnchorView(this)
                             setMediaController(mediaController)
 
-                            setVideoURI(Uri.parse(DEMO_VIDEO_URL))
+                            setVideoURI(Uri.parse(
+                                "android.resource://${ctx.packageName}/${R.raw.sample_video}"
+                            ))
 
                             setOnPreparedListener { mp: MediaPlayer ->
                                 isLoading = false
@@ -255,7 +259,8 @@ fun VideoScreen(modifier: Modifier = Modifier) {
             }
         }
 
-        Spacer(modifier = Modifier.height(spacing_12))
+        val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        Spacer(modifier = Modifier.height(spacing_12 + navBarPadding))
     }
 }
 

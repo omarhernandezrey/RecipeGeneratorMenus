@@ -3,14 +3,7 @@ package com.example.recipe_generator.presentation.myrecipes
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
@@ -43,19 +36,31 @@ fun EditRecipeScreen(
                     userId = recipe.userId,
                     userRecipeRepository = appContainer.userRecipeRepository,
                     firestoreSyncService = appContainer.firestoreSyncService,
-                    resolveRecipeVideoUseCase = appContainer.resolveRecipeVideoUseCase
+                    resolveRecipeVideoUseCase = appContainer.resolveRecipeVideoUseCase,
+                    geminiDataSource = appContainer.geminiRecipeDataSource, // Inyectado para IA
+                    appNotificationRepository = appContainer.appNotificationRepository
                 ) as T
             }
         }
     )
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var handledSaveVersion by remember { mutableStateOf(uiState.saveVersion) }
-    var showImageSearch by rememberSaveable { mutableStateOf(false) }
+    var handledSaveVersion by remember { mutableIntStateOf(uiState.saveVersion) }
+    var showImageSearch by remember { mutableStateOf(false) }
+
+    LaunchedEffect(recipe.id) {
+        viewModel.populateFromRecipe(recipe)
+    }
+
+    LaunchedEffect(uiState.saveVersion) {
+        if (uiState.saveVersion > handledSaveVersion) {
+            onSaved()
+        }
+    }
 
     if (showImageSearch) {
         MealImageSearchDialog(
-            initialQuery = uiState.title.ifBlank { "food" },
+            initialQuery = uiState.title,
             recipeId = uiState.recipeId,
             onImageSelected = { path ->
                 viewModel.updateImageRes(path)
@@ -65,37 +70,19 @@ fun EditRecipeScreen(
         )
     }
 
-    LaunchedEffect(recipe.id, recipe.updatedAt) {
-        viewModel.populateFromRecipe(recipe)
-        handledSaveVersion = viewModel.uiState.value.saveVersion
-    }
-
-    LaunchedEffect(uiState.saveVersion) {
-        if (uiState.saveVersion > handledSaveVersion) {
-            handledSaveVersion = uiState.saveVersion
-            onSaved()
-        }
-    }
-
-    val pickImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
+    val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
-            val fileName = "recipe_image_${uiState.recipeId}"
             coroutineScope.launch {
-                val path = copyContentUriToInternalStorage(context, fileName, uri)
+                val path = copyContentUriToInternalStorage(context, "recipe_${uiState.recipeId}", uri)
                 if (path != null) viewModel.updateImageRes(path)
             }
         }
     }
 
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview()
-    ) { bitmap ->
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
         if (bitmap != null) {
-            val fileName = "recipe_image_${uiState.recipeId}"
             coroutineScope.launch {
-                val path = saveBitmapToInternalStorage(context, fileName, bitmap)
+                val path = saveBitmapToInternalStorage(context, "recipe_${uiState.recipeId}", bitmap)
                 viewModel.updateImageRes(path)
             }
         }
@@ -119,13 +106,10 @@ fun EditRecipeScreen(
         onStepChange = viewModel::updateStep,
         onAddStep = viewModel::addStep,
         onRemoveStep = viewModel::removeStep,
-        onPickImageFromGallery = {
-            pickImageLauncher.launch(
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-            )
-        },
+        onPickImageFromGallery = { pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
         onTakePhoto = { cameraLauncher.launch(null) },
         onSearchImage = { showImageSearch = true },
+        onAiGenerate = viewModel::generateWithAI,
         onBack = onBack,
         onSave = viewModel::saveRecipe
     )

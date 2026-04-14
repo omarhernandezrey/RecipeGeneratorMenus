@@ -33,6 +33,9 @@ data class UserRecipeEntity(
     /** Nombre del drawable local (ej. "ic_recipe_default") o ruta relativa */
     val imageRes: String = "",
 
+    /** URL remota persistida tras búsqueda exitosa (F-Images) */
+    val imageUrl: String? = null,
+
     val timeInMinutes: Int = 0,
 
     val calories: Int = 0,

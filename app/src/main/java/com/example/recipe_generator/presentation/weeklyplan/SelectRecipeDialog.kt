@@ -36,11 +36,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.recipe_generator.R
 import com.example.recipe_generator.RecipeGeneratorApp
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.domain.model.UserRecipe
 import com.example.recipe_generator.presentation.components.AppTextField
 import com.example.recipe_generator.presentation.components.EditorialCard
+import com.example.recipe_generator.presentation.components.generarFallbackSeguro
+import com.example.recipe_generator.presentation.components.getImagenSegura
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
@@ -207,30 +210,31 @@ private fun RecipeCard(
             horizontalArrangement = Arrangement.spacedBy(spacing_4),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Miniatura
-            if (imageRes.isNotBlank()) {
-                val model: Any = if (imageRes.startsWith("http")) imageRes else File(imageRes)
-                AsyncImage(
-                    model = model,
-                    contentDescription = title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(RoundedCornerShape(rounded_lg))
-                        .background(PrimaryContainer.copy(alpha = 0.15f))
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(RoundedCornerShape(rounded_lg))
-                        .background(PrimaryContainer.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Outlined.RestaurantMenu, contentDescription = null,
-                        tint = Primary, modifier = Modifier.size(24.dp))
-                }
+            // Miniatura segura: nunca queda vacía.
+            val isLocalFile = imageRes.isNotBlank() && !imageRes.startsWith("http")
+            var remoteModel by remember(title, imageRes) {
+                mutableStateOf(getImagenSegura(title, imageRes.takeIf { it.startsWith("http") }))
             }
+            val model: Any = if (isLocalFile) File(imageRes) else remoteModel
+            AsyncImage(
+                model = model,
+                contentDescription = title,
+                contentScale = ContentScale.Crop,
+                placeholder = androidx.compose.ui.res.painterResource(R.drawable.img_placeholder),
+                error = androidx.compose.ui.res.painterResource(R.drawable.img_placeholder),
+                onError = {
+                    if (!isLocalFile) {
+                        val guaranteedFallback = generarFallbackSeguro(title)
+                        if (remoteModel != guaranteedFallback) {
+                            remoteModel = guaranteedFallback
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(rounded_lg))
+                    .background(PrimaryContainer.copy(alpha = 0.15f))
+            )
 
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(spacing_2)) {
                 Text(text = title, style = MaterialTheme.typography.titleMedium,
