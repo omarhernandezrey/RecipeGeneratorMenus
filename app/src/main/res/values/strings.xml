@@ -6,4 +6,5 @@
     <string name="recipe_video_close">Cerrar video</string>
     <string name="recipe_video_loading">Cargando video…</string>
     <string name="recipe_video_searching_inside_youtube">Mostrando YouTube dentro de la app</string>
+    <string name="recipe_video_error">No se pudo cargar el video.</string>
 </resources>

@@ -1,7 +1,11 @@
 package com.example.recipe_generator.presentation.components
 
 import android.annotation.SuppressLint
+import android.webkit.CookieManager
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -32,6 +36,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,6 +77,14 @@ fun RecipeVideoPlayerDialog(
     val playableUrl = remember(videoUrl, videoId) {
         videoId?.let(YouTubeVideoUrlUtils::buildEmbedUrl) ?: videoUrl
     }
+    val embedHtml = remember(videoId, normalizedTitle) {
+        videoId?.let {
+            buildEmbeddedPlayerHtml(
+                videoId = it,
+                title = normalizedTitle
+            )
+        }
+    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -82,6 +95,14 @@ fun RecipeVideoPlayerDialog(
     ) {
         var webViewRef by remember { mutableStateOf<WebView?>(null) }
         var isLoading by remember(playableUrl) { mutableStateOf(true) }
+        var loadError by remember(playableUrl) { mutableStateOf<String?>(null) }
+
+        LaunchedEffect(playableUrl) {
+            kotlinx.coroutines.delay(6_000)
+            if (loadError == null) {
+                isLoading = false
+            }
+        }
 
         DisposableEffect(webViewRef) {
             onDispose {
@@ -160,7 +181,11 @@ fun RecipeVideoPlayerDialog(
                             shape = RoundedCornerShape(rounded_lg),
                             color = SurfaceContainerHigh
                         ) {
-                            Box(modifier = Modifier.fillMaxSize()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.Black)
+                            ) {
                                 AndroidView(
                                     modifier = Modifier.fillMaxSize(),
                                     factory = { context ->
@@ -168,6 +193,9 @@ fun RecipeVideoPlayerDialog(
                                             webViewRef = this
                                             overScrollMode = WebView.OVER_SCROLL_NEVER
                                             setBackgroundColor(android.graphics.Color.BLACK)
+                                            CookieManager.getInstance().setAcceptCookie(true)
+                                            CookieManager.getInstance()
+                                                .setAcceptThirdPartyCookies(this, true)
                                             settings.apply {
                                                 javaScriptEnabled = true
                                                 domStorageEnabled = true
@@ -175,25 +203,92 @@ fun RecipeVideoPlayerDialog(
                                                 loadsImagesAutomatically = true
                                                 loadWithOverviewMode = true
                                                 useWideViewPort = true
+                                                javaScriptCanOpenWindowsAutomatically = true
+                                                mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
                                                 cacheMode = WebSettings.LOAD_DEFAULT
                                             }
-                                            webChromeClient = WebChromeClient()
-                                            webViewClient = object : WebViewClient() {
-                                                override fun onPageFinished(view: WebView?, url: String?) {
-                                                    isLoading = false
+                                            addJavascriptInterface(
+                                                EmbeddedVideoBridge(
+                                                    onReady = {
+                                                        loadError = null
+                                                        isLoading = false
+                                                    }
+                                                ),
+                                                "RecipeVideoBridge"
+                                            )
+                                            webChromeClient = object : WebChromeClient() {
+                                                override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                                                    if (newProgress >= 55 && loadError == null) {
+                                                        isLoading = false
+                                                    }
                                                 }
                                             }
-                                            loadUrl(playableUrl)
+                                            webViewClient = object : WebViewClient() {
+                                                override fun shouldOverrideUrlLoading(
+                                                    view: WebView?,
+                                                    request: WebResourceRequest?
+                                                ): Boolean = false
+
+                                                override fun onPageCommitVisible(view: WebView?, url: String?) {
+                                                    if (embedHtml == null) {
+                                                        isLoading = false
+                                                    }
+                                                }
+
+                                                override fun onPageFinished(view: WebView?, url: String?) {
+                                                    if (embedHtml == null) {
+                                                        isLoading = false
+                                                    }
+                                                }
+
+                                                override fun onReceivedError(
+                                                    view: WebView?,
+                                                    request: WebResourceRequest?,
+                                                    error: WebResourceError?
+                                                ) {
+                                                    if (request?.isForMainFrame == true) {
+                                                        loadError = context.getString(R.string.recipe_video_error)
+                                                        isLoading = false
+                                                    }
+                                                }
+                                            }
+                                            if (embedHtml != null) {
+                                                loadDataWithBaseURL(
+                                                    "https://www.youtube.com",
+                                                    embedHtml,
+                                                    "text/html",
+                                                    "utf-8",
+                                                    null
+                                                )
+                                            } else {
+                                                loadUrl(playableUrl)
+                                            }
                                         }
                                     },
                                     update = { webView ->
                                         webViewRef = webView
-                                        if (webView.url != playableUrl) {
+                                        if (embedHtml == null && webView.url != playableUrl) {
                                             isLoading = true
+                                            loadError = null
                                             webView.loadUrl(playableUrl)
                                         }
                                     }
                                 )
+
+                                loadError?.let { message ->
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Black.copy(alpha = 0.42f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = message,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.White
+                                        )
+                                    }
+                                }
 
                                 if (isLoading) {
                                     Box(
@@ -222,4 +317,75 @@ fun RecipeVideoPlayerDialog(
             }
         }
     }
+}
+
+private class EmbeddedVideoBridge(
+    private val onReady: () -> Unit
+) {
+    @JavascriptInterface
+    fun onContainerReady() = onReady()
+
+    @JavascriptInterface
+    fun onPlayerFrameLoaded() = onReady()
+}
+
+private fun buildEmbeddedPlayerHtml(
+    videoId: String,
+    title: String
+): String {
+    val safeTitle = title
+        .replace("&", "&amp;")
+        .replace("\"", "&quot;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+
+    return """
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="utf-8" />
+            <meta
+                name="viewport"
+                content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+            />
+            <style>
+                html, body {
+                    margin: 0;
+                    padding: 0;
+                    width: 100%;
+                    height: 100%;
+                    overflow: hidden;
+                    background: #000;
+                }
+                .frame {
+                    position: fixed;
+                    inset: 0;
+                    width: 100%;
+                    height: 100%;
+                    border: 0;
+                    background: #000;
+                }
+            </style>
+        </head>
+        <body>
+            <iframe
+                class="frame"
+                src="${YouTubeVideoUrlUtils.buildEmbedUrl(videoId)}"
+                title="$safeTitle"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                allowfullscreen
+                onload="window.RecipeVideoBridge && window.RecipeVideoBridge.onPlayerFrameLoaded()"
+            ></iframe>
+            <script>
+                window.addEventListener('load', function() {
+                    setTimeout(function() {
+                        if (window.RecipeVideoBridge) {
+                            window.RecipeVideoBridge.onContainerReady();
+                        }
+                    }, 250);
+                });
+            </script>
+        </body>
+        </html>
+    """.trimIndent()
 }
