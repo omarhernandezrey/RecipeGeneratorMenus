@@ -30,5 +30,11 @@ data class UserProfile(
     /** Número de porciones por defecto para el generador de menús (1-10) */
     val defaultPortions: Int = 2,
 
+    /** Formación culinaria / estudios relacionados con cocina y nutrición */
+    val culinaryStudies: String = "",
+
+    /** Experiencia personal en cocina: técnicas dominadas, estilos, logros */
+    val culinaryExperience: String = "",
+
     val createdAt: Long = System.currentTimeMillis()
 )
