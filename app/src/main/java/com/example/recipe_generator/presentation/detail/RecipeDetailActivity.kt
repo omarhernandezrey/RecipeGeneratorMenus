@@ -2,7 +2,6 @@ package com.example.recipe_generator.presentation.detail
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -13,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.example.recipe_generator.RecipeGeneratorApp
+import com.example.recipe_generator.data.remote.YouTubeVideoUrlUtils
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.domain.repository.FavoritesRepository
 import com.example.recipe_generator.domain.usecase.EnsureRecipeVideoUseCase
@@ -137,7 +137,7 @@ class DetailActivityViewModel(
                     r.videoYoutube?.takeIf { it.isNotBlank() }?.let { currentUrl ->
                         _videoUiState.value = RecipeVideoUiState.Ready(
                             videoUrl = currentUrl,
-                            fromFallback = isFallbackUrl(currentUrl)
+                            fromFallback = YouTubeVideoUrlUtils.isFallbackUrl(currentUrl)
                         )
                     } ?: run {
                         _videoUiState.value = RecipeVideoUiState.Loading
@@ -182,7 +182,7 @@ class DetailActivityViewModel(
             }.getOrElse {
                 _videoUiState.value = RecipeVideoUiState.Error(
                     message = "No se pudo resolver el video",
-                    fallbackUrl = buildFallbackUrl(recipeTitle)
+                    fallbackUrl = YouTubeVideoUrlUtils.buildSearchUrl(recipeTitle)
                 )
                 markCacheFinished(recipeId, wasSuccessful = false)
                 android.util.Log.e("VideoCache", "Error cacheando video: ${it.message}")
@@ -191,7 +191,7 @@ class DetailActivityViewModel(
 
             _videoUiState.value = RecipeVideoUiState.Ready(
                 videoUrl = result.resolvedVideoUrl,
-                fromFallback = isFallbackUrl(result.resolvedVideoUrl)
+                fromFallback = YouTubeVideoUrlUtils.isFallbackUrl(result.resolvedVideoUrl)
             )
             markCacheFinished(recipeId, wasSuccessful = result.persisted)
         }
@@ -203,14 +203,6 @@ class DetailActivityViewModel(
             if (wasSuccessful) cachedVideoRecipeIds.add(recipeId)
         }
     }
-
-    private fun buildFallbackUrl(recipeTitle: String): String {
-        return "https://www.youtube.com/results?search_query=${
-            Uri.encode("como preparar $recipeTitle receta tutorial")
-        }"
-    }
-
-    private fun isFallbackUrl(url: String): Boolean = url.contains("/results?search_query=")
 }
 
 private class DetailActivityViewModelFactory(

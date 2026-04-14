@@ -1,8 +1,8 @@
 package com.example.recipe_generator.presentation.myrecipes
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.recipe_generator.data.remote.YouTubeVideoUrlUtils
 import com.example.recipe_generator.data.sync.FirestoreSyncService
 import com.example.recipe_generator.domain.model.AppNotification
 import com.example.recipe_generator.domain.model.UserRecipe
@@ -121,7 +121,7 @@ class CreateRecipeViewModel(
             }.getOrElse {
                 android.util.Log.w("CreateRecipeViewModel", "No se pudo resolver video: ${it.message}")
                 current.videoYoutube.takeIf { !it.isNullOrBlank() }
-                    ?: "https://www.youtube.com/results?search_query=${Uri.encode("como preparar ${current.title.trim()} receta tutorial")}"
+                    ?: YouTubeVideoUrlUtils.buildSearchUrl(current.title.trim())
             }
 
             val recipe = current.copy(videoYoutube = resolvedVideo).toRecipe(userId)

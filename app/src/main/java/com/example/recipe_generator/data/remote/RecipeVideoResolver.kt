@@ -1,34 +1,42 @@
 package com.example.recipe_generator.data.remote
 
-import android.net.Uri
 import android.util.Log
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
 
 class RecipeVideoResolver(
-    private val youTubeVideoSearchService: YouTubeVideoSearchService = YouTubeVideoSearchService()
+    private val videoSearchEngine: RecipeVideoSearchEngine = YouTubeVideoSearchService()
 ) {
+
+    private data class CachedVideo(
+        val url: String,
+        val isFallback: Boolean
+    )
 
     companion object {
         private const val TAG = "RecipeVideoResolver"
-        private const val YOUTUBE_SEARCH_BASE = "https://www.youtube.com/results?search_query="
     }
 
-    private val titleCache = ConcurrentHashMap<String, String>()
+    private val titleCache = ConcurrentHashMap<String, CachedVideo>()
     private val inFlightTitleLocks = ConcurrentHashMap<String, Mutex>()
 
     fun resolve(currentVideoUrl: String?, recipeTitle: String): String {
-        if (!currentVideoUrl.isNullOrBlank() && isValidYoutubeUrl(currentVideoUrl)) {
-            return currentVideoUrl
+        if (!currentVideoUrl.isNullOrBlank() && !YouTubeVideoUrlUtils.needsResolution(currentVideoUrl)) {
+            return YouTubeVideoUrlUtils.normalizeVideoUrl(currentVideoUrl)
         }
 
         val normalizedTitle = recipeTitle.trim().lowercase()
-        titleCache[normalizedTitle]?.let { return it }
+        titleCache[normalizedTitle]?.let { return it.url }
 
-        val fallback = buildSearchUrl(recipeTitle)
-        titleCache[normalizedTitle] = fallback
-        Log.d(TAG, "Usando fallback local para: $recipeTitle")
+        val fallback = currentVideoUrl
+            ?.takeIf(YouTubeVideoUrlUtils::isFallbackUrl)
+            ?: buildSearchUrl(recipeTitle)
+        titleCache[normalizedTitle] = CachedVideo(
+            url = fallback,
+            isFallback = true
+        )
+        logDebug("Usando fallback local para: $recipeTitle")
         return fallback
     }
 
@@ -37,19 +45,23 @@ class RecipeVideoResolver(
         recipeTitle: String,
         youTubeApiKey: String
     ): String {
-        if (!currentVideoUrl.isNullOrBlank() && isValidYoutubeUrl(currentVideoUrl)) {
-            return currentVideoUrl
+        if (!currentVideoUrl.isNullOrBlank() && !YouTubeVideoUrlUtils.needsResolution(currentVideoUrl)) {
+            return YouTubeVideoUrlUtils.normalizeVideoUrl(currentVideoUrl)
         }
 
         val normalizedTitle = recipeTitle.trim().lowercase()
-        titleCache[normalizedTitle]?.let { return it }
+        titleCache[normalizedTitle]
+            ?.takeIf { !it.isFallback }
+            ?.let { return it.url }
 
         val lock = inFlightTitleLocks.getOrPut(normalizedTitle) { Mutex() }
         return lock.withLock {
-            titleCache[normalizedTitle]?.let { return@withLock it }
+            titleCache[normalizedTitle]
+                ?.takeIf { !it.isFallback }
+                ?.let { return@withLock it.url }
 
             val resolvedFromApi = runCatching {
-                youTubeVideoSearchService.searchBestVideoUrl(
+                videoSearchEngine.searchBestVideoUrl(
                     recipeTitle = recipeTitle,
                     queries = getSearchQueries(recipeTitle),
                     priorityKeywords = getPriorityKeywords(),
@@ -58,47 +70,54 @@ class RecipeVideoResolver(
             }.getOrNull()
 
             val resolved = resolvedFromApi
-                ?.takeIf { isValidYoutubeUrl(it) }
+                ?.takeIf { !YouTubeVideoUrlUtils.needsResolution(it) }
+                ?.let(YouTubeVideoUrlUtils::normalizeVideoUrl)
+                ?: currentVideoUrl
+                    ?.takeIf(YouTubeVideoUrlUtils::isFallbackUrl)
                 ?: buildSearchUrl(recipeTitle)
 
-            titleCache[normalizedTitle] = resolved
-            if (resolvedFromApi != null) {
-                Log.d(TAG, "Video resuelto con YouTube API para: $recipeTitle")
+            val cachedVideo = CachedVideo(
+                url = resolved,
+                isFallback = YouTubeVideoUrlUtils.isFallbackUrl(resolved)
+            )
+            titleCache[normalizedTitle] = cachedVideo
+            if (!cachedVideo.isFallback) {
+                logDebug("Video resuelto con búsqueda exacta para: $recipeTitle")
             } else {
-                Log.d(TAG, "Video resuelto con fallback para: $recipeTitle")
+                logDebug("Video resuelto con fallback para: $recipeTitle")
             }
             resolved
         }
     }
 
     fun needsResolution(currentVideoUrl: String?): Boolean {
-        return currentVideoUrl.isNullOrBlank() || !isValidYoutubeUrl(currentVideoUrl)
+        return YouTubeVideoUrlUtils.needsResolution(currentVideoUrl)
     }
 
     private fun buildSearchUrl(recipeTitle: String): String {
-        val query = "como preparar $recipeTitle receta tutorial"
-        return "$YOUTUBE_SEARCH_BASE${Uri.encode(query)}"
+        return YouTubeVideoUrlUtils.buildSearchUrl(recipeTitle)
     }
 
     fun getSearchQueries(recipeTitle: String): List<String> = listOf(
+        recipeTitle,
         "como preparar $recipeTitle",
+        "como hacer $recipeTitle",
+        "$recipeTitle receta paso a paso",
         "receta de $recipeTitle",
+        "$recipeTitle receta casera",
         "how to make $recipeTitle",
         "$recipeTitle recipe tutorial"
     )
 
     fun getPriorityKeywords(): List<String> = listOf(
-        "receta", "tutorial", "original", "casera", "preparar", "cocinar"
+        "receta", "tutorial", "original", "casera", "preparar", "como hacer", "paso a paso"
     )
 
     fun clearCache() {
         titleCache.clear()
     }
 
-    private fun isValidYoutubeUrl(url: String): Boolean {
-        return url.startsWith("https://www.youtube.com/") ||
-                url.startsWith("https://youtube.com/") ||
-                url.startsWith("https://youtu.be/") ||
-                url.startsWith("https://m.youtube.com/")
+    private fun logDebug(message: String) {
+        runCatching { Log.d(TAG, message) }
     }
 }

@@ -45,8 +45,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,10 +61,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.recipe_generator.data.remote.RecipeVideoResolver
+import com.example.recipe_generator.data.remote.YouTubeVideoUrlUtils
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.presentation.components.DetailEditorialTopAppBar
 import com.example.recipe_generator.presentation.components.EditorialBottomNavBar
 import com.example.recipe_generator.presentation.components.RecipeImage
+import com.example.recipe_generator.presentation.components.RecipeVideoPlayerDialog
 import com.example.recipe_generator.presentation.detail.components.RecipeVideoSection
 import com.example.recipe_generator.presentation.detail.components.RecipeVideoUiState
 import com.example.recipe_generator.presentation.components.editorialBottomBarContentPadding
@@ -116,6 +121,7 @@ fun RecipeDetailScreen(
     videoUiState: RecipeVideoUiState? = null
 ) {
     val scrollState = rememberScrollState()
+    var activeVideoUrl by rememberSaveable { mutableStateOf<String?>(null) }
 
     Box(
         modifier = Modifier
@@ -185,7 +191,8 @@ fun RecipeDetailScreen(
 
                         RecipeMainContent(
                             recipe = recipe,
-                            videoUiState = videoUiState
+                            videoUiState = videoUiState,
+                            onOpenVideo = { activeVideoUrl = it }
                         )
                     }
                 }
@@ -196,6 +203,14 @@ fun RecipeDetailScreen(
             EditorialBottomNavBar(
                 selectedItem = selectedNavItem,
                 onItemSelected = onNavItemSelected
+            )
+        }
+
+        activeVideoUrl?.let { videoUrl ->
+            RecipeVideoPlayerDialog(
+                recipeTitle = recipe.title,
+                videoUrl = videoUrl,
+                onDismiss = { activeVideoUrl = null }
             )
         }
     }
@@ -448,7 +463,8 @@ private fun NutrientCard(
 @Composable
 private fun RecipeMainContent(
     recipe: Recipe,
-    videoUiState: RecipeVideoUiState? = null
+    videoUiState: RecipeVideoUiState? = null,
+    onOpenVideo: (String) -> Unit = {}
 ) {
     val resolvedVideoUiState = videoUiState ?: rememberRecipeVideoUiState(recipe)
 
@@ -466,7 +482,10 @@ private fun RecipeMainContent(
         StepsList(recipe = recipe)
 
         Spacer(modifier = Modifier.height(16.dp))
-        RecipeVideoSection(videoUiState = resolvedVideoUiState)
+        RecipeVideoSection(
+            videoUiState = resolvedVideoUiState,
+            onOpenVideo = onOpenVideo
+        )
         Spacer(modifier = Modifier.height(24.dp))
     }
 }
@@ -610,6 +629,7 @@ fun RecipeDetailBottomSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val resolvedVideoUiState = videoUiState ?: rememberRecipeVideoUiState(recipe)
+    var activeVideoUrl by rememberSaveable { mutableStateOf<String?>(null) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -861,12 +881,23 @@ fun RecipeDetailBottomSheet(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            RecipeVideoSection(videoUiState = resolvedVideoUiState)
+            RecipeVideoSection(
+                videoUiState = resolvedVideoUiState,
+                onOpenVideo = { activeVideoUrl = it }
+            )
             Spacer(modifier = Modifier.height(24.dp))
 
             // Espacio inferior para gestos del sistema
             Spacer(modifier = Modifier.height(spacing_10))
         }
+    }
+
+    activeVideoUrl?.let { videoUrl ->
+        RecipeVideoPlayerDialog(
+            recipeTitle = recipe.title,
+            videoUrl = videoUrl,
+            onDismiss = { activeVideoUrl = null }
+        )
     }
 }
 
@@ -941,9 +972,7 @@ private fun rememberRecipeVideoUiState(recipe: Recipe): RecipeVideoUiState {
     val videoResolver = remember { RecipeVideoResolver() }
     val recipeTitle = recipe.title
     val currentVideo = recipe.videoYoutube
-    val fallbackUrl = remember(recipeTitle) {
-        "https://www.youtube.com/results?search_query=${android.net.Uri.encode("como preparar $recipeTitle receta tutorial")}"
-    }
+    val fallbackUrl = remember(recipeTitle) { YouTubeVideoUrlUtils.buildSearchUrl(recipeTitle) }
 
     val state by produceState<RecipeVideoUiState>(
         initialValue = RecipeVideoUiState.Loading,
@@ -973,7 +1002,7 @@ private fun rememberRecipeVideoUiState(recipe: Recipe): RecipeVideoUiState {
         } else {
             RecipeVideoUiState.Ready(
                 videoUrl = resolved,
-                fromFallback = resolved.contains("/results?search_query=")
+                fromFallback = YouTubeVideoUrlUtils.isFallbackUrl(resolved)
             )
         }
     }

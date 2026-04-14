@@ -1,8 +1,8 @@
 package com.example.recipe_generator.presentation.detail
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.recipe_generator.data.remote.YouTubeVideoUrlUtils
 import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.domain.usecase.EnsureRecipeVideoUseCase
 import com.example.recipe_generator.domain.usecase.GetRecipeDetailUseCase
@@ -52,7 +52,7 @@ class RecipeDetailViewModel(
                     recipe.videoYoutube?.takeIf { it.isNotBlank() }?.let { currentUrl ->
                         _videoUiState.value = RecipeVideoUiState.Ready(
                             videoUrl = currentUrl,
-                            fromFallback = isFallbackUrl(currentUrl)
+                            fromFallback = YouTubeVideoUrlUtils.isFallbackUrl(currentUrl)
                         )
                     } ?: run {
                         _videoUiState.value = RecipeVideoUiState.Loading
@@ -86,7 +86,7 @@ class RecipeDetailViewModel(
             }.getOrElse {
                 _videoUiState.value = RecipeVideoUiState.Error(
                     message = "No se pudo resolver el video",
-                    fallbackUrl = buildFallbackUrl(recipeTitle)
+                    fallbackUrl = YouTubeVideoUrlUtils.buildSearchUrl(recipeTitle)
                 )
                 markCacheFinished(recipeId, wasSuccessful = false)
                 android.util.Log.e("VideoCache", "Error cacheando video: ${it.message}")
@@ -95,7 +95,7 @@ class RecipeDetailViewModel(
 
             _videoUiState.value = RecipeVideoUiState.Ready(
                 videoUrl = result.resolvedVideoUrl,
-                fromFallback = isFallbackUrl(result.resolvedVideoUrl)
+                fromFallback = YouTubeVideoUrlUtils.isFallbackUrl(result.resolvedVideoUrl)
             )
             markCacheFinished(recipeId, wasSuccessful = result.persisted)
         }
@@ -114,12 +114,4 @@ class RecipeDetailViewModel(
             toggleFavoriteUseCase(userId, currentRecipe.id)
         }
     }
-
-    private fun buildFallbackUrl(recipeTitle: String): String {
-        return "https://www.youtube.com/results?search_query=${
-            Uri.encode("como preparar $recipeTitle receta tutorial")
-        }"
-    }
-
-    private fun isFallbackUrl(url: String): Boolean = url.contains("/results?search_query=")
 }
