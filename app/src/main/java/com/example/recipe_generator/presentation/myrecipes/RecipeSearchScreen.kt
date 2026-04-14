@@ -1,5 +1,6 @@
 package com.example.recipe_generator.presentation.myrecipes
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +41,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,14 +56,12 @@ import com.example.recipe_generator.data.remote.ColombianRecipesDatabase
 import com.example.recipe_generator.data.remote.FoodTranslator
 import com.example.recipe_generator.data.remote.MealDbApi
 import com.example.recipe_generator.data.remote.MealDbFullRecipe
-import com.example.recipe_generator.data.remote.YouTubeVideoUrlUtils
 import com.example.recipe_generator.data.sync.FirestoreSyncService
 import com.example.recipe_generator.domain.model.UserRecipe
 import com.example.recipe_generator.domain.repository.UserRecipeRepository
 import com.example.recipe_generator.domain.usecase.ResolveRecipeVideoUseCase
 import com.example.recipe_generator.presentation.components.EditorialCard
 import com.example.recipe_generator.presentation.components.PrimaryButton
-import com.example.recipe_generator.presentation.components.RecipeVideoPlayerDialog
 import com.example.recipe_generator.presentation.detail.components.RecipeVideoSection
 import com.example.recipe_generator.presentation.detail.components.RecipeVideoUiState
 import com.example.recipe_generator.presentation.profile.downloadImageToInternalStorage
@@ -510,7 +508,6 @@ private fun RecipeImportPreviewScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var isSaving by remember { mutableStateOf(false) }
-    var activeVideoUrl by rememberSaveable { mutableStateOf<String?>(null) }
 
     val steps = remember(recipe.instructions) {
         recipe.instructions
@@ -545,7 +542,7 @@ private fun RecipeImportPreviewScreen(
         } else {
             RecipeVideoUiState.Ready(
                 videoUrl = resolved,
-                fromFallback = YouTubeVideoUrlUtils.isFallbackUrl(resolved)
+                fromFallback = resolved.contains("/results?search_query=")
             )
         }
     }
@@ -595,174 +592,159 @@ private fun RecipeImportPreviewScreen(
         }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Surface)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = spacing_4, vertical = spacing_4),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing_4, vertical = spacing_4),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBack, enabled = !isSaving) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = OnSurface
-                    )
-                }
-                Column(modifier = Modifier.padding(start = spacing_2)) {
-                    Text(
-                        text = "Vista previa",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = OnSurface
-                    )
-                    Text(
-                        text = "Revisa antes de guardar",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSurfaceVariant
-                    )
-                }
+            IconButton(onClick = onBack, enabled = !isSaving) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = "Volver",
+                    tint = OnSurface
+                )
             }
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = spacing_6),
-                verticalArrangement = Arrangement.spacedBy(spacing_4)
-            ) {
-                if (recipe.thumbUrl.isNotBlank()) {
-                    AsyncImage(
-                        model = recipe.thumbUrl,
-                        contentDescription = recipe.name,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(220.dp)
-                            .clip(RoundedCornerShape(rounded_lg))
-                            .background(PrimaryContainer.copy(alpha = 0.15f))
-                    )
-                }
-
+            Column(modifier = Modifier.padding(start = spacing_2)) {
                 Text(
-                    text = recipe.name,
-                    style = MaterialTheme.typography.headlineMedium,
+                    text = "Vista previa",
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.ExtraBold,
                     color = OnSurface
                 )
-
-                if (recipe.category.isNotBlank() || recipe.area.isNotBlank()) {
-                    Text(
-                        text = listOf(recipe.category, recipe.area)
-                            .filter { it.isNotBlank() }
-                            .joinToString(" · "),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = OnSurfaceVariant
-                    )
-                }
-
-                // Ingredientes
-                EditorialCard {
-                    Text(
-                        text = "Ingredientes (${recipe.ingredients.size})",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = OnSurface
-                    )
-                    Spacer(modifier = Modifier.height(spacing_3))
-                    Column(verticalArrangement = Arrangement.spacedBy(spacing_2)) {
-                        recipe.ingredients.forEach { ingredient ->
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(spacing_2),
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                Text(
-                                    text = "•",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Primary,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = ingredient,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = OnSurface
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Pasos
-                EditorialCard {
-                    Text(
-                        text = "Preparación (${steps.size} pasos)",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = OnSurface
-                    )
-                    Spacer(modifier = Modifier.height(spacing_3))
-                    Column(verticalArrangement = Arrangement.spacedBy(spacing_3)) {
-                        steps.forEachIndexed { index, step ->
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(spacing_3),
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .background(
-                                            color = Primary.copy(alpha = 0.12f),
-                                            shape = RoundedCornerShape(rounded_full)
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "${index + 1}",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Primary
-                                    )
-                                }
-                                Text(
-                                    text = step,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = OnSurface,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                RecipeVideoSection(
-                    videoUiState = videoUiState,
-                    onOpenVideo = { activeVideoUrl = it }
-                )
-
-                Spacer(modifier = Modifier.height(spacing_2))
-            }
-
-            Box(modifier = Modifier.padding(spacing_6)) {
-                PrimaryButton(
-                    text = if (isSaving) "Guardando receta..." else "Guardar en Mis Recetas",
-                    onClick = { if (!isSaving) importRecipe() },
-                    modifier = Modifier.fillMaxWidth()
+                Text(
+                    text = "Revisa antes de guardar",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OnSurfaceVariant
                 )
             }
         }
 
-        activeVideoUrl?.let { videoUrl ->
-            RecipeVideoPlayerDialog(
-                recipeTitle = recipe.name,
-                videoUrl = videoUrl,
-                onDismiss = { activeVideoUrl = null }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = spacing_6),
+            verticalArrangement = Arrangement.spacedBy(spacing_4)
+        ) {
+            if (recipe.thumbUrl.isNotBlank()) {
+                AsyncImage(
+                    model = recipe.thumbUrl,
+                    contentDescription = recipe.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                        .clip(RoundedCornerShape(rounded_lg))
+                        .background(PrimaryContainer.copy(alpha = 0.15f))
+                )
+            }
+
+            Text(
+                text = recipe.name,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.ExtraBold,
+                color = OnSurface
+            )
+
+            if (recipe.category.isNotBlank() || recipe.area.isNotBlank()) {
+                Text(
+                    text = listOf(recipe.category, recipe.area)
+                        .filter { it.isNotBlank() }
+                        .joinToString(" · "),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = OnSurfaceVariant
+                )
+            }
+
+            // Ingredientes
+            EditorialCard {
+                Text(
+                    text = "Ingredientes (${recipe.ingredients.size})",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = OnSurface
+                )
+                Spacer(modifier = Modifier.height(spacing_3))
+                Column(verticalArrangement = Arrangement.spacedBy(spacing_2)) {
+                    recipe.ingredients.forEach { ingredient ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(spacing_2),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Text(
+                                text = "•",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = ingredient,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = OnSurface
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Pasos
+            EditorialCard {
+                Text(
+                    text = "Preparación (${steps.size} pasos)",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = OnSurface
+                )
+                Spacer(modifier = Modifier.height(spacing_3))
+                Column(verticalArrangement = Arrangement.spacedBy(spacing_3)) {
+                    steps.forEachIndexed { index, step ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(spacing_3),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(
+                                        color = Primary.copy(alpha = 0.12f),
+                                        shape = RoundedCornerShape(rounded_full)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "${index + 1}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Primary
+                                )
+                            }
+                            Text(
+                                text = step,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = OnSurface,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+            }
+
+            RecipeVideoSection(videoUiState = videoUiState)
+
+            Spacer(modifier = Modifier.height(spacing_2))
+        }
+
+        Box(modifier = Modifier.padding(spacing_6)) {
+            PrimaryButton(
+                text = if (isSaving) "Guardando receta..." else "Guardar en Mis Recetas",
+                onClick = { if (!isSaving) importRecipe() },
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
@@ -776,5 +758,7 @@ private fun mapToLocalCategory(category: String): String = when (category.lowerc
 }
 
 private fun buildVideoFallbackUrl(recipeName: String): String {
-    return YouTubeVideoUrlUtils.buildSearchUrl(recipeName)
+    return "https://www.youtube.com/results?search_query=${
+        Uri.encode("como preparar $recipeName receta tutorial")
+    }"
 }
