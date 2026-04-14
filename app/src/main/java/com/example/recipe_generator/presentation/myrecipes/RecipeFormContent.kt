@@ -17,7 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.recipe_generator.presentation.components.AppTextField
 import com.example.recipe_generator.presentation.components.EditorialCard
@@ -73,29 +75,52 @@ internal fun RecipeFormContent(
         }
 
         // SECCIÓN IA: ASISTENTE INTELIGENTE
+        val keyboardController = LocalSoftwareKeyboardController.current
+        val onGenerate = {
+            if (aiPrompt.isNotBlank() && !uiState.isGenerating) {
+                keyboardController?.hide()
+                onAiGenerate(aiPrompt)
+            }
+        }
         EditorialCard {
             Text("Asistente de Creación IA", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Primary)
             Text("Escribe el nombre de un plato y la IA completará los campos por ti.", style = MaterialTheme.typography.bodySmall, color = OnSurfaceVariant)
             Spacer(modifier = Modifier.height(spacing_4))
-            
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(spacing_2)) {
-                AppTextField(
-                    value = aiPrompt,
-                    onValueChange = { aiPrompt = it },
-                    placeholder = "Ej: Ajiaco Colombiano",
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(
-                    onClick = { if(aiPrompt.isNotBlank()) onAiGenerate(aiPrompt) },
-                    enabled = !uiState.isGenerating && aiPrompt.isNotBlank(),
-                    modifier = Modifier.background(PrimaryContainer, RoundedCornerShape(rounded_full))
-                ) {
-                    if (uiState.isGenerating) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp, color = Primary)
-                    } else {
-                        Icon(Icons.Outlined.AutoAwesome, "Generar", tint = Primary)
-                    }
+
+            AppTextField(
+                value = aiPrompt,
+                onValueChange = { aiPrompt = it },
+                placeholder = "Ej: Ajiaco Colombiano",
+                modifier = Modifier.fillMaxWidth(),
+                imeAction = ImeAction.Done,
+                onImeAction = { onGenerate() }
+            )
+            Spacer(modifier = Modifier.height(spacing_3))
+
+            Button(
+                onClick = { onGenerate() },
+                enabled = !uiState.isGenerating && aiPrompt.isNotBlank(),
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            ) {
+                if (uiState.isGenerating) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = Color.White)
+                    Spacer(modifier = Modifier.width(spacing_2))
+                    Text("Generando...", color = Color.White)
+                } else {
+                    Icon(Icons.Outlined.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(spacing_2))
+                    Text("Generar con IA")
                 }
+            }
+
+            if (!uiState.error.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(spacing_2))
+                Text(
+                    text = uiState.error,
+                    color = Color(0xFFBA1A1A),
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
 
@@ -134,10 +159,6 @@ internal fun RecipeFormContent(
 
         EditableStringSection("Ingredientes", uiState.ingredients, "Añadir ingrediente", onIngredientChange, onAddIngredient, onRemoveIngredient)
         EditableStringSection("Pasos de preparación", uiState.steps, "Añadir paso", onStepChange, onAddStep, onRemoveStep)
-
-        if (!uiState.error.isNullOrBlank()) {
-            Text(uiState.error, color = Color(0xFFBA1A1A), style = MaterialTheme.typography.bodyMedium)
-        }
 
         PrimaryButton(
             text = if (uiState.isSaving) "Guardando..." else buttonLabel,
