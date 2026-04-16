@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,6 +42,7 @@ import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.domain.model.UserRecipe
 import com.example.recipe_generator.presentation.components.AppTextField
 import com.example.recipe_generator.presentation.components.EditorialCard
+import com.example.recipe_generator.presentation.components.RecipeImage
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
@@ -51,8 +53,6 @@ import com.example.recipe_generator.presentation.theme.spacing_2
 import com.example.recipe_generator.presentation.theme.spacing_3
 import com.example.recipe_generator.presentation.theme.spacing_4
 import com.example.recipe_generator.presentation.theme.spacing_6
-import java.io.File
-
 /**
  * BottomSheet para seleccionar una receta para el plan semanal.
  *
@@ -228,16 +228,19 @@ private fun RecipeCard(
         ) {
             // Miniatura
             if (imageRes.isNotBlank()) {
-                val model: Any = if (imageRes.startsWith("http")) imageRes else File(imageRes)
-                AsyncImage(
-                    model = model,
-                    contentDescription = title,
-                    contentScale = ContentScale.Crop,
+                Box(
                     modifier = Modifier
                         .size(56.dp)
                         .clip(RoundedCornerShape(rounded_lg))
                         .background(PrimaryContainer.copy(alpha = 0.15f))
-                )
+                ) {
+                    RecipeImage(
+                        recipeTitle = title,
+                        imageRes = imageRes,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             } else {
                 Box(
                     modifier = Modifier

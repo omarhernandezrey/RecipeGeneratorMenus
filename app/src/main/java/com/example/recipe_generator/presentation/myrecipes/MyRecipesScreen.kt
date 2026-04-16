@@ -1,6 +1,5 @@
 package com.example.recipe_generator.presentation.myrecipes
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,8 +50,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.recipe_generator.RecipeGeneratorApp
 import com.example.recipe_generator.domain.model.UserRecipe
 import com.example.recipe_generator.presentation.components.EditorialCard
+import com.example.recipe_generator.presentation.components.RecipeImage
 import com.example.recipe_generator.presentation.components.editorialFabBottomPadding
-import com.example.recipe_generator.presentation.profile.rememberProfileImage
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
@@ -256,21 +254,22 @@ private fun RecipeSummaryCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val image = rememberProfileImage(recipe.imageRes.takeIf { it.isNotBlank() })
-
     EditorialCard(modifier = Modifier.padding(horizontal = spacing_6)) {
 
         // Imagen
-        if (image != null) {
-            Image(
-                bitmap           = image,
-                contentDescription = null,
-                modifier         = Modifier
+        if (recipe.imageRes.isNotBlank()) {
+            Box(
+                modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
-                    .clip(RoundedCornerShape(rounded_lg)),
-                contentScale     = ContentScale.Crop
-            )
+                    .clip(RoundedCornerShape(rounded_lg))
+            ) {
+                RecipeImage(
+                    recipeTitle = recipe.title,
+                    imageRes = recipe.imageRes,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
             Spacer(modifier = Modifier.height(spacing_4))
         }
 

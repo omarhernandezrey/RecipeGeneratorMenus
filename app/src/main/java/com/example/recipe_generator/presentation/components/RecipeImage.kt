@@ -1,5 +1,6 @@
 package com.example.recipe_generator.presentation.components
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,22 +43,21 @@ fun RecipeImage(
     var isLoading by remember(recipeTitle, imageRes) { mutableStateOf(imageRes.isBlank()) }
 
     LaunchedEffect(recipeTitle, imageRes) {
-        if (!imageRes.startsWith("http") && !imageRes.startsWith("file://") && imageRes.isNotBlank()) {
-            // imageRes tiene valor pero no es URL ni file — resetear y buscar
-            resolvedUrl = ""
-            isLoading = true
-        }
-        if (resolvedUrl.isBlank()) {
+        resolvedUrl = imageRes
+        val shouldResolveOnline = imageRes.isBlank() || !imageRes.isDirectImageReference()
+        if (shouldResolveOnline) {
             isLoading = true
             val found = RecipeImageResolver.resolve(recipeTitle, imageRes)
             resolvedUrl = found
+            isLoading = false
+        } else {
             isLoading = false
         }
     }
 
     Box(modifier = modifier) {
         when {
-            resolvedUrl.startsWith("http") -> {
+            resolvedUrl.isRemoteImageUrl() -> {
                 AsyncImage(
                     model = resolvedUrl,
                     contentDescription = recipeTitle,
@@ -67,7 +67,17 @@ fun RecipeImage(
                     error = painterResource(R.drawable.img_placeholder)
                 )
             }
-            resolvedUrl.startsWith("file://") || resolvedUrl.startsWith("/") -> {
+            resolvedUrl.startsWith("content://") -> {
+                AsyncImage(
+                    model = Uri.parse(resolvedUrl),
+                    contentDescription = recipeTitle,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = contentScale,
+                    placeholder = painterResource(R.drawable.img_placeholder),
+                    error = painterResource(R.drawable.img_placeholder)
+                )
+            }
+            resolvedUrl.startsWith("file://") || resolvedUrl.startsWith("/") || File(resolvedUrl).exists() -> {
                 val file = if (resolvedUrl.startsWith("file://"))
                     File(resolvedUrl.removePrefix("file://"))
                 else
@@ -106,3 +116,13 @@ fun RecipeImage(
         }
     }
 }
+
+private fun String.isRemoteImageUrl(): Boolean =
+    startsWith("http://") || startsWith("https://")
+
+private fun String.isDirectImageReference(): Boolean =
+    isRemoteImageUrl() ||
+        startsWith("file://") ||
+        startsWith("content://") ||
+        startsWith("/") ||
+        File(this).exists()
