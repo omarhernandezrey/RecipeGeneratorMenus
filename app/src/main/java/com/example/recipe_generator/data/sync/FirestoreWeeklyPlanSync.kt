@@ -147,6 +147,11 @@ class FirestoreWeeklyPlanSync(
                     localSlot.recipeTitle
                 else -> resolveRecipeTitle(userId, recipeId)
             }
+            val resolvedImage = when {
+                localSlot?.recipeId == recipeId && localSlot.imageRes.isNotBlank() ->
+                    localSlot.imageRes
+                else -> resolveRecipeImage(userId, recipeId)
+            }
 
             WeeklyPlanEntity(
                 userId = userId,
@@ -154,6 +159,7 @@ class FirestoreWeeklyPlanSync(
                 mealType = mealType,
                 recipeId = recipeId,
                 recipeTitle = resolvedTitle,
+                imageRes = resolvedImage,
                 notes = localSlot?.notes.orEmpty(),
                 updatedAt = System.currentTimeMillis()
             )
@@ -170,6 +176,16 @@ class FirestoreWeeklyPlanSync(
         }
 
         return recipeDao.getRecipeById(recipeId)?.title.orEmpty()
+    }
+
+    private suspend fun resolveRecipeImage(userId: String, recipeId: String): String {
+        userRecipeDao.getById(recipeId)
+            ?.takeIf { it.userId == userId }
+            ?.imageRes
+            ?.takeIf { it.isNotBlank() }
+            ?.let { return it }
+
+        return recipeDao.getRecipeById(recipeId)?.imageRes.orEmpty()
     }
 
     private fun buildRemoteDayDocument(entries: List<WeeklyPlanEntity>): Map<String, String?> {
