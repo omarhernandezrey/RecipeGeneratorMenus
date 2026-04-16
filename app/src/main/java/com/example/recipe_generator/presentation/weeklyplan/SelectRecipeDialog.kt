@@ -81,15 +81,20 @@ fun SelectRecipeDialog(
         appContainer.recipeRepository.getAllRecipes()
     }.collectAsStateWithLifecycle(initialValue = emptyList())
 
-    // Filtro estricto por tipo de comida + búsqueda por texto
-    val myRecipes = remember(allMyRecipes, query, mealType) {
-        allMyRecipes
-            .filter { it.category.equals(mealType, ignoreCase = true) ||
-                       it.mealType.equals(mealType, ignoreCase = true) }
-            .let { list ->
-                if (query.isBlank()) list
-                else list.filter { it.title.contains(query, ignoreCase = true) }
-            }
+    val filteredMyRecipes = remember(allMyRecipes, query) {
+        if (query.isBlank()) allMyRecipes
+        else allMyRecipes.filter { it.title.contains(query, ignoreCase = true) }
+    }
+
+    // En edición manual del calendario siempre se deben poder asignar recetas personales.
+    // Las compatibles con el slot aparecen primero, el resto debajo.
+    val myRecipes = remember(filteredMyRecipes, mealType) {
+        filteredMyRecipes.filter { it.matchesMealType(mealType) }
+    }
+
+    val otherMyRecipes = remember(filteredMyRecipes, myRecipes) {
+        val matchingIds = myRecipes.mapTo(mutableSetOf()) { it.id }
+        filteredMyRecipes.filterNot { it.id in matchingIds }
     }
 
     val catalogRecipes = remember(allCatalogRecipes, query, mealType) {
@@ -128,11 +133,21 @@ fun SelectRecipeDialog(
                 if (myRecipes.isEmpty()) {
                     item {
                         EmptySection(
-                            "No tienes recetas de $mealType. Crea una o importa desde Buscar Recetas."
+                            "No tienes recetas personales clasificadas como $mealType."
                         )
                     }
                 } else {
                     items(myRecipes, key = { it.id }) { recipe ->
+                        UserRecipeCard(recipe = recipe, onClick = { onRecipeSelected(recipe.id) })
+                    }
+                }
+
+                if (otherMyRecipes.isNotEmpty()) {
+                    item {
+                        Spacer(modifier = Modifier.height(spacing_2))
+                        SectionTitle("Otras recetas personales")
+                    }
+                    items(otherMyRecipes, key = { it.id }) { recipe ->
                         UserRecipeCard(recipe = recipe, onClick = { onRecipeSelected(recipe.id) })
                     }
                 }
@@ -155,6 +170,10 @@ fun SelectRecipeDialog(
         }
     }
 }
+
+private fun UserRecipe.matchesMealType(mealType: String): Boolean =
+    category.equals(mealType, ignoreCase = true) ||
+        mealType.equals(this.mealType, ignoreCase = true)
 
 // ─── Componentes privados ────────────────────────────────────────────────────
 

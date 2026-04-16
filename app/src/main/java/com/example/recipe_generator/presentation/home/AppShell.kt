@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 /**
@@ -99,7 +100,16 @@ fun AppShell(
 
     // Receta completa (con ingredientes y pasos) para el modal
     val fullRecipe: Recipe? by remember(selectedRecipe?.id) {
-        selectedRecipe?.let { r -> getRecipeDetailUseCase(r.id) } ?: flowOf(null)
+        selectedRecipe?.let { recipe ->
+            combine(
+                getRecipeDetailUseCase(recipe.id),
+                appContainer.userRecipeRepository.getMyRecipes(userId)
+            ) { catalogRecipe, userRecipes ->
+                catalogRecipe
+                    ?: userRecipes.firstOrNull { it.id == recipe.id }?.toRecipe()
+                    ?: recipe
+            }
+        } ?: flowOf(null)
     }.collectAsStateWithLifecycle(initialValue = selectedRecipe)
 
     // ── ViewModels ───────────────────────────────────────────────────
