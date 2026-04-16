@@ -66,7 +66,7 @@ class HomeViewModel(
             ) { planEntries, catalogRecipes ->
                 val showPlan = planEntries.isNotEmpty()
                 val recipes = if (showPlan) planEntries.map { it.toRecipe() } else catalogRecipes
-                Pair(showPlan, recipes)
+                Pair(showPlan, recipes.sortedForHome())
             }.collect { (showPlan, recipeList) ->
                 _hasPlan.value = showPlan
                 _recipes.value = recipeList

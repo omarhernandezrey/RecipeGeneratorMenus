@@ -28,14 +28,33 @@ interface WeeklyPlanDao {
     /** Retorna el plan semanal completo del usuario como Flow reactivo. */
     @Query(
         "SELECT * FROM weekly_plan WHERE userId = :userId " +
-        "ORDER BY dayOfWeek, mealType"
+        "ORDER BY " +
+        "CASE dayOfWeek " +
+        "WHEN 'Lunes' THEN 1 " +
+        "WHEN 'Martes' THEN 2 " +
+        "WHEN 'Miércoles' THEN 3 " +
+        "WHEN 'Jueves' THEN 4 " +
+        "WHEN 'Viernes' THEN 5 " +
+        "WHEN 'Sábado' THEN 6 " +
+        "WHEN 'Domingo' THEN 7 " +
+        "ELSE 8 END, " +
+        "CASE mealType " +
+        "WHEN 'Desayuno' THEN 1 " +
+        "WHEN 'Almuerzo' THEN 2 " +
+        "WHEN 'Cena' THEN 3 " +
+        "ELSE 4 END"
     )
     fun getPlanForUser(userId: String): Flow<List<WeeklyPlanEntity>>
 
     /** Retorna las comidas del usuario para un día específico. */
     @Query(
         "SELECT * FROM weekly_plan WHERE userId = :userId AND dayOfWeek = :day " +
-        "ORDER BY mealType"
+        "ORDER BY " +
+        "CASE mealType " +
+        "WHEN 'Desayuno' THEN 1 " +
+        "WHEN 'Almuerzo' THEN 2 " +
+        "WHEN 'Cena' THEN 3 " +
+        "ELSE 4 END"
     )
     fun getPlanForDay(userId: String, day: String): Flow<List<WeeklyPlanEntity>>
 
