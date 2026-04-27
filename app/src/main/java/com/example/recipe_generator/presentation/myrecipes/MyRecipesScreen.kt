@@ -83,7 +83,6 @@ fun MyRecipesScreen(
     embeddedMode: Boolean = false
 ) {
     val appContainer = (LocalContext.current.applicationContext as RecipeGeneratorApp).container
-    val userId = remember(appContainer) { appContainer.requireAuthenticatedUserId() }
     var route by remember { mutableStateOf<MyRecipesRoute>(MyRecipesRoute.List) }
 
     when (val current = route) {
@@ -97,12 +96,7 @@ fun MyRecipesScreen(
             onSaved = { route = MyRecipesRoute.List }
         )
         MyRecipesRoute.Search -> RecipeSearchScreen(
-            userId               = userId,
-            userRecipeRepository = appContainer.userRecipeRepository,
-            firestoreSyncService = appContainer.firestoreSyncService,
-            resolveRecipeVideoUseCase = appContainer.resolveRecipeVideoUseCase,
-            onBack               = { route = MyRecipesRoute.List },
-            onImported           = { route = MyRecipesRoute.List }
+            onBack               = { route = MyRecipesRoute.List }
         )
         MyRecipesRoute.List -> MyRecipesListContent(
             modifier        = modifier,

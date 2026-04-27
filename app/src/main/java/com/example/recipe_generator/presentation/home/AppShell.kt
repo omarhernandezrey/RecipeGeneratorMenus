@@ -26,6 +26,7 @@ import com.example.recipe_generator.domain.usecase.GetMenuForDayUseCase
 import com.example.recipe_generator.presentation.favorites.FavoritesScreen
 import com.example.recipe_generator.presentation.favorites.FavoritesViewModel
 import com.example.recipe_generator.presentation.generator.MenuGeneratorViewModel
+import com.example.recipe_generator.presentation.leftmenu.MainScreen
 import com.example.recipe_generator.presentation.profile.ProfileHubScreen
 import com.example.recipe_generator.presentation.settings.SettingsScreen
 import com.example.recipe_generator.presentation.settings.SettingsViewModel
@@ -70,6 +71,7 @@ fun AppShell(
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     var isProfileOpen by remember { mutableStateOf(false) }
+    var isDemosOpen by remember { mutableStateOf(false) }
     var selectedRecipe by remember { mutableStateOf<Recipe?>(null) }
     var showNotificationPanel by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -158,6 +160,28 @@ fun AppShell(
     // ── Navegación entre tabs ────────────────────────────────────────
     val onNavigate: (Int) -> Unit = { tab -> selectedTab = tab }
 
+    // Pantallas Demo — abre el layout de dos paneles (Perfil·Fotos·Video·Web·Botones)
+    if (isDemosOpen) {
+        Box(modifier = modifier.fillMaxSize()) {
+            MainScreen(modifier = Modifier.fillMaxSize())
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.BottomCenter),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                EditorialBottomNavBar(
+                    selectedItem = selectedTab,
+                    onItemSelected = { tab ->
+                        isDemosOpen = false
+                        selectedTab = tab
+                    }
+                )
+            }
+        }
+        return
+    }
+
     if (isProfileOpen) {
         ProfileHubScreen(
             modifier = modifier,
@@ -189,7 +213,7 @@ fun AppShell(
                     }
                 },
                 onRecipeSelected = { selectedRecipe = it },
-                onProfileClick = { isProfileOpen = true },
+                onProfileClick = { isDemosOpen = true },
                 isSyncing = isSyncingValue
             )
         }
@@ -296,6 +320,7 @@ fun AppShell(
                 onLogout = onLogout
             )
         }
+
     }
 
     // ── Notification Bell overlay ────────────────────────────────────────

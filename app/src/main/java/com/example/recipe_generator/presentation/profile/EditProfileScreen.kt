@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,6 +50,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
@@ -67,6 +71,7 @@ import com.example.recipe_generator.presentation.theme.Surface
 import com.example.recipe_generator.presentation.theme.SurfaceContainerLow
 import com.example.recipe_generator.presentation.theme.rounded_full
 import com.example.recipe_generator.presentation.theme.rounded_lg
+import com.example.recipe_generator.presentation.theme.spacing_1
 import com.example.recipe_generator.presentation.theme.spacing_10
 import com.example.recipe_generator.presentation.theme.spacing_2
 import com.example.recipe_generator.presentation.theme.spacing_3
@@ -120,6 +125,8 @@ fun EditProfileScreen(
     var selectedPhotoRef by remember { mutableStateOf<String?>(null) }
     var selectedDiets by remember { mutableStateOf(listOf<String>()) }
     var defaultPortions by remember { mutableStateOf(2f) }
+    var culinaryStudies by remember { mutableStateOf("") }
+    var culinaryExperience by remember { mutableStateOf("") }
     var hydratedUserId by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(profile, currentUser) {
@@ -131,6 +138,8 @@ fun EditProfileScreen(
             selectedPhotoRef = profile?.photoUrl ?: currentUser?.photoUrl
             selectedDiets = profile?.preferredDiets.orEmpty()
             defaultPortions = (profile?.defaultPortions ?: 2).toFloat()
+            culinaryStudies = profile?.culinaryStudies.orEmpty()
+            culinaryExperience = profile?.culinaryExperience.orEmpty()
         }
     }
 
@@ -179,6 +188,10 @@ fun EditProfileScreen(
         },
         defaultPortions = defaultPortions,
         onDefaultPortionsChange = { defaultPortions = it },
+        culinaryStudies = culinaryStudies,
+        onCulinaryStudiesChange = { culinaryStudies = it },
+        culinaryExperience = culinaryExperience,
+        onCulinaryExperienceChange = { culinaryExperience = it },
         isSaving = isSaving,
         error = error,
         onPickFromGallery = {
@@ -193,7 +206,9 @@ fun EditProfileScreen(
                 displayName = displayName.trim(),
                 photoUrl = selectedPhotoRef,
                 preferredDiets = selectedDiets,
-                defaultPortions = defaultPortions.toInt()
+                defaultPortions = defaultPortions.toInt(),
+                culinaryStudies = culinaryStudies.trim(),
+                culinaryExperience = culinaryExperience.trim()
             )
         }
     )
@@ -209,6 +224,10 @@ private fun EditProfileContent(
     onToggleDiet: (String) -> Unit,
     defaultPortions: Float,
     onDefaultPortionsChange: (Float) -> Unit,
+    culinaryStudies: String,
+    onCulinaryStudiesChange: (String) -> Unit,
+    culinaryExperience: String,
+    onCulinaryExperienceChange: (String) -> Unit,
     isSaving: Boolean,
     error: String?,
     onPickFromGallery: () -> Unit,
@@ -291,24 +310,66 @@ private fun EditProfileContent(
                 ) {
                     OutlinedButton(
                         onClick = onPickFromGallery,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(rounded_full),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary)
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(110.dp),
+                        shape = RoundedCornerShape(rounded_lg),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary),
+                        contentPadding = PaddingValues(horizontal = spacing_1, vertical = spacing_2)
                     ) {
-                        Icon(Icons.Outlined.Collections, contentDescription = null)
-                        Spacer(modifier = Modifier.width(spacing_2))
-                        Text("Galería")
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Collections,
+                                contentDescription = null,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(modifier = Modifier.height(spacing_2))
+                            Text(
+                                text = "Galería",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1,
+                                overflow = TextOverflow.Visible,
+                                softWrap = false
+                            )
+                        }
                     }
 
                     OutlinedButton(
                         onClick = onTakePhoto,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(rounded_full),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary)
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(110.dp),
+                        shape = RoundedCornerShape(rounded_lg),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary),
+                        contentPadding = PaddingValues(horizontal = spacing_1, vertical = spacing_2)
                     ) {
-                        Icon(Icons.Outlined.CameraAlt, contentDescription = null)
-                        Spacer(modifier = Modifier.width(spacing_2))
-                        Text("Cámara")
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.CameraAlt,
+                                contentDescription = null,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(modifier = Modifier.height(spacing_2))
+                            Text(
+                                text = "Cámara",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1,
+                                overflow = TextOverflow.Visible,
+                                softWrap = false
+                            )
+                        }
                     }
                 }
             }
@@ -406,6 +467,59 @@ private fun EditProfileContent(
                 onValueChange = onDefaultPortionsChange,
                 valueRange = 1f..10f,
                 steps = 7
+            )
+        }
+
+        // ── Sección FORMACIÓN ────────────────────────────────────────────
+        EditorialCard {
+            Text(
+                text = "Formación culinaria",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = OnSurface
+            )
+            Spacer(modifier = Modifier.height(spacing_4))
+            OutlinedTextField(
+                value = culinaryStudies,
+                onValueChange = onCulinaryStudiesChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+                placeholder = {
+                    Text(
+                        "Ej: Gastronomía SENA, nutrición deportiva, repostería...",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                },
+                label = { Text("Estudios") },
+                maxLines = 5,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(spacing_3)
+            )
+        }
+
+        EditorialCard {
+            Text(
+                text = "Experiencia en cocina",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = OnSurface
+            )
+            Spacer(modifier = Modifier.height(spacing_4))
+            OutlinedTextField(
+                value = culinaryExperience,
+                onValueChange = onCulinaryExperienceChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+                placeholder = {
+                    Text(
+                        "Ej: 3 años preparando menús familiares, comida italiana, técnicas de salteado...",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                },
+                label = { Text("Experiencia") },
+                maxLines = 5,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(spacing_3)
             )
         }
 

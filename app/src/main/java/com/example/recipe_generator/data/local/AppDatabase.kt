@@ -29,6 +29,8 @@ import com.example.recipe_generator.data.local.entity.WeeklyPlanEntity
  *  v4 — UserRecipeEntity (C-01), WeeklyPlanEntity (C-02)
  *  v5 — UserProfileEntity (C-03) — C-07: 3 entities + 3 DAOs completos
  *  v6 — FavoriteEntity: clave compuesta (userId, recipeId) — E-03
+ *  v10 — Añadido videoYoutube (F-Video)
+ *  v11 — Añadido imageUrl (F-Images / Persistencia IA)
  *
  * fallbackToDestructiveMigration(dropAllTables = true) para entorno de desarrollo.
  * Singleton — una sola instancia por proceso.
@@ -49,7 +51,7 @@ import com.example.recipe_generator.data.local.entity.WeeklyPlanEntity
         UserProfileEntity::class,
         AppNotificationEntity::class
     ],
-    version = 10,
+    version = 12,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -62,13 +64,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun appNotificationDao(): AppNotificationDao
 
     companion object {
-        val MIGRATION_9_TO_10 = object : androidx.room.migration.Migration(9, 10) {
-            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE recipes ADD COLUMN videoYoutube TEXT DEFAULT NULL")
-                db.execSQL("ALTER TABLE user_recipes ADD COLUMN videoYoutube TEXT DEFAULT NULL")
-            }
-        }
-
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -79,7 +74,6 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "recipe_generator_db"
                 )
-                .addMigrations(MIGRATION_9_TO_10)
                 .fallbackToDestructiveMigration(dropAllTables = true)
                 .build().also { INSTANCE = it }
             }

@@ -46,16 +46,16 @@ fun NotificationBellIcon(
                 animationSpec = infiniteRepeatable(
                     animation = keyframes {
                         durationMillis = 1200
-                        0f   at 0    with FastOutSlowInEasing
-                        18f  at 100  with FastOutSlowInEasing
-                        -16f at 200  with FastOutSlowInEasing
-                        14f  at 300  with FastOutSlowInEasing
-                        -10f at 400  with FastOutSlowInEasing
-                        6f   at 500  with FastOutSlowInEasing
-                        -3f  at 600  with FastOutSlowInEasing
-                        0f   at 700  with FastOutSlowInEasing
+                        0f   at 0    using FastOutSlowInEasing
+                        18f  at 100  using FastOutSlowInEasing
+                        -16f at 200  using FastOutSlowInEasing
+                        14f  at 300  using FastOutSlowInEasing
+                        -10f at 400  using FastOutSlowInEasing
+                        6f   at 500  using FastOutSlowInEasing
+                        -3f  at 600  using FastOutSlowInEasing
+                        0f   at 700  using FastOutSlowInEasing
                         // silence until next cycle
-                        0f   at 1200 with FastOutSlowInEasing
+                        0f   at 1200 using FastOutSlowInEasing
                     },
                     repeatMode = RepeatMode.Restart
                 )

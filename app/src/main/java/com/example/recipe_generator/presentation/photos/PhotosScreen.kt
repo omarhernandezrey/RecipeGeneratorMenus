@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,10 +33,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.recipe_generator.R
+import com.example.recipe_generator.RecipeGeneratorApp
+import com.example.recipe_generator.domain.model.Recipe
 import com.example.recipe_generator.presentation.theme.OnSurface
 import com.example.recipe_generator.presentation.theme.OnSurfaceVariant
 import com.example.recipe_generator.presentation.theme.Primary
@@ -50,73 +57,59 @@ import com.example.recipe_generator.presentation.theme.spacing_6
 import com.example.recipe_generator.presentation.theme.spacing_8
 
 /**
- * PhotosScreen — Galería de fotos de recetas.
+ * PhotosScreen — Galería de fotos de recetas reales.
  *
- * Usa LazyColumn con imágenes locales (painterResource) — LF8: LazyColumn (equiv. ListView).
- * Click en imagen muestra descripción — LF4: estado local con remember.
- * Cubre LF7: Image() con drawable local + LF8: LazyColumn.
+ * Carga recetas desde Room via RecipeRepository.
+ * LazyColumn con scroll (LF8: ListView equiv) — imagen por receta.
+ * Click → muestra descripción de la receta seleccionada (LF4: estado reactivo).
  *
  * Capa: Presentation
  */
 
-private data class PhotoItem(
-    val drawableRes: Int,
-    val title: String,
-    val description: String
+// Imágenes reales de comida (JPEG descargadas en res/drawable/)
+private val foodDrawables = listOf(
+    R.drawable.img_food_real_1,
+    R.drawable.img_food_real_2,
+    R.drawable.img_food_real_3,
+    R.drawable.img_food_real_4,
+    R.drawable.img_food_real_5
 )
 
-private val photoGallery = listOf(
-    PhotoItem(
-        R.drawable.img_food_1,
-        "Ensalada de Quinoa",
-        "Una ensalada nutritiva de quinoa con vegetales frescos rostizados. Rica en proteínas y perfecta para el almuerzo."
-    ),
-    PhotoItem(
-        R.drawable.img_food_2,
-        "Sopa de Verduras",
-        "Reconfortante sopa de verduras de temporada con hierbas aromáticas. Ideal para los días fríos."
-    ),
-    PhotoItem(
-        R.drawable.img_food_3,
-        "Postre Saludable",
-        "Delicioso postre elaborado con ingredientes naturales. Bajo en azúcar y alto en nutrientes."
-    ),
-    PhotoItem(
-        R.drawable.img_food_4,
-        "Plato Principal",
-        "Plato equilibrado con proteínas, carbohidratos complejos y vegetales de temporada."
-    ),
-    PhotoItem(
-        R.drawable.img_food_5,
-        "Desayuno Energético",
-        "Desayuno completo y energético para comenzar el día con vitalidad. Rico en fibra y antioxidantes."
-    ),
-    PhotoItem(
-        R.drawable.img_placeholder,
-        "Menú del Chef",
-        "Receta especial de la semana creada por nuestro chef. Fusión de sabores mediterráneos y latinoamericanos."
-    )
-)
+private fun drawableForIndex(index: Int): Int =
+    foodDrawables[index % foodDrawables.size]
 
 @Composable
 fun PhotosScreen(modifier: Modifier = Modifier) {
+    val appContainer = (LocalContext.current.applicationContext as RecipeGeneratorApp).container
+
+    // Carga recetas reales desde la BD para el día Lunes como muestra representativa
+    val recipesFlow = remember(appContainer.recipeRepository) {
+        appContainer.recipeRepository.getAllRecipes()
+    }
+    val allRecipes by recipesFlow.collectAsStateWithLifecycle(initialValue = emptyList())
+
+    // Usamos las primeras 10 recetas para la galería
+    val galleryRecipes = remember(allRecipes) { allRecipes.take(10) }
+
     // LF4: estado local con remember { mutableStateOf() }
-    var selectedPhotoTitle by remember { mutableStateOf<String?>(null) }
-    var selectedDescription by remember { mutableStateOf("") }
+    var selectedRecipeId by remember { mutableStateOf<String?>(null) }
+    val selectedRecipe = remember(selectedRecipeId, galleryRecipes) {
+        galleryRecipes.firstOrNull { it.id == selectedRecipeId }
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(Surface)
     ) {
-        // Descripción seleccionada (LF4: estado reactivo)
+        // Panel de descripción al seleccionar una imagen (LF4: estado reactivo)
         val descBg by animateColorAsState(
-            if (selectedPhotoTitle != null) SecondaryContainer else Surface,
+            if (selectedRecipe != null) SecondaryContainer else Surface,
             animationSpec = tween(300),
             label = "descBg"
         )
 
-        if (selectedPhotoTitle != null) {
+        if (selectedRecipe != null) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -125,21 +118,28 @@ fun PhotosScreen(modifier: Modifier = Modifier) {
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(spacing_2)) {
                     Text(
-                        text = selectedPhotoTitle!!,
+                        text = selectedRecipe.title,
                         style = MaterialTheme.typography.titleMedium,
                         color = Primary,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = selectedDescription,
+                        text = selectedRecipe.description.ifBlank {
+                            "${selectedRecipe.category} · ${selectedRecipe.timeInMinutes} min · ${selectedRecipe.calories} kcal"
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         color = OnSurface
+                    )
+                    Text(
+                        text = "Dificultad: ${selectedRecipe.difficulty}  |  Día: ${selectedRecipe.dayOfWeek}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = OnSurfaceVariant
                     )
                 }
             }
         }
 
-        // LF8: LazyColumn (equivalente Compose de ListView)
+        // LF8: LazyColumn con barra de desplazamiento (equiv. ListView)
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -148,39 +148,37 @@ fun PhotosScreen(modifier: Modifier = Modifier) {
         ) {
             item { Spacer(modifier = Modifier.height(spacing_4)) }
 
-            items(photoGallery) { photo ->
-                PhotoCard(
-                    photo = photo,
-                    isSelected = photo.title == selectedPhotoTitle,
+            items(galleryRecipes, key = { it.id }) { recipe ->
+                val index = galleryRecipes.indexOf(recipe)
+                RecipePhotoCard(
+                    recipe = recipe,
+                    drawableRes = drawableForIndex(index),
+                    isSelected = recipe.id == selectedRecipeId,
                     onClick = {
-                        if (selectedPhotoTitle == photo.title) {
-                            // Deseleccionar si ya estaba seleccionada
-                            selectedPhotoTitle = null
-                            selectedDescription = ""
-                        } else {
-                            // Seleccionar y mostrar descripción
-                            selectedPhotoTitle = photo.title
-                            selectedDescription = photo.description
-                        }
+                        selectedRecipeId = if (selectedRecipeId == recipe.id) null else recipe.id
                     }
                 )
             }
 
-            item { Spacer(modifier = Modifier.height(spacing_8)) }
+            item {
+                val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                Spacer(modifier = Modifier.height(spacing_8 + navBarPadding))
+            }
         }
     }
 }
 
 @Composable
-private fun PhotoCard(
-    photo: PhotoItem,
+private fun RecipePhotoCard(
+    recipe: Recipe,
+    drawableRes: Int,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val borderColor by animateColorAsState(
+    val elevation by animateColorAsState(
         if (isSelected) Primary else SurfaceContainerLowest,
         animationSpec = tween(200),
-        label = "borderAnim"
+        label = "cardBorder"
     )
 
     Card(
@@ -197,7 +195,7 @@ private fun PhotoCard(
         )
     ) {
         Column {
-            // LF7: Image() — equivalente Compose de ImageView con drawable local
+            // LF7: Image() con drawable local
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -205,8 +203,8 @@ private fun PhotoCard(
                     .clip(RoundedCornerShape(topStart = rounded_md, topEnd = rounded_md))
             ) {
                 Image(
-                    painter = painterResource(id = photo.drawableRes),
-                    contentDescription = photo.title,
+                    painter = painterResource(id = drawableRes),
+                    contentDescription = recipe.title,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
@@ -215,25 +213,41 @@ private fun PhotoCard(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(borderColor.copy(alpha = 0.20f))
+                            .background(Primary.copy(alpha = 0.12f))
                     )
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .padding(spacing_4)
-                            .background(
-                                Primary,
-                                shape = RoundedCornerShape(rounded_md)
-                            )
+                            .background(Primary, shape = RoundedCornerShape(rounded_md))
                             .padding(horizontal = spacing_4, vertical = spacing_2)
                     ) {
                         Text(
-                            text = "✓ Seleccionada",
+                            text = "Seleccionada",
                             style = MaterialTheme.typography.labelSmall,
                             color = androidx.compose.ui.graphics.Color.White,
                             fontWeight = FontWeight.Bold
                         )
                     }
+                }
+
+                // Badge con tipo de comida
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(spacing_4)
+                        .background(
+                            androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.55f),
+                            shape = RoundedCornerShape(rounded_md)
+                        )
+                        .padding(horizontal = spacing_4, vertical = spacing_2)
+                ) {
+                    Text(
+                        text = recipe.category,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = androidx.compose.ui.graphics.Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
@@ -242,10 +256,15 @@ private fun PhotoCard(
                 verticalArrangement = Arrangement.spacedBy(spacing_2)
             ) {
                 Text(
-                    text = photo.title,
+                    text = recipe.title,
                     style = MaterialTheme.typography.titleMedium,
                     color = if (isSelected) Primary else OnSurface,
                     fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "${recipe.timeInMinutes} min  ·  ${recipe.calories} kcal  ·  ${recipe.difficulty}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OnSurfaceVariant
                 )
                 Text(
                     text = if (isSelected) "Toca para deseleccionar" else "Toca para ver descripción",

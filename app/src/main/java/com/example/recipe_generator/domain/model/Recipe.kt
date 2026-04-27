@@ -14,6 +14,8 @@ data class Recipe(
     val title: String,
     /** Nombre del recurso drawable local, p.ej. "img_scrambled_eggs" */
     val imageRes: String,
+    /** URL remota persistida tras búsqueda en Pixabay/Gemini (F-Images) */
+    val imageUrl: String? = null,
     val timeInMinutes: Int,
     val calories: Int,
     /** "Fácil" | "Medio" | "Difícil" */

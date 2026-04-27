@@ -62,6 +62,8 @@ private fun UserProfileEntity.toDomain(): UserProfile = UserProfile(
     photoUrl = photoUrl,
     preferredDiets = parseJsonArray(preferredDietsJson),
     defaultPortions = defaultPortions,
+    culinaryStudies = culinaryStudies,
+    culinaryExperience = culinaryExperience,
     createdAt = createdAt
 )
 
@@ -74,6 +76,8 @@ private fun UserProfile.toEntity(): UserProfileEntity = UserProfileEntity(
     photoUrl = photoUrl,
     preferredDietsJson = toJsonArray(preferredDiets),
     defaultPortions = defaultPortions,
+    culinaryStudies = culinaryStudies,
+    culinaryExperience = culinaryExperience,
     createdAt = createdAt
 )
 

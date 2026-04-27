@@ -28,6 +28,11 @@
         android:name="com.example.recipe_generator.presentation.settings.SettingsFragment"
         android:label="Ajustes" />
 
+    <fragment
+        android:id="@+id/globalRecipeSearchFragment"
+        android:name="com.example.recipe_generator.presentation.ui.GlobalRecipeSearchFragment"
+        android:label="Busqueda Global" />
+
     <!-- F2-04/F2-05: MainScreen — layout de dos paneles (LeftMenu + Content) -->
     <fragment
         android:id="@+id/leftMenuFragment"

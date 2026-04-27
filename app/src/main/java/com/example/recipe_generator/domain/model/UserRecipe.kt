@@ -26,6 +26,9 @@ data class UserRecipe(
     /** Nombre del drawable local o cadena vacía si no tiene imagen */
     val imageRes: String = "",
 
+    /** URL remota persistida tras búsqueda exitosa (F-Images) */
+    val imageUrl: String? = null,
+
     val timeInMinutes: Int = 0,
 
     val calories: Int = 0,
