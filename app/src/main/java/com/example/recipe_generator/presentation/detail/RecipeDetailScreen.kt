@@ -510,13 +510,17 @@ private fun IngredientsList(recipe: Recipe) {
                 ) {
                     Text(
                         text = buildString {
-                            append(ingredient.quantity)
+                            if (ingredient.quantity.isNotBlank()) {
+                                append(ingredient.quantity)
+                            }
                             if (ingredient.unit.isNotBlank()) {
-                                append(" ")
+                                if (isNotEmpty()) append(" ")
                                 append(ingredient.unit)
                             }
-                            append(" ")
-                            append(ingredient.name)
+                            if (ingredient.name.isNotBlank()) {
+                                if (isNotEmpty()) append(" ")
+                                append(ingredient.name)
+                            }
                         },
                         style = MaterialTheme.typography.bodyLarge,
                         color = OnSurface

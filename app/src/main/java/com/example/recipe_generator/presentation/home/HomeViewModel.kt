@@ -66,7 +66,7 @@ class HomeViewModel(
             ) { planEntries, catalogRecipes ->
                 val showPlan = planEntries.isNotEmpty()
                 val recipes = if (showPlan) planEntries.map { it.toRecipe() } else catalogRecipes
-                Pair(showPlan, recipes)
+                Pair(showPlan, recipes.sortedForHome())
             }.collect { (showPlan, recipeList) ->
                 _hasPlan.value = showPlan
                 _recipes.value = recipeList
@@ -88,3 +88,12 @@ private fun WeeklyPlan.toRecipe(): Recipe = Recipe(
     description = "",
     dayOfWeek = dayOfWeek
 )
+internal fun List<Recipe>.sortedForHome(): List<Recipe> =
+    sortedBy { homeMealTypeOrder(it.category.ifBlank { it.categorySubtitle }) }
+
+private fun homeMealTypeOrder(mealType: String): Int = when (mealType.trim().lowercase()) {
+    "desayuno" -> 0
+    "almuerzo" -> 1
+    "cena" -> 2
+    else -> 3
+}

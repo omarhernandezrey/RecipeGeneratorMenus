@@ -59,6 +59,8 @@ fun RecipeListScreen(
     onProfileClick: () -> Unit = {},
     isSyncing: Boolean = false
 ) {
+    val orderedRecipes = remember(recipes) { recipes.sortedForHome() }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -86,7 +88,7 @@ fun RecipeListScreen(
                     .padding(horizontal = spacing_6),
                 verticalArrangement = Arrangement.spacedBy(spacing_10)
             ) {
-                recipes.forEach { recipe ->
+                orderedRecipes.forEach { recipe ->
                     RecipeSection(
                         recipe = recipe,
                         favoriteRecipeIds = favoriteRecipeIds,
